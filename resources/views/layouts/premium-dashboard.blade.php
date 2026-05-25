@@ -1,0 +1,766 @@
+    <style>
+        :root {
+            --primary: #f97316; /* Orange 500 */
+            --secondary: #fb923c; /* Orange 400 */
+            --bg: #09090b; /* Zinc 950 (Modern Black) */
+            --surface: #121214; /* Slightly lighter surface */
+            --surface-variant: #1c1c1f;
+            --sidebar-bg: #111114;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --text: #f8fafc;
+            --text-secondary: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --sidebar-width: 280px;
+            --radius-xl: 32px;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 3rem;
+            color: #fff;
+            letter-spacing: -1px;
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: 0.3s;
+            opacity: 0.7;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--card-bg);
+            opacity: 1;
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            flex-grow: 1;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: calc(100% - var(--sidebar-width));
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+        }
+
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 0.6rem;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        /* Backdrop */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+        }
+
+        /* Responsive Utilities */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 20px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .glass-card:active {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        @media (max-width: 1024px) {
+            .grid-3 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .sidebar-backdrop.active {
+                display: block;
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 0.9rem;
+                padding-bottom: 90px !important;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .grid-3, .grid-2 {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+            .header {
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5rem;
+                margin-bottom: 1.2rem;
+                padding-bottom: 0.8rem;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+            .user-info {
+                display: none;
+            }
+            .header h1 {
+                font-size: clamp(1rem, 4vw, 1.3rem) !important;
+                line-height: 1.25;
+                word-break: break-word;
+            }
+            .glass-card {
+                padding: 1.1rem !important;
+                border-radius: 16px !important;
+            }
+            table {
+                font-size: 0.82rem;
+            }
+            table th, table td {
+                padding: 0.6rem 0.8rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.7rem;
+                padding-bottom: 90px !important;
+            }
+            .glass-card {
+                padding: 1rem !important;
+                border-radius: 14px !important;
+            }
+            h1, h2 {
+                font-size: clamp(0.95rem, 4vw, 1.2rem) !important;
+            }
+            h3 {
+                font-size: clamp(0.9rem, 3.5vw, 1.1rem) !important;
+            }
+        }
+
+        .btn-logout {
+            margin-top: auto;
+            color: #ef4444;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .notification-bell:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            #notification-dropdown {
+                width: calc(100vw - 2rem) !important;
+                right: -50px !important;
+            }
+        }
+
+        select option {
+            background-color: #1e293b;
+            color: #ffffff;
+        }
+
+        /* Mobile Bottom Navigation Bar Styles - Material 3 Inspired */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px; /* Taller for M3 */
+            background-color: #0c0c0e; 
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 0.8rem;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.72rem;
+            font-weight: 600;
+            flex: 1;
+            height: 100%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .mobile-nav-icon-wrapper {
+            position: relative;
+            padding: 4px 20px;
+            border-radius: 16px;
+            margin-bottom: 4px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-nav-item.active {
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .mobile-nav-item.active .mobile-nav-icon-wrapper {
+            background: rgba(249, 115, 22, 0.2);
+            color: var(--primary);
+        }
+
+        .mobile-nav-item svg {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+        }
+
+        .mobile-nav-badge {
+            position: absolute;
+            top: -2px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 900;
+            padding: 0 0.4rem;
+            border-radius: 10px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #0c0c0e;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-bottom-nav {
+                display: flex;
+            }
+            body {
+                padding-bottom: 120px !important; /* Compact HP Safe Padding */
+            }
+            .mobile-logo-container {
+                display: flex !important;
+            }
+            .header h1 {
+                display: none !important; /* Hide large page title on mobile to match mockup logo */
+            }
+        }
+    </style>
+    @stack('styles')
+</head>
+<body>
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMenu()"></div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="logo">CleanUP<span>Shoes</span></div>
+        <ul class="nav-menu">
+            @if(Auth::user()->role == 'employee')
+                <li class="nav-item">
+                    <a href="{{ route('employee.dashboard') }}" class="nav-link {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('employee.orders.index') }}" class="nav-link {{ request()->routeIs('employee.orders.*') ? 'active' : '' }}" style="display: flex; align-items: center; justify-content: space-between;">
+                        <span>Tugas Saya</span>
+                        @php
+                            $pendingOrdersCount = \App\Models\Order::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingOrdersCount > 0)
+                            <span class="badge-pulse" style="background: #f43f5e; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(244, 63, 94, 0.4); margin-left: 0.5rem; line-height: 1;">
+                                {{ $pendingOrdersCount }}
+                            </span>
+                        @endif
+                    </a>
+                </li>
+                <style>
+                    @keyframes pulse-red {
+                        0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
+                        70% { box-shadow: 0 0 0 10px rgba(244, 63, 94, 0); }
+                        100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+                    }
+                    .badge-pulse {
+                        animation: pulse-red 2s infinite;
+                    }
+                </style>
+
+                <li class="nav-item">
+                    <a href="{{ route('employee.reports.index') }}" class="nav-link {{ request()->routeIs('employee.reports.*') ? 'active' : '' }}">
+                        Laporan
+                    </a>
+                </li>
+            @elseif(Auth::user()->role == 'admin')
+                <li class="nav-item">
+                    <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" style="display: flex; align-items: center; justify-content: space-between;">
+                        <span>Pesanan</span>
+                        @php
+                            $adminPendingCount = \App\Models\Order::where('status', 'pending')->count();
+                        @endphp
+                        @if($adminPendingCount > 0)
+                            <span class="badge-pulse" style="background: #f43f5e; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(244, 63, 94, 0.4); margin-left: 0.5rem; line-height: 1;">
+                                {{ $adminPendingCount }}
+                            </span>
+                        @endif
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                        Laporan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.services.index') }}" class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
+                        Layanan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.finances.index') }}" class="nav-link {{ request()->routeIs('admin.finances.*') ? 'active' : '' }}">
+                        Keuangan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.employees.index') }}" class="nav-link {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}">
+                        Karyawan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                        Pengaturan
+                    </a>
+                </li>
+            @else
+                <li class="nav-item">
+                    <a href="{{ route('customer.dashboard') }}" class="nav-link {{ request()->routeIs('customer.dashboard') ? 'active' : '' }}">
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}">
+                        Lihat Layanan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('orders.my-orders') }}" class="nav-link {{ request()->routeIs('orders.my-orders') ? 'active' : '' }}" style="display: flex; align-items: center; justify-content: space-between;">
+                        <span>Pesanan Saya</span>
+                        @php
+                            $custActiveCount = \App\Models\Order::where('user_id', Auth::id())->whereNotIn('status', ['completed', 'cancelled'])->count();
+                        @endphp
+                        @if($custActiveCount > 0)
+                            <span style="background: var(--primary); color: #000; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4); margin-left: 0.5rem; line-height: 1;">
+                                {{ $custActiveCount }}
+                            </span>
+                        @endif
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('orders.history') }}" class="nav-link {{ request()->routeIs('orders.history') ? 'active' : '' }}">
+                        Riwayat Pesanan
+                    </a>
+                </li>
+            @endif
+        </ul>
+        <form method="POST" action="{{ route('logout') }}" style="margin-top: auto;">
+            @csrf
+            <button type="submit" class="btn-logout" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left; font-family: 'Outfit', sans-serif; font-size: 1rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Keluar
+            </button>
+        </form>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button class="menu-toggle" onclick="toggleMenu()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <h1 style="font-size: clamp(1.2rem, 4vw, 2.2rem); font-weight: 800; letter-spacing: -1px; color: #fff; margin: 0;">@yield('page_title')</h1>
+                <div class="mobile-logo-container" style="display: none; align-items: center; gap: 0.4rem;">
+                    <span style="font-weight: 900; letter-spacing: -0.5px; font-size: 1.15rem; color: #fff;">CleanUP</span>
+                    <span style="background: var(--primary); color: #000; font-size: 0.65rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2;">
+                        @if(Auth::user()->role == 'employee') Staff @elseif(Auth::user()->role == 'admin') Admin @else Client @endif
+                    </span>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Notification Bell & Dropdown -->
+                <div class="notification-container" style="position: relative;">
+                    <button id="notification-btn" class="notification-bell" style="position: relative; padding: 0.5rem; border-radius: 12px; transition: 0.3s; color: var(--text); background: transparent; border: none; cursor: pointer;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span id="notification-badge" style="display: none; position: absolute; top: 5px; right: 5px; width: 18px; height: 18px; background: var(--danger); border-radius: 50%; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; border: 2px solid var(--bg);">0</span>
+                    </button>
+
+                    <!-- Dropdown Content -->
+                    <div id="notification-dropdown" class="glass-card" style="display: none; position: absolute; top: 50px; right: 0; width: 350px; z-index: 1002; padding: 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                        <div style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
+                            <span style="font-weight: 700;">Notifikasi</span>
+                            <button onclick="markAllAsRead()" style="font-size: 0.75rem; color: var(--primary); background: transparent; border: none; cursor: pointer;">Tandai semua dibaca</button>
+                        </div>
+                        <div id="notification-list" style="max-height: 400px; overflow-y: auto;">
+                            <!-- List items will be injected here -->
+                            <div style="padding: 2rem; text-align: center; opacity: 0.5;">Memuat...</div>
+                        </div>
+                        <a href="{{ route('notifications.index') }}" style="display: block; padding: 1rem; text-align: center; font-size: 0.85rem; color: var(--text); text-decoration: none; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">Lihat Semua</a>
+                    </div>
+                </div>
+
+                <a href="{{ route('profile.edit') }}" class="user-profile" style="text-decoration: none; color: inherit; transition: 0.3s; padding: 0.5rem 0.8rem; border-radius: 16px;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                    <div class="user-info" style="text-align: right;">
+                        <p style="font-weight: 600;">{{ Auth::user()->name }}</p>
+                        <p style="font-size: 0.8rem; opacity: 0.6;">
+                            @if(Auth::user()->role == 'admin') Admin @elseif(Auth::user()->role == 'employee') Karyawan @else Pelanggan @endif
+                        </p>
+                    </div>
+                    <div class="avatar" style="box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
+                </a>
+            </div>
+        </div>
+
+        @yield('content')
+    </div>
+
+    <script>
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            sidebar.classList.toggle('active');
+            backdrop.classList.toggle('active');
+        }
+
+        // Notification Logic
+        const notificationBtn = document.getElementById('notification-btn');
+        const notificationDropdown = document.getElementById('notification-dropdown');
+        const notificationList = document.getElementById('notification-list');
+        const notificationBadge = document.getElementById('notification-badge');
+
+        notificationBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notificationDropdown.style.display = notificationDropdown.style.display === 'none' ? 'block' : 'none';
+            if (notificationDropdown.style.display === 'block') {
+                fetchNotifications();
+            }
+        });
+
+        document.addEventListener('click', () => {
+            notificationDropdown.style.display = 'none';
+        });
+
+        notificationDropdown.addEventListener('click', (e) => e.stopPropagation());
+
+        async function fetchNotifications() {
+            try {
+                const response = await fetch('{{ route('notifications.recent') }}');
+                const data = await response.json();
+                
+                // Update badge
+                if (data.unread_count > 0) {
+                    notificationBadge.innerText = data.unread_count;
+                    notificationBadge.style.display = 'flex';
+                } else {
+                    notificationBadge.style.display = 'none';
+                }
+
+                // Update list
+                if (data.recent.length === 0) {
+                    notificationList.innerHTML = '<div style="padding: 2rem; text-align: center; opacity: 0.5;">Tidak ada notifikasi</div>';
+                } else {
+                    notificationList.innerHTML = data.recent.map(n => `
+                        <div onclick="markAsRead('${n.id}', '${n.data.url}')" style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.02); cursor: pointer; transition: 0.3s; ${!n.read_at ? 'background: rgba(0, 210, 255, 0.05);' : ''}" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='${!n.read_at ? 'rgba(0, 210, 255, 0.05)' : 'transparent'}'">
+                            <div style="display: flex; gap: 0.8rem;">
+                                <div style="width: 35px; height: 35px; border-radius: 10px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                     <span style="color: var(--primary); font-size: 1.2rem;">•</span>
+                                </div>
+                                <div style="flex-grow: 1;">
+                                    <p style="font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem;">${n.data.title}</p>
+                                    <p style="font-size: 0.8rem; opacity: 0.7; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${n.data.message}</p>
+                                    <p style="font-size: 0.7rem; opacity: 0.4; margin-top: 0.4rem;">${n.created_at}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to fetch notifications:', error);
+            }
+        }
+
+        async function markAsRead(id, url) {
+            await fetch(`/notifications/${id}/read`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            });
+            window.location.href = url;
+        }
+
+        async function markAllAsRead() {
+            await fetch('{{ route('notifications.markAllAsRead') }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+            });
+            fetchNotifications();
+        }
+
+        // Poll for notifications every 3 seconds for near-realtime updates
+        setInterval(fetchNotifications, 3000);
+        fetchNotifications(); // Initial fetch
+    </script>
+
+    <!-- Mobile Sticky Bottom Navigation (Android Native style) -->
+    <div class="mobile-bottom-nav">
+        @if(Auth::user()->role == 'employee')
+            <a href="{{ route('employee.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                Utama
+            </a>
+            <a href="{{ route('employee.orders.index') }}" class="mobile-nav-item {{ request()->routeIs('employee.orders.*') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
+                    @php
+                        $empPendingCount = \App\Models\Order::where('status', 'pending')->count();
+                    @endphp
+                    @if($empPendingCount > 0)
+                        <span class="mobile-nav-badge">{{ $empPendingCount }}</span>
+                    @endif
+                </div>
+                Orderan
+            </a>
+
+            <a href="{{ route('employee.reports.index') }}" class="mobile-nav-item {{ request()->routeIs('employee.reports.*') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </div>
+                Laporan
+            </a>
+            <a href="{{ route('profile.edit') }}" class="mobile-nav-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                Profil
+            </a>
+        @elseif(Auth::user()->role == 'admin')
+            <a href="{{ route('admin.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                Utama
+            </a>
+            <a href="{{ route('admin.orders.index') }}" class="mobile-nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
+                    @php
+                        $adminPendingCount = \App\Models\Order::where('status', 'pending')->count();
+                    @endphp
+                    @if($adminPendingCount > 0)
+                        <span class="mobile-nav-badge">{{ $adminPendingCount }}</span>
+                    @endif
+                </div>
+                Orderan
+            </a>
+            <a href="{{ route('admin.finances.index') }}" class="mobile-nav-item {{ request()->routeIs('admin.finances.*') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                Keuangan
+            </a>
+            <a href="{{ route('admin.employees.index') }}" class="mobile-nav-item {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </div>
+                Karyawan
+            </a>
+            <a href="{{ route('profile.edit') }}" class="mobile-nav-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                Profil
+            </a>
+        @else
+            <a href="{{ route('customer.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('customer.dashboard') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                Utama
+            </a>
+            <a href="{{ route('services.index') }}" class="mobile-nav-item {{ request()->routeIs('services.index') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                </div>
+                Layanan
+            </a>
+            <a href="{{ route('orders.my-orders') }}" class="mobile-nav-item {{ request()->routeIs('orders.my-orders') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
+                    @php
+                        $custActiveCount = \App\Models\Order::where('user_id', Auth::id())->whereNotIn('status', ['completed', 'cancelled'])->count();
+                    @endphp
+                    @if($custActiveCount > 0)
+                        <span class="mobile-nav-badge">{{ $custActiveCount }}</span>
+                    @endif
+                </div>
+                Pesanan
+            </a>
+            <a href="{{ route('orders.history') }}" class="mobile-nav-item {{ request()->routeIs('orders.history') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                Riwayat
+            </a>
+            <a href="{{ route('profile.edit') }}" class="mobile-nav-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+                <div class="mobile-nav-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                Profil
+            </a>
+        @endif
+    </div>
+
+    @stack('scripts')
+</body>
+</html>
