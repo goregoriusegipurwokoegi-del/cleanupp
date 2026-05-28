@@ -28,7 +28,7 @@ class OrderController extends Controller
         $search = $request->input('search');
         
         $query = Auth::user()->orders()->with('service')
-            ->whereNotIn('status', ['completed', 'cancelled']);
+            ->whereNotIn('status', ['completed', 'cancelled', 'dikirim']);
 
         if ($search) {
             $query->where(function($q) use ($search) {
@@ -55,13 +55,15 @@ class OrderController extends Controller
 
         if ($status_filter === 'completed') {
             $query->where('status', 'completed');
+        } elseif ($status_filter === 'dikirim') {
+            $query->where('status', 'dikirim');
         } elseif ($status_filter === 'cancelled') {
             $query->where('status', 'cancelled');
         } elseif ($status_filter === 'active') {
-            $query->whereNotIn('status', ['completed', 'cancelled']);
+            $query->whereNotIn('status', ['completed', 'cancelled', 'dikirim']);
         } else {
             // 'all': completed and cancelled
-            $query->whereIn('status', ['completed', 'cancelled']);
+            $query->whereIn('status', ['completed', 'cancelled', 'dikirim']);
         }
 
         if ($search) {
@@ -91,7 +93,11 @@ class OrderController extends Controller
         $bank_account = \App\Models\Setting::where('key', 'bank_account')->first()?->value;
         $bank_holder = \App\Models\Setting::where('key', 'bank_holder')->first()?->value;
 
-        return view('orders.create', compact('services', 'selectedService', 'bank_name', 'bank_account', 'bank_holder'));
+        $storeLat = env('STORE_LATITUDE', '-0.0513462');
+        $storeLng = env('STORE_LONGITUDE', '109.3210380');
+        $deliveryFeeAmount = env('DELIVERY_FEE_AMOUNT', 15000);
+
+        return view('orders.create', compact('services', 'selectedService', 'bank_name', 'bank_account', 'bank_holder', 'storeLat', 'storeLng', 'deliveryFeeAmount'));
     }
 
     /**
@@ -104,25 +110,31 @@ class OrderController extends Controller
             'additional_services' => 'nullable|array',
             'additional_services.*' => 'exists:services,id',
             'processing_speed' => 'required|in:regular,express',
-            'payment_method' => 'required|in:cash,transfer',
-            'shoe_name' => 'required|string|max:255',
-            'shoe_size' => 'required|string|max:10',
-            'shoe_photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'payment_method' => 'required|in:cash,transfer,qris',
+            'is_delivery' => 'required|boolean',
+            'delivery_address' => 'required_if:is_delivery,1|nullable|string',
+            'shoe_quantity' => 'required_if:is_delivery,1|integer|min:1',
+            'latitude' => 'nullable|string',
+            'longitude' => 'nullable|string',
+            'shoe_name' => 'required_if:is_delivery,0|nullable|string|max:255',
+            'shoe_size' => 'required_if:is_delivery,0|nullable|string|max:10',
+            'shoe_photo' => 'required_if:is_delivery,0|nullable|image|mimes:jpeg,png,jpg|max:2048',
             'shoe_photo_2' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $mainService = \App\Models\Service::findOrFail($request->service_id);
-        $totalPrice = $mainService->price;
+        $shoeQuantity = $request->input('shoe_quantity', 1);
+        $totalPrice = $mainService->price * $shoeQuantity;
 
         // Calculate Additional Services
         if ($request->has('additional_services')) {
             $extras = \App\Models\Service::whereIn('id', $request->additional_services)->get();
-            $totalPrice += $extras->sum('price');
+            $totalPrice += ($extras->sum('price') * $shoeQuantity);
         }
 
         // Processing Speed Premium
         if ($request->processing_speed === 'express') {
-            $totalPrice += 25000;
+            $totalPrice += (25000 * $shoeQuantity);
         }
 
         // Handle Photo Upload
@@ -134,6 +146,32 @@ class OrderController extends Controller
         $photoPath2 = null;
         if ($request->hasFile('shoe_photo_2')) {
             $photoPath2 = $request->file('shoe_photo_2')->store('orders/photos', 'public');
+        }
+
+        // Calculate Delivery Fee based on distance
+        $deliveryFee = 0;
+        if ($request->is_delivery && $request->latitude && $request->longitude) {
+            $storeLat = env('STORE_LATITUDE', '-0.0513462');
+            $storeLng = env('STORE_LONGITUDE', '109.3210380');
+            
+            $earthRadius = 6371; // Radius of the earth in km
+            $latFrom = deg2rad($storeLat);
+            $lonFrom = deg2rad($storeLng);
+            $latTo = deg2rad($request->latitude);
+            $lonTo = deg2rad($request->longitude);
+            
+            $latDelta = $latTo - $latFrom;
+            $lonDelta = $lonTo - $lonFrom;
+            
+            $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) +
+                cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+            
+            $distance = $angle * $earthRadius;
+            
+            if ($distance > 5) {
+                $deliveryFee = env('DELIVERY_FEE_AMOUNT', 15000);
+                $totalPrice += $deliveryFee;
+            }
         }
 
         // Generate Order Number & Queue Number
@@ -154,10 +192,16 @@ class OrderController extends Controller
             'payment_method' => $request->payment_method,
             'payment_status' => 'unpaid',
             'reception_date' => now(),
-            'shoe_name' => $order_data['shoe_name'] ?? $request->shoe_name,
-            'shoe_size' => $order_data['shoe_size'] ?? $request->shoe_size,
+            'shoe_name' => $request->shoe_name,
+            'shoe_size' => $request->shoe_size,
             'photo_before' => $photoPath,
             'photo_before_2' => $photoPath2,
+            'is_delivery' => $request->is_delivery,
+            'delivery_address' => $request->delivery_address,
+            'shoe_quantity' => $shoeQuantity,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'delivery_fee' => $deliveryFee,
         ]);
 
         $order = Order::latest()->first(); // Get the created order
@@ -169,17 +213,24 @@ class OrderController extends Controller
             $paymentInstruction = "";
             if ($order->payment_method == 'cash') {
                 $paymentInstruction = "Metode Pembayaran: TUNAI (Bayar di Tempat)\n";
+            } elseif ($order->payment_method == 'qris') {
+                $paymentInstruction = "Metode Pembayaran: QRIS\n" .
+                                     "Silakan scan kode QRIS di halaman detail pesanan untuk melakukan pembayaran.\n";
             } else {
                 $paymentInstruction = "Metode Pembayaran: TRANSFER BANK\n" .
                                      "Silakan transfer ke rekening outlet dan konfirmasi ke admin.\n";
             }
 
+            $deliveryInstruction = $order->is_delivery 
+                                 ? "\nKami akan segera mengambil sepatu ke alamat Anda:\n" . $order->delivery_address . "\n"
+                                 : "\nSilakan antar sepatu Anda ke outlet kami.\n";
+
             $message = "Halo *" . $order->user->name . "*, pesanan CleanUP Shoes Anda telah diterima! 👟✨\n\n" .
                        "No. Pesanan: #" . $order->order_number . "\n" .
                        "No. Antrian: " . $order->queue_number . "\n" .
-                       "Sepatu: " . $order->shoe_name . "\n" .
+                       "Layanan: " . ($order->is_delivery ? 'Antar Jemput (' . $order->shoe_quantity . ' Sepatu)' : 'Drop-off (' . ($order->shoe_name ?: '1 Sepatu') . ')') . "\n" .
                        $paymentInstruction . 
-                       "\nSilakan antar sepatu Anda ke outlet kami.\n" .
+                       $deliveryInstruction . 
                        "Cek detail pesanan: " . route('orders.show', $order->id) . "\n\n" .
                        "Terima kasih!";
             $this->whatsAppService->sendMessage($order->user->phone, $message);
@@ -430,7 +481,9 @@ class OrderController extends Controller
                 'in_progress' => 'Sedang Dicuci',
                 'repairing' => 'Sedang Direparasi',
                 'finishing' => 'Finishing',
-                'completed' => 'Siap Diambil',
+                'ready' => 'Siap Diambil',
+                'dikirim' => 'Dikirim',
+                'completed' => 'Selesai',
                 'cancelled' => 'Dibatalkan',
             ];
 

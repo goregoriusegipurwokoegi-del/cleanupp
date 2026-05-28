@@ -85,6 +85,13 @@
                 </div>
                 @endforeach
             @endif
+
+            @if($order->delivery_fee > 0)
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; opacity: 0.8;">
+                <p style="font-size: 0.9rem; color: #fff;">+ Biaya Antar Jemput (> 5km)</p>
+                <p style="font-weight: 600; color: #fff;">Rp {{ number_format($order->delivery_fee, 0, ',', '.') }}</p>
+            </div>
+            @endif
         </div>
 
         <!-- Total -->

@@ -11,6 +11,10 @@
 @endsection
 
 @section('content')
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <style>
     .order-grid {
         display: grid; 
@@ -156,14 +160,53 @@
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 2rem;">
-                        <div>
-                            <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Nama Sepatu</label>
-                            <input type="text" name="shoe_name" placeholder="Nike, Adidas, dll" required style="width: 100%; padding: 1rem 1.2rem; border-radius: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='rgba(255,255,255,0.04)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.02)'">
+                    <!-- Metode Penyerahan Sepatu -->
+                    <div style="margin-bottom: 2rem;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 1rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Metode Penyerahan</label>
+                        <div style="display: flex; background: rgba(255,255,255,0.03); padding: 0.4rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); gap: 0.4rem;">
+                            <label style="flex: 1; cursor: pointer; position: relative;">
+                                <input type="radio" name="is_delivery" value="0" checked style="display: none;" onchange="toggleDelivery(this)">
+                                <div class="delivery-option active" style="padding: 0.8rem; border-radius: 12px; text-align: center; font-weight: 700; font-size: 0.9rem; transition: 0.4s; color: #0f172a; display: flex; align-items: center; justify-content: center; gap: 0.6rem; background: var(--primary); box-shadow: 0 4px 15px rgba(249, 115, 22, 0.2);">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                    Bawa ke Outlet
+                                </div>
+                            </label>
+                            <label style="flex: 1; cursor: pointer; position: relative;">
+                                <input type="radio" name="is_delivery" value="1" style="display: none;" onchange="toggleDelivery(this)">
+                                <div class="delivery-option" style="padding: 0.8rem; border-radius: 12px; text-align: center; font-weight: 700; font-size: 0.9rem; transition: 0.4s; color: #fff; display: flex; align-items: center; justify-content: center; gap: 0.6rem; opacity: 0.4;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                                    Antar Jemput
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Detail Antar Jemput -->
+                    <div id="delivery_details" style="display: none; margin-bottom: 2rem; background: rgba(249, 115, 22, 0.05); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(249, 115, 22, 0.2);">
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Pilih Lokasi di Peta</label>
+                            <div id="map" style="height: 250px; width: 100%; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem; z-index: 1;"></div>
+                            
+                            <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Alamat Penjemputan</label>
+                            <textarea name="delivery_address" id="delivery_address" placeholder="Contoh: Jl. Sudirman No 10, RT 01/RW 02..." style="width: 100%; padding: 1rem 1.2rem; border-radius: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; transition: 0.3s; min-height: 100px;"></textarea>
+                            
+                            <input type="hidden" name="latitude" id="latitude">
+                            <input type="hidden" name="longitude" id="longitude">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Size</label>
-                            <input type="text" name="shoe_size" placeholder="42" required style="width: 100%; padding: 1rem; border-radius: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; transition: 0.3s; text-align: center;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='rgba(255,255,255,0.04)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.02)'">
+                            <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Jumlah Sepatu</label>
+                            <input type="number" name="shoe_quantity" id="shoe_quantity" value="1" min="1" style="width: 100%; padding: 1rem 1.2rem; border-radius: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; transition: 0.3s;" onchange="updatePriceFromQuantity()">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                        <div>
+                            <label id="label_shoe_name" style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Nama Sepatu</label>
+                            <input type="text" id="shoe_name" name="shoe_name" placeholder="Nike, Adidas, dll" required style="width: 100%; padding: 1rem 1.2rem; border-radius: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='rgba(255,255,255,0.04)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.02)'">
+                        </div>
+                        <div>
+                            <label id="label_shoe_size" style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Size</label>
+                            <input type="text" id="shoe_size" name="shoe_size" placeholder="42" required style="width: 100%; padding: 1rem; border-radius: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; transition: 0.3s; text-align: center;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='rgba(255,255,255,0.04)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'; this.style.background='rgba(255,255,255,0.02)'">
                         </div>
                     </div>
 
@@ -224,10 +267,30 @@
                                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4" style="display: none;"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                 </div>
                             </label>
+
+                            <!-- QRIS -->
+                            <div style="padding: 0.6rem 1.2rem; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <p style="font-size: 0.65rem; font-weight: 800; color: #8b5cf6; text-transform: uppercase; letter-spacing: 1px;">QRIS</p>
+                            </div>
+                            <label style="display: flex; align-items: center; justify-content: space-between; padding: 1.2rem; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                                <input type="radio" name="payment_method" value="qris" style="display: none;" onchange="updatePaymentUI(this, 'QRIS')">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div style="width: 36px; height: 36px; background: rgba(139, 92, 246, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="0.5"/><rect x="20" y="14" width="2" height="2"/><rect x="14" y="20" width="2" height="2"/><rect x="18" y="18" width="4" height="4" rx="0.5"/></svg>
+                                    </div>
+                                    <div>
+                                        <span style="font-weight: 700; font-size: 0.95rem; color: #fff; display: block;">QRIS</span>
+                                        <span style="font-size: 0.78rem; color: var(--text-secondary);">Scan QR Code — Gopay, OVO, Dana, dll</span>
+                                    </div>
+                                </div>
+                                <div class="checkmark-icon" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); background: transparent; display: flex; align-items: center; justify-content: center; transition: 0.3s; flex-shrink: 0;">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4" style="display: none;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </div>
+                            </label>
                         </div>
                     </div>
 
-                        <label style="display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.8rem; color: #fff;">Foto Sepatu (Wajib 2 Foto)</label>
+                        <label id="label_shoe_photo" style="display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.8rem; color: #fff;">Foto Sepatu (Wajib 2 Foto)</label>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <!-- Photo 1 -->
                             <div style="position: relative;">
@@ -265,6 +328,10 @@
                         <span style="opacity: 0.6;">Biaya Layanan</span>
                         <span id="display_price" style="font-weight: 600;">Rp 0</span>
                     </div>
+                    <div id="delivery_fee_row" style="display: none; justify-content: space-between; margin-bottom: 1rem;">
+                        <span style="opacity: 0.6;">Biaya Antar Jemput (> 5km)</span>
+                        <span id="display_delivery_fee" style="font-weight: 600;">Rp 0</span>
+                    </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
                         <span style="opacity: 0.6;">Pajak & Biaya Admin</span>
                         <span style="font-weight: 600; color: #10b981;">FREE</span>
@@ -297,6 +364,152 @@
 <script>
     let currentMainPrice = {{ $selectedService->price ?? 0 }};
     let currentEstimatedTime = '{{ $selectedService->estimated_time ?? '2-3 Hari' }}';
+    let baseShoeQuantity = 1;
+    let map;
+    let marker;
+    let userLat = null;
+    let userLng = null;
+    let storeLat = {{ $storeLat ?? -0.0513462 }};
+    let storeLng = {{ $storeLng ?? 109.3210380 }};
+    let deliveryFeeAmount = {{ $deliveryFeeAmount ?? 15000 }};
+    let currentDeliveryFee = 0;
+
+    function initMap() {
+        if (map) return; // Already initialized
+
+        // Default to Jakarta
+        map = L.map('map').setView([-6.200000, 106.816666], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        marker = L.marker([-6.200000, 106.816666], { draggable: true }).addTo(map);
+
+        // Try to get user location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                map.setView([lat, lng], 15);
+                marker.setLatLng([lat, lng]);
+                updateCoordinates(lat, lng);
+            });
+        }
+
+        marker.on('dragend', function (e) {
+            const pos = marker.getLatLng();
+            updateCoordinates(pos.lat, pos.lng);
+            reverseGeocode(pos.lat, pos.lng);
+        });
+        
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            updateCoordinates(e.latlng.lat, e.latlng.lng);
+            reverseGeocode(e.latlng.lat, e.latlng.lng);
+        });
+    }
+
+    function updateCoordinates(lat, lng) {
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lng;
+        userLat = lat;
+        userLng = lng;
+        calculateDeliveryFee();
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Radius of the earth in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        const d = R * c; // Distance in km
+        return d;
+    }
+
+    function calculateDeliveryFee() {
+        const isDelivery = document.querySelector('input[name="is_delivery"][value="1"]').checked;
+        currentDeliveryFee = 0;
+
+        if (isDelivery && userLat !== null && userLng !== null) {
+            const distance = calculateDistance(storeLat, storeLng, userLat, userLng);
+            if (distance > 5) {
+                currentDeliveryFee = deliveryFeeAmount;
+            }
+        }
+        updatePrice();
+    }
+
+    function reverseGeocode(lat, lng) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data && data.display_name) {
+                    document.getElementById('delivery_address').value = data.display_name;
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    function updatePriceFromQuantity() {
+        baseShoeQuantity = parseInt(document.getElementById('shoe_quantity').value) || 1;
+        updatePrice();
+    }
+
+    function toggleDelivery(el) {
+        const options = el.closest('.order-grid').querySelectorAll('.delivery-option');
+        options.forEach(opt => {
+            opt.classList.remove('active');
+            opt.style.background = 'transparent';
+            opt.style.color = '#fff';
+            opt.style.boxShadow = 'none';
+            opt.style.opacity = '0.4';
+        });
+        
+        const div = el.nextElementSibling;
+        div.classList.add('active');
+        div.style.background = 'var(--primary)';
+        div.style.color = '#0f172a';
+        div.style.boxShadow = '0 4px 15px rgba(249, 115, 22, 0.2)';
+        div.style.opacity = '1';
+
+        const isDelivery = el.value === '1';
+        const deliveryDetails = document.getElementById('delivery_details');
+        
+        if (isDelivery) {
+            deliveryDetails.style.display = 'block';
+            setTimeout(() => {
+                initMap();
+                if (map) map.invalidateSize();
+            }, 100);
+        } else {
+            deliveryDetails.style.display = 'none';
+        }
+        
+        // Update required attributes
+        document.getElementById('delivery_address').required = isDelivery;
+        
+        document.getElementById('shoe_name').required = !isDelivery;
+        document.getElementById('label_shoe_name').innerHTML = isDelivery ? 'Nama Sepatu <span style="font-size:0.6rem;opacity:0.6">(Opsional)</span>' : 'Nama Sepatu';
+        
+        document.getElementById('shoe_size').required = !isDelivery;
+        document.getElementById('label_shoe_size').innerHTML = isDelivery ? 'Size <span style="font-size:0.6rem;opacity:0.6">(Opsional)</span>' : 'Size';
+        
+        document.getElementById('shoe_photo_input').required = !isDelivery;
+        document.getElementById('shoe_photo_input_2').required = !isDelivery;
+        document.getElementById('label_shoe_photo').innerHTML = isDelivery ? 'Foto Sepatu <span style="font-size:0.7rem;font-weight:400;opacity:0.6">(Opsional untuk Antar Jemput)</span>' : 'Foto Sepatu (Wajib 2 Foto)';
+
+        if (!isDelivery) {
+            document.getElementById('shoe_quantity').value = 1;
+            updatePriceFromQuantity();
+        }
+        
+        calculateDeliveryFee();
+    }
 
     function toggleServiceList() {
         const list = document.getElementById('service-list-container');
@@ -342,25 +555,35 @@
     }
 
     function updatePrice() {
-        let totalPrice = currentMainPrice;
+        let totalPrice = currentMainPrice * baseShoeQuantity;
         let estimatedTime = currentEstimatedTime;
         
         // Add additional services
         const checkboxes = document.querySelectorAll('input[name="additional_services[]"]:checked');
         checkboxes.forEach(cb => {
-            totalPrice += parseInt(cb.getAttribute('data-price'));
+            totalPrice += (parseInt(cb.getAttribute('data-price')) * baseShoeQuantity);
         });
 
         // Add express premium
         const expressRadio = document.querySelector('input[name="processing_speed"][value="express"]');
         if (expressRadio && expressRadio.checked) {
-            totalPrice += 25000;
+            totalPrice += (25000 * baseShoeQuantity);
             estimatedTime = "1 Hari (Kilat)";
         }
 
+        const isDelivery = document.querySelector('input[name="is_delivery"][value="1"]').checked;
+        if (isDelivery) {
+            document.getElementById('delivery_fee_row').style.display = 'flex';
+            document.getElementById('display_delivery_fee').innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(currentDeliveryFee);
+            totalPrice += currentDeliveryFee;
+        } else {
+            document.getElementById('delivery_fee_row').style.display = 'none';
+        }
+
         const formatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalPrice);
+        const formattedBase = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalPrice - currentDeliveryFee);
         
-        document.getElementById('display_price').innerText = formatted;
+        document.getElementById('display_price').innerText = formattedBase;
         document.getElementById('display_total').innerText = formatted;
         document.getElementById('display_time').innerText = estimatedTime;
     }
@@ -459,11 +682,18 @@
     }
 
     function showSummary() {
+        const isDelivery = document.querySelector('input[name="is_delivery"][value="1"]').checked;
         const shoeName = document.querySelector('input[name="shoe_name"]').value;
         const shoeSize = document.querySelector('input[name="shoe_size"]').value;
+        const deliveryAddress = document.querySelector('textarea[name="delivery_address"]').value;
 
-        if (!shoeName || !shoeSize) {
+        if (!isDelivery && (!shoeName || !shoeSize)) {
             alert('Silakan isi nama sepatu dan ukuran terlebih dahulu.');
+            return;
+        }
+
+        if (isDelivery && !deliveryAddress) {
+            alert('Silakan isi alamat penjemputan terlebih dahulu.');
             return;
         }
 

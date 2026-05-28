@@ -133,6 +133,7 @@
     <!-- Tabs -->
     <div class="history-tabs">
         <a href="{{ route('orders.history', ['status_filter' => 'completed']) }}" class="history-tab {{ $status_filter == 'completed' ? 'active' : '' }}">Selesai</a>
+        <a href="{{ route('orders.history', ['status_filter' => 'dikirim']) }}" class="history-tab {{ $status_filter == 'dikirim' ? 'active' : '' }}">Dikirim</a>
         <a href="{{ route('orders.history', ['status_filter' => 'cancelled']) }}" class="history-tab {{ $status_filter == 'cancelled' ? 'active' : '' }}">Dibatalkan</a>
         <a href="{{ route('orders.history', ['status_filter' => 'all']) }}" class="history-tab {{ $status_filter == 'all' ? 'active' : '' }}">Semua</a>
     </div>

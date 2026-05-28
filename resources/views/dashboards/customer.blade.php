@@ -63,7 +63,7 @@
                         $statusColor = match($order->status) {
                             'pending' => 'var(--secondary)',
                             'processing', 'finishing' => 'var(--primary)',
-                            'ready' => '#10b981',
+                            'ready', 'dikirim' => '#10b981',
                             default => '#6b7280'
                         };
                     @endphp
@@ -84,6 +84,7 @@
                         'processing' => ($order->service->category == 'cleaning' ? 'Dicuci' : 'Dikerjakan'),
                         'finishing' => ($order->service->category == 'cleaning' ? 'Pengeringan' : 'Finishing'),
                         'ready' => 'Siap Ambil',
+                        'dikirim' => 'Dikirim',
                         'uncollected' => 'Belum Diambil',
                         'completed' => 'Selesai',
                         'cancelled' => 'Ditolak',
@@ -99,15 +100,15 @@
         @php
             // Define stage indicators
             $isPending = true;
-            $isProcessing = in_array($order->status, ['processing', 'finishing', 'ready', 'uncollected', 'completed']);
-            $isFinishing = in_array($order->status, ['finishing', 'ready', 'uncollected', 'completed']);
-            $isReady = in_array($order->status, ['ready', 'uncollected', 'completed']);
+            $isProcessing = in_array($order->status, ['processing', 'finishing', 'ready', 'dikirim', 'uncollected', 'completed']);
+            $isFinishing = in_array($order->status, ['finishing', 'ready', 'dikirim', 'uncollected', 'completed']);
+            $isReady = in_array($order->status, ['ready', 'dikirim', 'uncollected', 'completed']);
             
             $steps = [
                 ['label' => 'Menunggu', 'active' => $isPending],
                 ['label' => ($order->service->category == 'cleaning' ? 'Dicuci' : 'Dikerjakan'), 'active' => $isProcessing],
                 ['label' => ($order->service->category == 'cleaning' ? 'Pengeringan' : 'Finishing'), 'active' => $isFinishing],
-                ['label' => 'Siap Ambil', 'active' => $isReady],
+                ['label' => $order->is_delivery ? 'Dikirim/Selesai' : 'Siap Ambil', 'active' => $isReady],
             ];
         @endphp
         
@@ -121,7 +122,7 @@
                     'pending' => 0,
                     'processing' => 33.33,
                     'finishing' => 66.66,
-                    'ready', 'uncollected', 'completed' => 100,
+                    'ready', 'dikirim', 'uncollected', 'completed' => 100,
                     default => 0
                 };
             @endphp

@@ -1,6 +1,10 @@
 @extends('layouts.premium-dashboard')
 
 @push('scripts')
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <script type="text/javascript"
         src="https://app.{{ config('services.midtrans.is_production') ? '' : 'sandbox.' }}midtrans.com/snap/snap.js"
         data-client-key="{{ $midtrans_client_key }}" defer></script>
@@ -194,6 +198,41 @@
                 </div>
             </div>
 
+            <!-- Delivery Info -->
+            @if($order->is_delivery)
+            <div style="background: rgba(249, 115, 22, 0.05); padding: 16px; border-radius: 16px; margin-bottom: 24px; border: 1px solid rgba(249, 115, 22, 0.2);">
+                <div style="display: flex; gap: 12px; align-items: start; margin-bottom: 12px;">
+                    <div style="width: 32px; height: 32px; background: rgba(249, 115, 22, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <p style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Alamat Penjemputan</p>
+                        <p style="font-size: 0.85rem; color: #f3f4f6; margin: 0; line-height: 1.4;">{{ $order->delivery_address }}</p>
+                    </div>
+                    @if($order->latitude && $order->longitude)
+                    <a href="https://maps.google.com/?q={{ $order->latitude }},{{ $order->longitude }}" target="_blank" style="background: rgba(249, 115, 22, 0.1); color: var(--primary); text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; border: 1px solid rgba(249, 115, 22, 0.2);">
+                        BUKA GMAPS
+                    </a>
+                    @endif
+                </div>
+                
+                @if($order->latitude && $order->longitude)
+                <div id="delivery_map" style="height: 150px; width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); z-index: 1;"></div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var lat = {{ $order->latitude }};
+                        var lng = {{ $order->longitude }};
+                        var map = L.map('delivery_map').setView([lat, lng], 15);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '© OpenStreetMap'
+                        }).addTo(map);
+                        L.marker([lat, lng]).addTo(map);
+                    });
+                </script>
+                @endif
+            </div>
+            @endif
+
             <div class="divider-dashed"></div>
 
             <!-- Items Section -->
@@ -208,8 +247,8 @@
                         <img src="{{ $order->photo_before ? asset('storage/' . $order->photo_before) : ( $order->service->image ? asset('storage/' . $order->service->image) : 'https://via.placeholder.com/60' ) }}" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div style="flex-grow: 1;">
-                        <p style="font-weight: 800; color: #fff; font-size: 1rem; margin: 0;">1x {{ $order->service->name }}</p>
-                        <p style="font-size: 0.75rem; color: #6b7280; font-weight: 600; margin-top: 2px;">{{ $order->shoe_name }} • Size {{ $order->shoe_size }}</p>
+                        <p style="font-weight: 800; color: #fff; font-size: 1rem; margin: 0;">{{ $order->shoe_quantity ?? 1 }}x {{ $order->service->name }}</p>
+                        <p style="font-size: 0.75rem; color: #6b7280; font-weight: 600; margin-top: 2px;">{{ $order->shoe_name ?: 'Sepatu (Antar Jemput)' }} @if($order->shoe_size) • Size {{ $order->shoe_size }} @endif</p>
                     </div>
                     <p style="font-weight: 800; color: #fff; font-size: 0.95rem;">Rp {{ number_format($order->service->price, 0, ',', '.') }}</p>
                 </div>
@@ -249,8 +288,14 @@
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <div class="price-row">
                     <span class="price-label">Subtotal</span>
-                    <span class="price-value">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                    <span class="price-value">Rp {{ number_format($order->total_price - $order->delivery_fee, 0, ',', '.') }}</span>
                 </div>
+                @if($order->delivery_fee > 0)
+                <div class="price-row">
+                    <span class="price-label">Biaya Antar Jemput (> 5km)</span>
+                    <span class="price-value">Rp {{ number_format($order->delivery_fee, 0, ',', '.') }}</span>
+                </div>
+                @endif
                 <div class="price-row">
                     <span class="price-label">Biaya Layanan</span>
                     <span class="price-value">Rp 0</span>
@@ -276,8 +321,37 @@
                             </div>
                             <div>
                                 <p style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--primary); margin-bottom: 4px;">Instruksi Tunai</p>
-                                <p style="font-size: 0.8rem; color: #d1d5db; margin: 0; line-height: 1.5;">Silakan antar sepatu ke outlet dan bayar di kasir saat penyerahan.</p>
+                                <p style="font-size: 0.8rem; color: #d1d5db; margin: 0; line-height: 1.5;">{{ $order->is_delivery ? 'Silakan siapkan uang tunai untuk diserahkan ke kurir saat penjemputan/pengantaran sepatu.' : 'Silakan antar sepatu ke outlet dan bayar di kasir saat penyerahan.' }}</p>
                             </div>
+                        </div>
+                    @endif
+
+                    @if($order->payment_method == 'qris')
+                        <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); padding: 1.5rem; border-radius: 20px; margin-bottom: 20px;">
+                            <div style="display: flex; gap: 12px; align-items: start; margin-bottom: 16px;">
+                                <div style="width: 32px; height: 32px; background: rgba(139, 92, 246, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #8b5cf6;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="0.5"/></svg>
+                                </div>
+                                <div>
+                                    <p style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #8b5cf6; margin-bottom: 4px;">Bayar dengan QRIS</p>
+                                    <p style="font-size: 0.8rem; color: #d1d5db; margin: 0; line-height: 1.5;">Scan kode QR di bawah menggunakan aplikasi e-wallet (Gopay, OVO, Dana, ShopeePay, dll)</p>
+                                </div>
+                            </div>
+                            @php
+                                $qris_image = \App\Models\Setting::where('key', 'qris_image')->first()?->value;
+                            @endphp
+                            @if($qris_image)
+                            <div style="background: #fff; border-radius: 16px; padding: 1rem; text-align: center;">
+                                <img src="{{ asset('storage/' . $qris_image) }}" alt="QRIS Code" style="max-width: 250px; width: 100%; height: auto; border-radius: 8px;">
+                            </div>
+                            @else
+                            <div style="background: rgba(255,255,255,0.03); border-radius: 16px; padding: 2rem; text-align: center; border: 2px dashed rgba(139, 92, 246, 0.2);">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.5" style="margin-bottom: 0.5rem; opacity: 0.5;"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="0.5"/></svg>
+                                <p style="font-size: 0.8rem; color: #8b5cf6; font-weight: 700; margin-bottom: 4px;">Kode QRIS Belum Tersedia</p>
+                                <p style="font-size: 0.7rem; color: #6b7280; margin: 0;">Silakan hubungi admin untuk mendapatkan kode QRIS</p>
+                            </div>
+                            @endif
+                            <p style="font-size: 0.7rem; color: #9ca3af; text-align: center; margin-top: 12px;">Setelah pembayaran, konfirmasi ke admin agar pesanan segera diproses.</p>
                         </div>
                     @endif
 

@@ -94,9 +94,10 @@
                             $statusLabel = 'Diterima';
                             if($order->status == 'processing') $statusLabel = ($order->service->category == 'cleaning' ? 'Sedang di cuci' : 'Sedang dikerjakan');
                             if($order->status == 'finishing') $statusLabel = ($order->service->category == 'cleaning' ? 'Di jemur' : 'Proses finishing');
-                            if($order->status == 'ready') $statusLabel = 'Selesai';
+                            if($order->status == 'ready') $statusLabel = 'Siap Diambil/Dikirim';
+                            if($order->status == 'dikirim') $statusLabel = 'Sedang Dikirim';
                             if($order->status == 'uncollected') $statusLabel = 'Belum diambil';
-                            if($order->status == 'completed') $statusLabel = 'Boleh di ambil';
+                            if($order->status == 'completed') $statusLabel = 'Selesai';
                         @endphp
                         <span style="padding: 0.5rem 1rem; border-radius: 20px; background: rgba(0,210,255,0.1); color: var(--primary); font-size: 0.85rem; font-weight: 600;">
                             {{ $statusLabel }}
@@ -142,11 +143,19 @@
                                     if ($order->service->category == 'cleaning') {
                                         if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Cuci → Jemur'; }
                                         elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Selesai Jemur → Siap'; }
-                                        elseif ($order->status == 'ready') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                                        elseif ($order->status == 'ready') { 
+                                            if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
+                                            else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                                        }
+                                        elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
                                     } else {
                                         if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Kerja → Finishing'; }
                                         elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Finishing → Siap'; }
-                                        elseif ($order->status == 'ready') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                                        elseif ($order->status == 'ready') { 
+                                            if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
+                                            else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                                        }
+                                        elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
                                     }
                                 @endphp
 
@@ -212,11 +221,19 @@
                     if ($order->service->category == 'cleaning') {
                         if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Cuci → Jemur'; }
                         elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Selesai Jemur → Siap'; }
-                        elseif ($order->status == 'ready') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                        elseif ($order->status == 'ready') { 
+                            if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
+                            else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                        }
+                        elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
                     } else {
                         if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Kerja → Finishing'; }
                         elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Finishing → Siap'; }
-                        elseif ($order->status == 'ready') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                        elseif ($order->status == 'ready') { 
+                            if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
+                            else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                        }
+                        elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
                     }
                 @endphp
 
