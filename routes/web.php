@@ -90,8 +90,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/customer/orders/{order}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
     Route::get('/customer/orders/{order}/receipt', [App\Http\Controllers\OrderController::class, 'receipt'])->name('orders.receipt');
-    Route::post('/midtrans/callback', [App\Http\Controllers\MidtransController::class, 'callback'])->name('midtrans.callback');
 });
+
+Route::post('/midtrans/callback', [App\Http\Controllers\MidtransController::class, 'callback'])->name('midtrans.callback');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

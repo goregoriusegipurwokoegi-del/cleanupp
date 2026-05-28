@@ -425,6 +425,14 @@
                 onClose: function () { console.log('Snap closed'); }
             });
         });
+
+        @if(session('trigger_payment'))
+            window.addEventListener('DOMContentLoaded', (event) => {
+                setTimeout(() => {
+                    payButton.click();
+                }, 800);
+            });
+        @endif
     }
     @endif
 </script>

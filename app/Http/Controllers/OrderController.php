@@ -110,7 +110,7 @@ class OrderController extends Controller
             'additional_services' => 'nullable|array',
             'additional_services.*' => 'exists:services,id',
             'processing_speed' => 'required|in:regular,express',
-            'payment_method' => 'required|in:cash,transfer,qris',
+            'payment_method' => 'required|in:cash,transfer,qris,midtrans',
             'is_delivery' => 'required|boolean',
             'delivery_address' => 'required_if:is_delivery,1|nullable|string',
             'shoe_quantity' => 'required_if:is_delivery,1|integer|min:1',
@@ -206,7 +206,17 @@ class OrderController extends Controller
 
         $order = Order::latest()->first(); // Get the created order
 
-        // Metode pembayaran hanya cash atau transfer manual, tidak perlu Midtrans
+        // Generate Snap token if Midtrans is selected
+        if ($order->payment_method == 'midtrans') {
+            try {
+                $snapToken = $this->midtransService->getSnapToken($order);
+                $order->snap_token = $snapToken;
+                $order->save();
+            } catch (\Exception $e) {
+                // Keep order but log error if Midtrans is unreachable
+                logger()->error('Failed to generate Midtrans Snap Token: ' . $e->getMessage());
+            }
+        }
 
         // Send WhatsApp Notification to Customer
         if ($order->user->phone) {
@@ -216,6 +226,9 @@ class OrderController extends Controller
             } elseif ($order->payment_method == 'qris') {
                 $paymentInstruction = "Metode Pembayaran: QRIS\n" .
                                      "Silakan scan kode QRIS di halaman detail pesanan untuk melakukan pembayaran.\n";
+            } elseif ($order->payment_method == 'midtrans') {
+                $paymentInstruction = "Metode Pembayaran: ONLINE PAYMENT (Midtrans)\n" .
+                                     "Silakan selesaikan pembayaran online Anda di halaman detail pesanan.\n";
             } else {
                 $paymentInstruction = "Metode Pembayaran: TRANSFER BANK\n" .
                                      "Silakan transfer ke rekening outlet dan konfirmasi ke admin.\n";
@@ -251,6 +264,12 @@ class OrderController extends Controller
         foreach ($staff as $user) {
             /** @var User $user */
             $user->notify(new \App\Notifications\AppNotification($notificationData));
+        }
+
+        if ($order->payment_method == 'midtrans') {
+            return redirect()->route('orders.show', $order->id)
+                ->with('success', 'Pesanan Anda berhasil dibuat! Silakan selesaikan pembayaran Anda.')
+                ->with('trigger_payment', true);
         }
 
         return redirect()->route('orders.my-orders')->with('success', 'Pesanan Anda berhasil dibuat! Silakan bawa sepatu Anda ke outlet kami.');
