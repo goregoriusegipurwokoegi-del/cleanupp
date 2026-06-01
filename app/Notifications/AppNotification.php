@@ -86,10 +86,12 @@ class AppNotification extends Notification
     {
         return (new MailMessage)
                     ->subject($this->details['title'] ?? 'Notifikasi CleanUP Shoes')
-                    ->greeting('Halo, ' . $notifiable->name . '!')
-                    ->line($this->details['message'])
-                    ->action('Lihat Detail', url($this->details['url'] ?? '/dashboard'))
-                    ->line('Terima kasih telah menggunakan layanan CleanUP Shoes!');
+                    ->view('emails.notification', [
+                        'title' => $this->details['title'] ?? 'Notifikasi CleanUP Shoes',
+                        'message' => $this->details['message'],
+                        'url' => url($this->details['url'] ?? '/dashboard'),
+                        'notifiable' => $notifiable
+                    ]);
     }
 
     /**

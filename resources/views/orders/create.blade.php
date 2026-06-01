@@ -11,10 +11,6 @@
 @endsection
 
 @section('content')
-<!-- Leaflet CSS & JS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
 <style>
     .order-grid {
         display: grid; 
@@ -182,22 +178,56 @@
                     </div>
 
                     <!-- Detail Antar Jemput -->
+                    @php
+                        $isProfileComplete = !empty(Auth::user()->name) && 
+                                             !empty(Auth::user()->phone) && 
+                                             !empty(Auth::user()->address) && 
+                                             !empty(Auth::user()->kecamatan) && 
+                                             !empty(Auth::user()->postal_code) &&
+                                             !empty(Auth::user()->latitude) &&
+                                             !empty(Auth::user()->longitude);
+                    @endphp
+
+                    @if($isProfileComplete)
+                    <!-- Detail Antar Jemput (Jika Lengkap) -->
                     <div id="delivery_details" style="display: none; margin-bottom: 2rem; background: rgba(249, 115, 22, 0.05); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(249, 115, 22, 0.2);">
                         <div style="margin-bottom: 1.5rem;">
-                            <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Pilih Lokasi di Peta</label>
-                            <div id="map" style="height: 250px; width: 100%; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem; z-index: 1;"></div>
-                            
-                            <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Alamat Penjemputan</label>
-                            <textarea name="delivery_address" id="delivery_address" placeholder="Contoh: Jl. Sudirman No 10, RT 01/RW 02..." style="width: 100%; padding: 1rem 1.2rem; border-radius: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; transition: 0.3s; min-height: 100px;"></textarea>
-                            
-                            <input type="hidden" name="latitude" id="latitude">
-                            <input type="hidden" name="longitude" id="longitude">
+                            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;">Informasi Antar Jemput</h4>
+                            <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem; opacity: 0.9;">
+                                <div><strong style="color: var(--primary);">Nama Penerima:</strong> <span style="color:#fff;">{{ Auth::user()->name }}</span></div>
+                                <div><strong style="color: var(--primary);">No. WhatsApp:</strong> <span style="color:#fff;">{{ Auth::user()->phone }}</span></div>
+                                <div><strong style="color: var(--primary);">Alamat Lengkap:</strong> <span style="color:#fff;">{{ Auth::user()->address }}</span></div>
+                                <div><strong style="color: var(--primary);">Kecamatan:</strong> <span style="color:#fff;">{{ Auth::user()->kecamatan }}</span></div>
+                                <div><strong style="color: var(--primary);">Kode Pos:</strong> <span style="color:#fff;">{{ Auth::user()->postal_code }}</span></div>
+                            </div>
+                            <p style="font-size: 0.75rem; opacity: 0.5; margin-top: 1.2rem; line-height: 1.4; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.8rem;">
+                                *Jika alamat penjemputan di atas tidak sesuai, silakan ubah terlebih dahulu di <a href="{{ route('profile.edit') }}" style="color: var(--primary); text-decoration: underline;">Pengaturan Profil</a> sebelum memesan.
+                            </p>
                         </div>
+                        
+                        <!-- Hidden inputs for form submit -->
+                        <input type="hidden" name="delivery_address" value="{{ Auth::user()->address }}, Kec. {{ Auth::user()->kecamatan }}, {{ Auth::user()->postal_code }}">
+                        <input type="hidden" name="latitude" id="latitude" value="{{ Auth::user()->latitude }}">
+                        <input type="hidden" name="longitude" id="longitude" value="{{ Auth::user()->longitude }}">
+
                         <div>
                             <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Jumlah Sepatu</label>
                             <input type="number" name="shoe_quantity" id="shoe_quantity" value="1" min="1" style="width: 100%; padding: 1rem 1.2rem; border-radius: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; transition: 0.3s;" onchange="updatePriceFromQuantity()">
                         </div>
                     </div>
+                    @else
+                    <!-- Warning Lengkapi Profil (Jika Belum Lengkap) -->
+                    <div id="delivery_details" style="display: none; margin-bottom: 2rem; background: rgba(239, 68, 68, 0.05); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(239, 68, 68, 0.2);">
+                        <div style="text-align: center; padding: 1rem 0;">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" style="margin-bottom: 1rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.6rem; color: #fff;">Profil Pengiriman Belum Lengkap</h4>
+                            <p style="font-size: 0.82rem; opacity: 0.7; line-height: 1.5; margin-bottom: 1.5rem; color: #fff;">
+                                Untuk memesan layanan Antar Jemput, Anda wajib melengkapi Nama, No. WhatsApp, Alamat Lengkap, Kecamatan, Kode Pos, dan Pin Lokasi di menu Pengaturan terlebih dahulu.
+                            </p>
+                            <a href="{{ route('profile.edit') }}" style="display: inline-block; padding: 0.8rem 1.5rem; background: var(--primary); color: #0f172a; font-weight: 800; border-radius: 12px; text-decoration: none; transition: 0.3s; font-size: 0.85rem;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Lengkapi di Pengaturan</a>
+                        </div>
+                    </div>
+                    @endif
 
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 2rem;">
                         <div>
@@ -387,8 +417,8 @@
     let baseShoeQuantity = 1;
     let map;
     let marker;
-    let userLat = null;
-    let userLng = null;
+    let userLat = @json(Auth::user()->latitude);
+    let userLng = @json(Auth::user()->longitude);
     let storeLat = {{ $storeLat ?? -0.0513462 }};
     let storeLng = {{ $storeLng ?? 109.3210380 }};
     let deliveryFeeAmount = {{ $deliveryFeeAmount ?? 15000 }};
@@ -397,24 +427,35 @@
     function initMap() {
         if (map) return; // Already initialized
 
-        // Default to Jakarta
-        map = L.map('map').setView([-6.200000, 106.816666], 13);
+        let startLat = userLat ? parseFloat(userLat) : storeLat;
+        let startLng = userLng ? parseFloat(userLng) : storeLng;
+        let zoomLevel = userLat ? 16 : 13;
+
+        map = L.map('map').setView([startLat, startLng], zoomLevel);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        marker = L.marker([-6.200000, 106.816666], { draggable: true }).addTo(map);
+        marker = L.marker([startLat, startLng], { draggable: true }).addTo(map);
 
-        // Try to get user location
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                map.setView([lat, lng], 15);
-                marker.setLatLng([lat, lng]);
-                updateCoordinates(lat, lng);
-            });
+        if (userLat && userLng) {
+            updateCoordinates(parseFloat(userLat), parseFloat(userLng));
+        } else {
+            // Try to get user location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    map.setView([lat, lng], 15);
+                    marker.setLatLng([lat, lng]);
+                    updateCoordinates(lat, lng);
+                    reverseGeocode(lat, lng); // Auto-fill alamat dari lokasi user
+                });
+            } else {
+                updateCoordinates(storeLat, storeLng);
+                reverseGeocode(storeLat, storeLng);
+            }
         }
 
         marker.on('dragend', function (e) {
@@ -703,17 +744,11 @@
 
     function showSummary() {
         const isDelivery = document.querySelector('input[name="is_delivery"][value="1"]').checked;
-        const shoeName = document.querySelector('input[name="shoe_name"]').value;
-        const shoeSize = document.querySelector('input[name="shoe_size"]').value;
-        const deliveryAddress = document.querySelector('textarea[name="delivery_address"]').value;
+        const shoeName = document.querySelector('input[name="shoe_name"]')?.value;
+        const shoeSize = document.querySelector('input[name="shoe_size"]')?.value;
 
         if (!isDelivery && (!shoeName || !shoeSize)) {
             alert('Silakan isi nama sepatu dan ukuran terlebih dahulu.');
-            return;
-        }
-
-        if (isDelivery && !deliveryAddress) {
-            alert('Silakan isi alamat penjemputan terlebih dahulu.');
             return;
         }
 
@@ -740,5 +775,6 @@
 
     // Initialize price on load
     window.onload = updatePrice;
+
 </script>
 @endsection

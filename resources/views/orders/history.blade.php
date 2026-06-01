@@ -14,15 +14,23 @@
     .history-container { max-width: 600px; margin: 0 auto; padding: 10px; }
     
     /* Tabs styling to match screenshot */
+    /* Tabs styling to match screenshot and support responsive overflow */
     .history-tabs {
         display: flex;
         border-bottom: 2px solid rgba(255,255,255,0.05);
         margin-bottom: 25px;
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE 10+ */
+    }
+    .history-tabs::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
     }
     .history-tab {
         flex: 1;
         text-align: center;
-        padding: 12px;
+        padding: 12px 16px;
         color: #6b7280;
         text-decoration: none;
         font-weight: 700;
@@ -30,10 +38,19 @@
         transition: 0.3s;
         border-bottom: 2px solid transparent;
         margin-bottom: -2px;
+        white-space: nowrap;
     }
     .history-tab.active {
         color: var(--primary);
         border-bottom: 2px solid var(--primary);
+    }
+    
+    @media (max-width: 640px) {
+        .history-tab {
+            flex: 0 0 auto;
+            padding: 12px 14px;
+            font-size: 0.85rem;
+        }
     }
 
     .order-card-compact {

@@ -18,6 +18,12 @@
 @endsection
 
 @section('content')
+@if(Auth::user()->role == 'customer')
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+@endif
+
 <style>
     .profile-wrap {
         max-width: 680px;
@@ -188,6 +194,24 @@
             padding: 1.1rem 1.3rem;
         }
     }
+    .search-result-item {
+        padding: 0.9rem 1.2rem;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        transition: background 0.2s;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+    .search-result-item:hover {
+        background: rgba(249, 115, 22, 0.1);
+    }
+    .search-result-item:last-child {
+        border-bottom: none;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
 </style>
 
 <div class="profile-wrap">
@@ -255,6 +279,62 @@
                 @endif
             </div>
 
+            @if(Auth::user()->role == 'customer')
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); margin-bottom: 1.5rem;">
+                <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;">Alamat Saya (Lokasi Default)</h4>
+                <p style="font-size: 0.8rem; opacity: 0.5; margin-bottom: 1.2rem; line-height: 1.4;">Tentukan alamat default Anda agar pengisian lokasi antar jemput terisi secara otomatis.</p>
+                
+                <!-- Search Address Box -->
+                <div class="field-group" style="position: relative; margin-bottom: 1.2rem;">
+                    <label class="form-label">Cari Alamat</label>
+                    <div style="position: relative;">
+                        <input type="text" id="address_search" placeholder="Ketik alamat untuk mencari..." autocomplete="off" class="form-input" style="padding-left: 2.5rem;" onfocus="this.style.borderColor='var(--primary)';" onblur="setTimeout(() => { document.getElementById('search_results').style.display='none'; }, 250)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); opacity: 0.7;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <div id="search_results" style="display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: rgba(20, 20, 30, 0.98); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; max-height: 200px; overflow-y: auto; z-index: 999; backdrop-filter: blur(20px); box-shadow: 0 12px 40px rgba(0,0,0,0.5);"></div>
+                        <div id="search_loading" style="display: none; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);">
+                            <div style="width: 16px; height: 16px; border: 2px solid rgba(249,115,22,0.3); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.6s linear infinite;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leaflet Map -->
+                <div class="field-group" style="margin-bottom: 1.2rem;">
+                    <label class="form-label">Pilih Lokasi di Peta</label>
+                    <div id="map" style="height: 250px; width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); z-index: 1;"></div>
+                </div>
+
+                <!-- Address Input -->
+                <div class="field-group" style="margin-bottom: 1.2rem;">
+                    <label class="form-label">Detail Alamat Lengkap</label>
+                    <textarea name="address" id="delivery_address" class="form-input" style="min-height: 80px;" placeholder="Pilih lokasi di peta atau cari untuk mengisi alamat otomatis...">{{ old('address', $user->address ?? '') }}</textarea>
+                    @if($errors->get('address'))
+                        <p class="field-error">{{ $errors->get('address')[0] }}</p>
+                    @endif
+                </div>
+
+                <!-- Kecamatan & Kode Pos -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;">
+                    <div>
+                        <label class="form-label">Kecamatan</label>
+                        <input type="text" name="kecamatan" class="form-input" value="{{ old('kecamatan', $user->kecamatan ?? '') }}" placeholder="Contoh: Sengah Temila">
+                        @if($errors->get('kecamatan'))
+                            <p class="field-error">{{ $errors->get('kecamatan')[0] }}</p>
+                        @endif
+                    </div>
+                    <div>
+                        <label class="form-label">Kode Pos</label>
+                        <input type="text" name="postal_code" class="form-input" value="{{ old('postal_code', $user->postal_code ?? '') }}" placeholder="Contoh: 78351">
+                        @if($errors->get('postal_code'))
+                            <p class="field-error">{{ $errors->get('postal_code')[0] }}</p>
+                        @endif
+                    </div>
+                </div>
+
+                <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', $user->latitude ?? '') }}">
+                <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude', $user->longitude ?? '') }}">
+            </div>
+            @endif
+
             <button type="submit" class="btn-save">Simpan Perubahan</button>
         </form>
     </div>
@@ -316,4 +396,159 @@
     </div>
 
 </div>
+
+@if(Auth::user()->role == 'customer')
+<script>
+    let map;
+    let marker;
+    let userLat = @json($user->latitude);
+    let userLng = @json($user->longitude);
+    let defaultLat = -0.0513462;
+    let defaultLng = 109.3210380;
+
+    function initProfileMap() {
+        if (map) return;
+
+        let startLat = userLat ? parseFloat(userLat) : defaultLat;
+        let startLng = userLng ? parseFloat(userLng) : defaultLng;
+        let zoomLevel = userLat ? 16 : 13;
+
+        map = L.map('map').setView([startLat, startLng], zoomLevel);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        marker = L.marker([startLat, startLng], { draggable: true }).addTo(map);
+
+        // If no userLat/userLng, try Geolocation
+        if (!userLat && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                map.setView([lat, lng], 15);
+                marker.setLatLng([lat, lng]);
+                updateCoordinates(lat, lng);
+                reverseGeocode(lat, lng);
+            });
+        }
+
+        marker.on('dragend', function (e) {
+            const pos = marker.getLatLng();
+            updateCoordinates(pos.lat, pos.lng);
+            reverseGeocode(pos.lat, pos.lng);
+        });
+
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            updateCoordinates(e.latlng.lat, e.latlng.lng);
+            reverseGeocode(e.latlng.lat, e.latlng.lng);
+        });
+    }
+
+    function updateCoordinates(lat, lng) {
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lng;
+        userLat = lat;
+        userLng = lng;
+    }
+
+    function reverseGeocode(lat, lng) {
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data && data.display_name) {
+                    document.getElementById('delivery_address').value = data.display_name;
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    // Address Search
+    let searchTimeout = null;
+    document.addEventListener('DOMContentLoaded', function() {
+        initProfileMap();
+
+        const searchInput = document.getElementById('address_search');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                const query = this.value.trim();
+                
+                if (query.length < 3) {
+                    document.getElementById('search_results').style.display = 'none';
+                    document.getElementById('search_loading').style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('search_loading').style.display = 'block';
+                searchTimeout = setTimeout(() => searchAddress(query), 500);
+            });
+        }
+    });
+
+    function searchAddress(query) {
+        const resultsContainer = document.getElementById('search_results');
+        const loadingIndicator = document.getElementById('search_loading');
+
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=5&addressdetails=1`)
+            .then(res => res.json())
+            .then(data => {
+                loadingIndicator.style.display = 'none';
+                resultsContainer.innerHTML = '';
+
+                if (data.length === 0) {
+                    resultsContainer.innerHTML = `
+                        <div style="padding: 1rem; text-align: center; color: rgba(255,255,255,0.4); font-size: 0.85rem;">
+                            <p>Alamat tidak ditemukan</p>
+                        </div>`;
+                    resultsContainer.style.display = 'block';
+                    return;
+                }
+
+                data.forEach(place => {
+                    const item = document.createElement('div');
+                    item.className = 'search-result-item';
+                    
+                    const parts = place.display_name.split(',');
+                    const mainText = parts.slice(0, 2).join(',').trim();
+                    const subText = parts.slice(2).join(',').trim();
+                    
+                    item.innerHTML = `
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" style="flex-shrink: 0; margin-top: 2px;">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <div>
+                            <div style="font-size: 0.85rem; color: #fff; font-weight: 600; margin-bottom: 2px;">${mainText}</div>
+                            <div style="font-size: 0.72rem; color: rgba(255,255,255,0.4); line-height: 1.3;">${subText}</div>
+                        </div>`;
+                    
+                    item.addEventListener('click', function() {
+                        selectSearchResult(parseFloat(place.lat), parseFloat(place.lon), place.display_name);
+                    });
+                    
+                    resultsContainer.appendChild(item);
+                });
+                resultsContainer.style.display = 'block';
+            })
+            .catch(err => {
+                loadingIndicator.style.display = 'none';
+                console.error(err);
+            });
+    }
+
+    function selectSearchResult(lat, lng, displayName) {
+        document.getElementById('address_search').value = displayName.split(',').slice(0, 3).join(',').trim();
+        document.getElementById('delivery_address').value = displayName;
+        document.getElementById('search_results').style.display = 'none';
+        
+        if (map) {
+            map.setView([lat, lng], 16);
+            marker.setLatLng([lat, lng]);
+        }
+        updateCoordinates(lat, lng);
+    }
+</script>
+@endif
 @endsection

@@ -50,19 +50,19 @@ class OrderStatusNotification extends Notification
         ];
 
         $statusLabel = $statusLabels[$this->status] ?? $this->status;
+        
+        // Ensure relation is loaded safely
+        $this->order->load('service');
 
-        $mail = (new MailMessage)
+        return (new MailMessage)
                     ->subject('Update Pesanan: ' . strtoupper($statusLabel))
-                    ->greeting('Halo, ' . $notifiable->name . '!')
-                    ->line('Status pesanan Anda #' . $this->order->order_number . ' (' . $this->order->shoe_name . ') telah diperbarui menjadi:')
-                    ->line('**' . strtoupper($statusLabel) . '**');
-
-        if ($this->status == 'ready') {
-            $mail->line('Sepatu Anda sudah bersih dan siap untuk tampil keren kembali! Silakan ambil di toko kami.');
-        }
-
-        return $mail->action('Lihat Detail Pesanan', url('/customer/dashboard'))
-                    ->line('Terima kasih telah mempercayakan perawatan sepatu Anda kepada CleanUP Shoes!');
+                    ->view('emails.order_status', [
+                        'order' => $this->order,
+                        'status' => $this->status,
+                        'statusLabel' => $statusLabel,
+                        'notifiable' => $notifiable,
+                        'url' => url('/customer/orders/' . $this->order->id)
+                    ]);
     }
 
     /**

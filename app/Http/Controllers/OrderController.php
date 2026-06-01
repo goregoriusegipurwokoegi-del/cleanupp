@@ -49,21 +49,20 @@ class OrderController extends Controller
     {
         $sort = $request->input('sort', 'desc');
         $search = $request->input('search');
-        $status_filter = $request->input('status_filter', 'completed');
+        $status_filter = $request->input('status_filter', 'all');
         
         $query = Auth::user()->orders()->with('service');
 
-        if ($status_filter === 'completed') {
-            $query->where('status', 'completed');
+        if ($status_filter === 'pending') {
+            $query->where('status', 'pending');
+        } elseif ($status_filter === 'processing') {
+            $query->whereIn('status', ['processing', 'finishing', 'ready', 'uncollected']);
         } elseif ($status_filter === 'dikirim') {
             $query->where('status', 'dikirim');
+        } elseif ($status_filter === 'completed') {
+            $query->where('status', 'completed');
         } elseif ($status_filter === 'cancelled') {
             $query->where('status', 'cancelled');
-        } elseif ($status_filter === 'active') {
-            $query->whereNotIn('status', ['completed', 'cancelled', 'dikirim']);
-        } else {
-            // 'all': completed and cancelled
-            $query->whereIn('status', ['completed', 'cancelled', 'dikirim']);
         }
 
         if ($search) {
@@ -122,6 +121,23 @@ class OrderController extends Controller
             'shoe_photo_2' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
+        // Jika antar jemput, validasi kelengkapan profil
+        if ($request->is_delivery) {
+            $user = Auth::user();
+            $isProfileComplete = !empty($user->name) &&
+                                 !empty($user->phone) &&
+                                 !empty($user->address) &&
+                                 !empty($user->kecamatan) &&
+                                 !empty($user->postal_code) &&
+                                 !empty($user->latitude) &&
+                                 !empty($user->longitude);
+
+            if (!$isProfileComplete) {
+                return redirect()->route('profile.edit')
+                    ->with('warning', 'Profil pengiriman Anda belum lengkap. Silakan lengkapi Nama, No. WhatsApp, Alamat, Kecamatan, Kode Pos, dan Pin Lokasi terlebih dahulu.');
+            }
+        }
+
         $mainService = \App\Models\Service::findOrFail($request->service_id);
         $shoeQuantity = $request->input('shoe_quantity', 1);
         $totalPrice = $mainService->price * $shoeQuantity;
@@ -148,17 +164,19 @@ class OrderController extends Controller
             $photoPath2 = $request->file('shoe_photo_2')->store('orders/photos', 'public');
         }
 
-        // Calculate Delivery Fee based on distance
+        // Calculate Delivery Fee based on distance (pakai koordinat dari profil user)
         $deliveryFee = 0;
-        if ($request->is_delivery && $request->latitude && $request->longitude) {
+        $userLat = Auth::user()->latitude;
+        $userLng = Auth::user()->longitude;
+        if ($request->is_delivery && $userLat && $userLng) {
             $storeLat = env('STORE_LATITUDE', '-0.0513462');
             $storeLng = env('STORE_LONGITUDE', '109.3210380');
             
             $earthRadius = 6371; // Radius of the earth in km
             $latFrom = deg2rad($storeLat);
             $lonFrom = deg2rad($storeLng);
-            $latTo = deg2rad($request->latitude);
-            $lonTo = deg2rad($request->longitude);
+            $latTo = deg2rad($userLat);
+            $lonTo = deg2rad($userLng);
             
             $latDelta = $latTo - $latFrom;
             $lonDelta = $lonTo - $lonFrom;
@@ -180,6 +198,17 @@ class OrderController extends Controller
         $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
         $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
+        // Jika antar jemput, gunakan alamat & koordinat dari profil user
+        $deliveryAddress = null;
+        $orderLat = null;
+        $orderLng = null;
+        if ($request->is_delivery) {
+            $u = Auth::user();
+            $deliveryAddress = $u->address . ', Kec. ' . $u->kecamatan . ', ' . $u->postal_code;
+            $orderLat = $u->latitude;
+            $orderLng = $u->longitude;
+        }
+
         Order::create([
             'user_id' => Auth::id(),
             'service_id' => $mainService->id,
@@ -197,10 +226,10 @@ class OrderController extends Controller
             'photo_before' => $photoPath,
             'photo_before_2' => $photoPath2,
             'is_delivery' => $request->is_delivery,
-            'delivery_address' => $request->delivery_address,
+            'delivery_address' => $deliveryAddress,
             'shoe_quantity' => $shoeQuantity,
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
+            'latitude' => $orderLat,
+            'longitude' => $orderLng,
             'delivery_fee' => $deliveryFee,
         ]);
 
