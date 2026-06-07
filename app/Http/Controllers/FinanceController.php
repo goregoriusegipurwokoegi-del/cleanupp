@@ -15,20 +15,20 @@ class FinanceController extends Controller
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
 
-        $dateOrdersQuery = Order::where('payment_status', 'paid')->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        $dateOrdersQuery = Order::where('payment_status', 'paid')->whereBetween('updated_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
         $dateManualQuery = Finance::whereBetween('date', [$startDate, $endDate]);
 
         $ordersQuery = Order::where('payment_status', 'paid');
         $manualFinanceQuery = Finance::query();
 
         if ($filter == 'daily') {
-            $ordersQuery->whereDate('created_at', now());
+            $ordersQuery->whereDate('updated_at', now());
             $manualFinanceQuery->whereDate('date', now());
         } elseif ($filter == 'monthly') {
-            $ordersQuery->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year);
+            $ordersQuery->whereMonth('updated_at', now()->month)->whereYear('updated_at', now()->year);
             $manualFinanceQuery->whereMonth('date', now()->month)->whereYear('date', now()->year);
         } elseif ($filter == 'yearly') {
-            $ordersQuery->whereYear('created_at', now()->year);
+            $ordersQuery->whereYear('updated_at', now()->year);
             $manualFinanceQuery->whereYear('date', now()->year);
         }
 
@@ -40,7 +40,7 @@ class FinanceController extends Controller
 
         if ($tab == 'buku-kas' || $tab == 'pemasukan' || $tab == 'pengeluaran') {
             $orders = $ordersQuery->get()->map(function($order) {
-                return (object) ['id' => 'ord_'.$order->id, 'date' => $order->created_at->format('Y-m-d'), 'description' => 'Pesanan #' . $order->order_number . ' (' . $order->user->name . ')', 'type' => 'income', 'amount' => $order->total_price, 'is_manual' => false];
+                return (object) ['id' => 'ord_'.$order->id, 'date' => $order->updated_at->format('Y-m-d'), 'description' => 'Pesanan #' . $order->order_number . ' (' . $order->user->name . ')', 'type' => 'income', 'amount' => $order->total_price, 'is_manual' => false];
             });
             $manuals = $manualFinanceQuery->get()->map(function($fin) {
                 return (object) ['id' => $fin->id, 'date' => $fin->date, 'description' => $fin->description, 'type' => $fin->type, 'amount' => $fin->amount, 'is_manual' => true, 'model' => $fin];
@@ -68,7 +68,7 @@ class FinanceController extends Controller
                 $d = now()->subDays($i)->format('Y-m-d');
                 $chartData['labels'][] = now()->subDays($i)->format('d M');
                 
-                $incOrders = Order::where('payment_status', 'paid')->whereDate('created_at', $d)->sum('total_price');
+                $incOrders = Order::where('payment_status', 'paid')->whereDate('updated_at', $d)->sum('total_price');
                 $incManual = Finance::where('type', 'income')->whereDate('date', $d)->sum('amount');
                 $expManual = Finance::where('type', 'expense')->whereDate('date', $d)->sum('amount');
                 
@@ -109,9 +109,9 @@ class FinanceController extends Controller
         $endDate = $request->input('end_date', now()->toDateString());
 
         $orders = Order::where('payment_status', 'paid')
-            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            ->whereBetween('updated_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->get()->map(function($order) {
-                return (object) ['date' => $order->created_at->format('Y-m-d'), 'description' => 'Pesanan #' . $order->order_number, 'type' => 'income', 'amount' => $order->total_price];
+                return (object) ['date' => $order->updated_at->format('Y-m-d'), 'description' => 'Pesanan #' . $order->order_number, 'type' => 'income', 'amount' => $order->total_price];
             });
         
         $manuals = Finance::whereBetween('date', [$startDate, $endDate])->get()->map(function($fin) {

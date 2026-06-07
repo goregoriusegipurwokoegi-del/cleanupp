@@ -69,12 +69,7 @@
     .tab-content { animation: fadeIn 0.4s ease; }
 </style>
 
-<div class="no-print" style="margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-    <div>
-        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">Laporan &amp; Analisis</h2>
-        <p style="opacity: 0.6;">Lihat metrik, performa layanan, dan rekap data operasional.</p>
-    </div>
-</div>
+
 
 {{-- Tab Bar --}}
 <div class="tab-bar no-print">

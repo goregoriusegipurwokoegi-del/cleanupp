@@ -63,10 +63,7 @@
 </style>
 
 <div class="header-actions" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-    <div>
-        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">Manajemen Keuangan</h2>
-        <p style="opacity: 0.6;">Kelola arus kas, laba rugi, dan statistik keuangan Anda.</p>
-    </div>
+
     <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
         <button onclick="openModal('income')" style="background: var(--success); color: #fff; border: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: 0.3s;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>

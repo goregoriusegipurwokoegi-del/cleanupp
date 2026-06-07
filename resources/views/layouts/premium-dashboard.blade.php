@@ -382,7 +382,7 @@
             }
         }
     </style>
-    @if(Auth::user()->role != 'customer')
+    @if(false)
     <style>
         @media (max-width: 768px) {
             body {
@@ -412,19 +412,39 @@
         <ul class="nav-menu">
             @if(Auth::user()->role == 'employee')
                 <li class="nav-item">
-                    <a href="{{ route('employee.dashboard') }}" class="nav-link {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
-                        Dashboard
+                    <a href="{{ route('employee.dashboard') }}" class="nav-link {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('employee.orders.index') }}" class="nav-link {{ request()->routeIs('employee.orders.*') ? 'active' : '' }}" style="display: flex; align-items: center; justify-content: space-between;">
-                        <span>Tugas Saya</span>
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            <span>Tugas Saya</span>
+                        </div>
                         @php
                             $pendingOrdersCount = \App\Models\Order::where('status', 'pending')->count();
                         @endphp
                         @if($pendingOrdersCount > 0)
                             <span class="badge-pulse" style="background: #f43f5e; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(244, 63, 94, 0.4); margin-left: 0.5rem; line-height: 1;">
                                 {{ $pendingOrdersCount }}
+                            </span>
+                        @endif
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('employee.orders.index', ['delivery' => 1]) }}" class="nav-link {{ request('delivery') == '1' ? 'active' : '' }}" style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 18H3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3"></path><polyline points="8 6 12 2 16 6"></polyline><path d="M16 2v4"></path><path d="M21 16v2a2 2 0 0 1-2 2h-2"></path><circle cx="17" cy="18" r="2"></circle><circle cx="7" cy="18" r="2"></circle><path d="M12 2h4l4 4v8h-3"></path><path d="M9 18h4"></path></svg>
+                            <span>Antar Jemput</span>
+                        </div>
+                        @php
+                            $deliveryOrdersCount = \App\Models\Order::where('is_delivery', 1)->whereNotIn('status', ['completed', 'cancelled'])->count();
+                        @endphp
+                        @if($deliveryOrdersCount > 0)
+                            <span style="background: #f59e0b; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; margin-left: 0.5rem; line-height: 1;">
+                                {{ $deliveryOrdersCount }}
                             </span>
                         @endif
                     </a>
@@ -441,9 +461,24 @@
                 </style>
 
                 <li class="nav-item">
+                    <a href="{{ route('employee.orders.index', ['queue' => 1]) }}" class="nav-link {{ request('queue') == '1' ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                        <span>Monitor Antrian</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('employee.inventories.index') }}" class="nav-link {{ request()->routeIs('employee.inventories.*') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        <span>Stok Barang</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="#" class="nav-link {{ request()->routeIs('employee.reports.*') ? 'active' : '' }}" onclick="toggleSubmenu(event, this)">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            <span>Laporan</span>
+                            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                <span>Laporan</span>
+                            </div>
                             <svg class="submenu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.3s; transform: {{ request()->routeIs('employee.reports.*') ? 'rotate(180deg)' : 'rotate(0)' }}"><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </div>
                     </a>
@@ -459,13 +494,17 @@
                 </li>
             @elseif(Auth::user()->role == 'admin')
                 <li class="nav-item">
-                    <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                        Dashboard
+                    <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}" style="display: flex; align-items: center; justify-content: space-between;">
-                        <span>Pesanan</span>
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            <span>Pesanan</span>
+                        </div>
                         @php
                             $adminPendingCount = \App\Models\Order::where('status', 'pending')->count();
                         @endphp
@@ -477,59 +516,89 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        Antar Jemput
+                    <a href="{{ route('admin.orders.index', ['delivery' => 1]) }}" class="nav-link {{ request('delivery') == '1' ? 'active' : '' }}" style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                            <span>Antar Jemput</span>
+                        </div>
+                        @php
+                            $adminDeliveryCount = \App\Models\Order::where('is_delivery', 1)->whereNotIn('status', ['completed', 'cancelled'])->count();
+                        @endphp
+                        @if($adminDeliveryCount > 0)
+                            <span style="background: #f59e0b; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; margin-left: 0.5rem; line-height: 1;">
+                                {{ $adminDeliveryCount }}
+                            </span>
+                        @endif
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        Pelanggan
+                    <a href="{{ route('admin.orders.index', ['queue' => 1]) }}" class="nav-link {{ request('queue') == '1' ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                        <span>Monitor Antrian</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.services.index') }}" class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
-                        Layanan
+                    <a href="{{ route('admin.customers.index') }}" class="nav-link {{ request()->routeIs('admin.customers.*') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span>Pelanggan</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.inventories.index') }}" class="nav-link {{ request()->routeIs('admin.inventories.*') ? 'active' : '' }}">
-                        Stok Barang
+                    <a href="{{ route('admin.services.index') }}" class="nav-link {{ request()->routeIs('admin.services.*') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                        <span>Layanan</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.finances.index') }}" class="nav-link {{ request()->routeIs('admin.finances.*') ? 'active' : '' }}">
-                        Keuangan
+                    <a href="{{ route('admin.inventories.index') }}" class="nav-link {{ request()->routeIs('admin.inventories.*') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        <span>Stok Barang</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                        Laporan
+                    <a href="{{ route('admin.finances.index') }}" class="nav-link {{ request()->routeIs('admin.finances.*') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                        <span>Keuangan</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        <span>Laporan</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.employees.index') }}" class="nav-link {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}">
-                        Karyawan
+                    <a href="{{ route('admin.employees.index') }}" class="nav-link {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span>Karyawan</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                        Pengaturan
+                    <a href="{{ route('admin.settings.index') }}" class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        <span>Pengaturan</span>
                     </a>
                 </li>
             @else
                 <li class="nav-item">
-                    <a href="{{ route('customer.dashboard') }}" class="nav-link {{ request()->routeIs('customer.dashboard') ? 'active' : '' }}">
-                        Dashboard
+                    <a href="{{ route('customer.dashboard') }}" class="nav-link {{ request()->routeIs('customer.dashboard') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                        <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}">
-                        Lihat Layanan
+                    <a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                        <span>Lihat Layanan</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('orders.my-orders') }}" class="nav-link {{ request()->routeIs('orders.my-orders') ? 'active' : '' }}" style="display: flex; align-items: center; justify-content: space-between;">
-                        <span>Pesanan Saya</span>
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            <span>Pesanan Saya</span>
+                        </div>
                         @php
                             $custActiveCount = \App\Models\Order::where('user_id', Auth::id())->whereNotIn('status', ['completed', 'cancelled'])->count();
                         @endphp
@@ -541,8 +610,9 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('orders.history') }}" class="nav-link {{ request()->routeIs('orders.history') ? 'active' : '' }}">
-                        Riwayat Pesanan
+                    <a href="{{ route('orders.history') }}" class="nav-link {{ request()->routeIs('orders.history') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span>Riwayat Pesanan</span>
                     </a>
                 </li>
             @endif

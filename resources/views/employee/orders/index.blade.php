@@ -5,7 +5,7 @@
 @section('nav_items')
     <li class="nav-item"><a href="{{ route('employee.dashboard') }}" class="nav-link">Dashboard</a></li>
     <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link active">Antrian Pesanan</a></li>
-    <li class="nav-item"><a href="#" class="nav-link">Inventaris</a></li>
+    <li class="nav-item"><a href="{{ route('employee.inventories.index') }}" class="nav-link">Stok Barang</a></li>
 @endsection
 
 @section('content')
@@ -14,12 +14,19 @@
 </style>
 <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
     <div>
-        <p style="opacity: 0.6;">Kelola dan perbarui status pengerjaan sepatu pelanggan.</p>
+        <h2 style="font-size: 1.8rem; font-weight: 900; margin-bottom: 5px;">
+            @if(request('queue')) Monitor <span style="color: var(--primary);">Antrian</span> @elseif(request('delivery')) Antar <span style="color: var(--primary);">Jemput</span> @else Tugas <span style="color: var(--primary);">Saya</span> @endif
+        </h2>
+        <p style="opacity: 0.6;">
+            @if(request('queue')) Pantau pesanan aktif. Pesanan selesai otomatis disembunyikan. @else Kelola dan perbarui status pengerjaan sepatu pelanggan. @endif
+        </p>
     </div>
+    @if(!request('queue'))
     <button onclick="openCreateModal()" style="background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Tambah Pesanan
     </button>
+    @endif
 </div>
 
 @if(session('success'))
@@ -36,13 +43,13 @@
             display: block; 
             background: rgba(255,255,255,0.03); 
             border: 1px solid rgba(255,255,255,0.05); 
-            border-radius: 16px; 
-            padding: 1.2rem; 
-            margin-bottom: 1rem;
+            border-radius: 12px; 
+            padding: 1rem; 
+            margin-bottom: 0.8rem;
         }
-        .order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .order-card-body { margin-bottom: 1rem; }
-        .order-card-footer { border-top: 1px solid rgba(255,255,255,0.05); pt: 1rem; padding-top: 1rem; }
+        .order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
+        .order-card-body { margin-bottom: 0.8rem; }
+        .order-card-footer { border-top: 1px solid rgba(255,255,255,0.05); pt: 0.8rem; padding-top: 0.8rem; }
         select { width: 100%; padding: 0.8rem !important; }
     }
     
@@ -123,6 +130,13 @@
     .filter-input:focus {
         border-color: var(--primary);
     }
+    .custom-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+    }
 </style>
 
 <div class="glass-card" style="border-radius: 24px; overflow: hidden; background: transparent; border: none; padding: 0;">
@@ -147,18 +161,15 @@
                         <div style="background: var(--primary); color: #0f172a; padding: 0.3rem 0.8rem; border-radius: 8px; font-weight: 800; width: fit-content; font-size: 1rem;">{{ $order->queue_number ?? '-' }}</div>
                     </td>
                     <td style="padding: 1.5rem;">
-                        <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem;">{{ $order->user->name }}</div>
+                        <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                            {{ $order->user->name }}
+                            @if($order->is_delivery)
+                                <span style="background: rgba(249, 115, 22, 0.15); color: var(--primary); padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(249, 115, 22, 0.3);" title="Layanan Antar Jemput">🚚 Antar</span>
+                            @endif
+                        </div>
                         <a href="{{ route('orders.show', $order->id) }}" style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; opacity: 0.6; color: #fff; transition: 0.2s;" onmouseover="this.style.color='var(--primary)'; this.style.opacity='1'" onmouseout="this.style.color='#fff'; this.style.opacity='0.6'">
                             Klik Detail Pesanan <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         </a>
-                        @if($order->is_delivery && $order->latitude && $order->longitude)
-                            <div style="margin-top: 0.5rem;">
-                                <a href="https://www.google.com/maps/search/?api=1&query={{ $order->latitude }},{{ $order->longitude }}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.35rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-decoration: none; border: 1px solid rgba(16, 185, 129, 0.2); transition: 0.2s; white-space: nowrap; width: max-content;" onmouseover="this.style.background='rgba(16, 185, 129, 0.2)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                                    Peta Lokasi
-                                </a>
-                            </div>
-                        @endif
                     </td>
                     <td style="padding: 1.5rem;">
                         <div style="display: flex; align-items: center; gap: 1rem;">
@@ -227,6 +238,7 @@
                                         </button>
                                     </form>
                                 @endif
+                                <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 0.5rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 0.5rem;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">EDIT PESANAN</button>
                             </div>
                         @else
                             <div style="display: flex; flex-direction: column; gap: 0.5rem;">
@@ -278,6 +290,7 @@
                                         </button>
                                     </form>
                                 @endif
+                                <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 0.5rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 0.5rem;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">EDIT PESANAN</button>
                             </div>
                         @endif
                     </td>
@@ -298,21 +311,21 @@
                 <span style="font-size: 0.85rem; opacity: 0.6;">{{ $order->created_at->format('d M Y H:i') }}</span>
             </div>
             @if($order->is_delivery && $order->latitude && $order->longitude)
-                <div style="margin-bottom: 0.8rem; padding: 0 1.2rem;">
-                    <a href="https://www.google.com/maps/search/?api=1&query={{ $order->latitude }},{{ $order->longitude }}" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; text-decoration: none; border: 1px solid rgba(16, 185, 129, 0.2);">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <div style="margin-bottom: 0.6rem; padding: 0;">
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ $order->latitude }},{{ $order->longitude }}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-decoration: none; border: 1px solid rgba(16, 185, 129, 0.2);">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                         Buka Peta Pelanggan
                     </a>
                 </div>
             @endif
             <div class="order-card-body">
-                <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 0.3rem;">{{ $order->service->name }}</div>
-                <div style="font-size: 0.85rem; opacity: 0.6; margin-bottom: 0.5rem;">Pelanggan: {{ $order->user->name }}</div>
+                <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.2rem;">{{ $order->service->name }}</div>
+                <div style="font-size: 0.8rem; opacity: 0.6; margin-bottom: 0.4rem;">Pelanggan: {{ $order->user->name }}</div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="badge {{ $order->service->category == 'cleaning' ? 'badge-success' : 'badge-warning' }}">
+                    <span class="badge {{ $order->service->category == 'cleaning' ? 'badge-success' : 'badge-warning' }}" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
                         {{ $order->service->category == 'cleaning' ? 'Cuci' : 'Reparasi' }}
                     </span>
-                    <span style="color: var(--primary); font-size: 0.85rem; font-weight: 600;">{{ strtoupper($order->status) }}</span>
+                    <span style="color: var(--primary); font-size: 0.8rem; font-weight: 600;">{{ strtoupper($order->status) }}</span>
                 </div>
             </div>
             <div class="order-card-footer">
@@ -346,36 +359,40 @@
                             @csrf
                             @method('PATCH')
                             <input type="hidden" name="status" value="processing">
-                            <button type="submit" style="width: 100%; background: #10b981; color: #fff; border: none; padding: 0.8rem; border-radius: 12px; font-weight: 700; cursor: pointer;">Terima</button>
+                            <button type="submit" style="width: 100%; background: #10b981; color: #fff; border: none; padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">Terima</button>
                         </form>
                         <form action="{{ route('orders.status.update', $order) }}" method="POST" style="flex: 1;">
                             @csrf
                             @method('PATCH')
                             <input type="hidden" name="status" value="cancelled">
-                            <button type="submit" onclick="return confirm('Apakah Anda yakin ingin menolak pesanan ini?')" style="width: 100%; background: #f43f5e; color: #fff; border: none; padding: 0.8rem; border-radius: 12px; font-weight: 700; cursor: pointer;">Tolak</button>
+                            <button type="submit" onclick="return confirm('Apakah Anda yakin ingin menolak pesanan ini?')" style="width: 100%; background: #f43f5e; color: #fff; border: none; padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">Tolak</button>
                         </form>
                     </div>
                 @else
                     @if($nextStatus)
-                        <form action="{{ route('orders.status.update', $order) }}" method="POST" style="margin-bottom: 0.5rem;">
+                        <form action="{{ route('orders.status.update', $order) }}" method="POST" style="margin-bottom: 0.4rem;">
                             @csrf
                             @method('PATCH')
                             <input type="hidden" name="status" value="{{ $nextStatus }}">
                             @if($nextStatus == 'ready')
-                                <input type="text" name="storage_location" placeholder="Lokasi Rak (Cth: A1)" required style="width: 100%; padding: 0.8rem; margin-bottom: 0.5rem; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.9rem;">
+                                <input type="text" name="storage_location" placeholder="Lokasi Rak (Cth: A1)" required style="width: 100%; padding: 0.6rem; margin-bottom: 0.4rem; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.8rem;">
                             @endif
-                            <button type="submit" style="width: 100%; background: {{ $btnColor }}; color: #fff; border: none; padding: 0.8rem; border-radius: 12px; font-size: 0.9rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <button type="submit" style="width: 100%; background: {{ $btnColor }}; color: #fff; border: none; padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                                 <span>{{ $nextLabel }}</span>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
                         </form>
                     @endif
                 @endif
                 @if($order->payment_status == 'unpaid')
-                    <form action="{{ route('orders.payment.remind', $order) }}" method="POST" style="margin-top: 0.5rem;">
+                    <form action="{{ route('orders.payment.remind', $order) }}" method="POST" style="margin-top: 0.4rem;">
                         @csrf
-                        <button type="submit" style="width: 100%; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.8rem; border-radius: 12px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">PENGINGAT WA PEMBAYARAN</button>
+                        <button type="submit" style="width: 100%; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.5rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">PENGINGAT WA PEMBAYARAN</button>
                     </form>
+                @endif
+                <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-top: 0.4rem;">EDIT PESANAN</button>
+                @if($order->payment_status == 'paid')
+                <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-top: 0.4rem; text-decoration: none; text-align: center; display: block;">CETAK NOTA</a>
                 @endif
             </div>
         </div>
@@ -444,6 +461,7 @@
                     <select name="payment_method" required class="filter-input" style="width: 100%; background: #1e1e24;">
                         <option value="cash">Tunai (Cash)</option>
                         <option value="qris">QRIS</option>
+                        <option value="transfer">Transfer Bank</option>
                     </select>
                 </div>
             </div>
@@ -476,6 +494,101 @@
         </form>
     </div>
 </div>
+
+<!-- Modal Edit Pesanan -->
+<div id="editOrderModal" class="modal-backdrop" onclick="closeModal('editOrderModal')">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModal('editOrderModal')">&times;</button>
+        <h3 style="font-size: 1.5rem; font-weight: 900; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 15px;">Edit <span style="color: var(--primary);">Pesanan</span></h3>
+        
+        <form id="editOrderForm" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+            <div class="modal-grid-2">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Layanan</label>
+                    <select name="service_id" id="edit_service_id" required class="filter-input" style="width: 100%; background: #1e1e24;">
+                        @foreach($services as $serv)
+                            <option value="{{ $serv->id }}">{{ $serv->name }} (Rp{{ number_format($serv->price, 0, ',', '.') }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Nomor Antrian</label>
+                    <input type="text" name="queue_number" id="edit_queue_number" required class="filter-input" style="width: 100%; background: #1e1e24;">
+                </div>
+            </div>
+            <div class="modal-grid-2">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Kecepatan</label>
+                    <select name="processing_speed" id="edit_processing_speed" required class="filter-input" style="width: 100%; background: #1e1e24;">
+                        <option value="regular">Regular</option>
+                        <option value="express">Express</option>
+                    </select>
+                </div>
+            <div class="modal-grid-2">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Nama Sepatu</label>
+                    <input type="text" name="shoe_name" id="edit_shoe_name" required class="filter-input" style="width: 100%; background: #1e1e24;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Ukuran Sepatu</label>
+                    <input type="text" name="shoe_size" id="edit_shoe_size" required class="filter-input" style="width: 100%; background: #1e1e24;">
+                </div>
+            </div>
+            <div class="modal-grid-2">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Jumlah Sepatu</label>
+                    <input type="number" name="shoe_quantity" id="edit_shoe_quantity" min="1" required class="filter-input" style="width: 100%; background: #1e1e24;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Metode Pembayaran</label>
+                    <select name="payment_method" id="edit_payment_method" required class="filter-input" style="width: 100%; background: #1e1e24;">
+                        <option value="cash">Tunai (Cash)</option>
+                        <option value="qris">QRIS</option>
+                        <option value="transfer">Transfer Bank</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-grid-2">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Status Pembayaran</label>
+                    <select name="payment_status" id="edit_payment_status" required class="filter-input" style="width: 100%; background: #1e1e24;">
+                        <option value="unpaid">Belum Lunas (Unpaid)</option>
+                        <option value="paid">Lunas (Paid)</option>
+                    </select>
+                    <div id="edit_payment_proof_container" style="display: none; margin-top: 8px;">
+                        <a id="edit_payment_proof_link" href="#" target="_blank" style="font-size: 0.75rem; color: #60a5fa; text-decoration: underline;">Lihat Bukti Pembayaran (Validasi)</a>
+                    </div>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Status Pesanan</label>
+                    <select name="status" id="edit_status" required class="filter-input" style="width: 100%; background: #1e1e24;">
+                        <option value="pending">Menunggu (Pending)</option>
+                        <option value="processing">Proses (Processing)</option>
+                        <option value="washing">Dicuci (Washing)</option>
+                        <option value="drying">Dikeringkan (Drying)</option>
+                        <option value="finishing">Finishing</option>
+                        <option value="ready">Siap Diambil (Ready)</option>
+                        <option value="completed">Diambil (Completed)</option>
+                        <option value="cancelled">Dibatalkan (Cancelled)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-grid-2">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Ubah Foto Sebelum</label>
+                    <input type="file" name="shoe_photo" class="filter-input" style="width: 100%; background: #1e1e24;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Upload Foto Sesudah</label>
+                    <input type="file" name="photo_after" class="filter-input" style="width: 100%; background: #1e1e24;">
+                </div>
+            </div>
+            <button type="submit" style="background: var(--primary); color: #000; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; cursor: pointer;">Simpan Perubahan</button>
+        </form>
+    </div>
+</div>
 @endsection
 
 <script>
@@ -483,8 +596,32 @@
         document.getElementById('createOrderModal').classList.add('active');
     }
 
+    function openEditModal(order) {
+        document.getElementById('editOrderForm').action = `/employee/orders/${order.id}`;
+        
+        document.getElementById('edit_queue_number').value = order.queue_number;
+        document.getElementById('edit_service_id').value = order.service_id;
+        document.getElementById('edit_processing_speed').value = order.processing_speed;
+        document.getElementById('edit_shoe_name').value = order.shoe_name || '';
+        document.getElementById('edit_shoe_size').value = order.shoe_size || '';
+        document.getElementById('edit_shoe_quantity').value = order.shoe_quantity || 1;
+        document.getElementById('edit_payment_method').value = order.payment_method;
+        document.getElementById('edit_payment_status').value = order.payment_status;
+        document.getElementById('edit_status').value = order.status;
+        
+        const proofContainer = document.getElementById('edit_payment_proof_container');
+        const proofLink = document.getElementById('edit_payment_proof_link');
+        if (order.payment_proof) {
+            proofLink.href = '/storage/' + order.payment_proof;
+            proofContainer.style.display = 'block';
+        } else {
+            proofContainer.style.display = 'none';
+        }
+        
+        document.getElementById('editOrderModal').classList.add('active');
+    }
+
     function closeModal(modalId) {
-        document.getElementById('createOrderModal').classList.remove('active'); // Wait, modalId is better
         document.getElementById(modalId).classList.remove('active');
     }
 

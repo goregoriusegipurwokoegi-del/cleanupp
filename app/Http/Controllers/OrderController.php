@@ -117,7 +117,7 @@ class OrderController extends Controller
             'additional_services' => 'nullable|array',
             'additional_services.*' => 'exists:services,id',
             'processing_speed' => 'required|in:regular,express',
-            'payment_method' => 'required|in:cash,qris',
+            'payment_method' => 'required|in:cash,qris,transfer',
             'is_delivery' => 'required|boolean',
             'delivery_address' => 'required_if:is_delivery,1|nullable|string',
             'shoe_quantity' => 'required_if:is_delivery,1|integer|min:1',
@@ -300,12 +300,166 @@ class OrderController extends Controller
         ];
         
         foreach ($staff as $user) {
-            /** @var User $user */
+            /** @var \App\Models\User $user */
             $user->notify(new \App\Notifications\AppNotification($notificationData));
         }
 
 
         return redirect()->route('orders.my-orders')->with('success', 'Pesanan Anda berhasil dibuat! Silakan bawa sepatu Anda ke outlet kami.');
+    }
+
+    public function storeCheckout(Request $request)
+    {
+        $cart = \Illuminate\Support\Facades\Session::get('cart', []);
+        if (empty($cart)) {
+            return redirect()->route('services.index')->with('error', 'Keranjang Anda kosong.');
+        }
+
+        $request->validate([
+            'is_delivery' => 'required|boolean',
+            'address_id' => 'required_if:is_delivery,1|exists:user_addresses,id',
+            'payment_method' => 'required|in:cash,qris,transfer',
+            'shoe_photo' => 'required|image|max:2048',
+            'shoe_photo_2' => 'required|image|max:2048',
+        ]);
+
+        $photoPath = $request->file('shoe_photo')->store('orders/photos', 'public');
+        $photoPath2 = $request->file('shoe_photo_2')->store('orders/photos', 'public');
+
+        $groupId = 'INV-' . strtoupper(\Illuminate\Support\Str::random(8));
+
+        $deliveryAddress = null;
+        $orderLat = null;
+        $orderLng = null;
+        $deliveryFee = 0;
+
+        if ($request->is_delivery && $request->address_id) {
+            $address = \App\Models\UserAddress::where('id', $request->address_id)->where('user_id', Auth::id())->firstOrFail();
+            $deliveryAddress = $address->full_address . ', ' . $address->village . ', ' . $address->kecamatan . ', ' . $address->city . ', ' . $address->province . ' ' . $address->postal_code . ' (Penerima: ' . $address->recipient_name . ' - ' . $address->phone . ')';
+            $orderLat = $address->latitude;
+            $orderLng = $address->longitude;
+
+            // Calculate Delivery Fee once for the entire group
+            if ($orderLat && $orderLng) {
+                $storeLat = \App\Models\Setting::where('key', 'store_latitude')->first()?->value ?? '-0.0513462';
+                $storeLng = \App\Models\Setting::where('key', 'store_longitude')->first()?->value ?? '109.3210380';
+                $deliveryThresholdKm = \App\Models\Setting::where('key', 'delivery_threshold_km')->first()?->value ?? 5;
+                $deliveryFeeAboveThreshold = \App\Models\Setting::where('key', 'delivery_fee_above_threshold')->first()?->value ?? 25000;
+                
+                $earthRadius = 6371;
+                $latFrom = deg2rad((float) str_replace(',', '.', $storeLat));
+                $lonFrom = deg2rad((float) str_replace(',', '.', $storeLng));
+                $latTo = deg2rad((float) str_replace(',', '.', $orderLat));
+                $lonTo = deg2rad((float) str_replace(',', '.', $orderLng));
+                
+                $latDelta = $latTo - $latFrom;
+                $lonDelta = $lonTo - $lonFrom;
+                
+                $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) + cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+                $distance = $angle * $earthRadius;
+                
+                if ($distance > $deliveryThresholdKm) {
+                    $deliveryFee = $deliveryFeeAboveThreshold;
+                }
+            }
+        }
+
+        $orders = [];
+        $firstOrder = true;
+
+        foreach ($cart as $item) {
+            $itemPrice = $item['price'] * $item['shoe_quantity'];
+            if ($item['processing_speed'] == 'express') {
+                $itemPrice += (25000 * $item['shoe_quantity']);
+            }
+
+            // Apply delivery fee ONLY to the first order in the group to avoid double charging
+            $itemDeliveryFee = $firstOrder ? $deliveryFee : 0;
+            $firstOrder = false;
+
+            $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(8));
+            $lastOrder = Order::orderBy('id', 'desc')->first();
+            $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
+            $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+            $order = Order::create([
+                'group_id' => $groupId,
+                'user_id' => Auth::id(),
+                'service_id' => $item['service_id'],
+                'processing_speed' => $item['processing_speed'],
+                'order_number' => $orderNumber,
+                'queue_number' => $queueNumber,
+                'status' => 'pending',
+                'total_price' => $itemPrice + $itemDeliveryFee,
+                'payment_method' => $request->payment_method,
+                'payment_status' => 'unpaid',
+                'reception_date' => now(),
+                'shoe_name' => $item['shoe_name'],
+                'shoe_size' => $item['shoe_size'],
+                'photo_before' => $photoPath,
+                'photo_before_2' => $photoPath2,
+                'is_delivery' => $request->is_delivery,
+                'delivery_address' => $deliveryAddress,
+                'shoe_quantity' => $item['shoe_quantity'],
+                'latitude' => $orderLat,
+                'longitude' => $orderLng,
+                'delivery_fee' => $itemDeliveryFee,
+            ]);
+
+            $orders[] = $order;
+        }
+
+        // Clear Cart
+        \Illuminate\Support\Facades\Session::forget('cart');
+
+        // Send WhatsApp Notification for the first order as representative
+        $repOrder = $orders[0];
+        if ($repOrder->user->phone) {
+            $paymentInstruction = "";
+            if ($repOrder->payment_method == 'cash') {
+                $paymentInstruction = "Metode Pembayaran: TUNAI (Bayar di Tempat)\n";
+            } elseif ($repOrder->payment_method == 'qris') {
+                $paymentInstruction = "Metode Pembayaran: QRIS\n" .
+                                     "Silakan scan kode QRIS di halaman pesanan untuk melakukan pembayaran.\n";
+            } else {
+                $paymentInstruction = "Metode Pembayaran: TRANSFER BANK\n" .
+                                     "Silakan transfer ke rekening outlet dan konfirmasi ke admin.\n";
+            }
+
+            $storeLat = env('STORE_LATITUDE', '-0.0513462');
+            $storeLng = env('STORE_LONGITUDE', '109.3210380');
+            $mapLink = "https://maps.google.com/?q={$storeLat},{$storeLng}";
+
+            $deliveryInstruction = $repOrder->is_delivery 
+                                 ? "\nKami akan segera mengambil sepatu ke alamat Anda:\n" . $repOrder->delivery_address . "\n"
+                                 : "\nSilakan antar sepatu Anda ke outlet kami.\nLokasi Toko: " . $mapLink . "\n";
+
+            $message = "Halo *" . $repOrder->user->name . "*, pesanan CleanUP Shoes (Total " . count($orders) . " Layanan) Anda telah diterima! 👟✨\n\n" .
+                       "Kode Invoice: #" . $groupId . "\n" .
+                       $paymentInstruction . 
+                       $deliveryInstruction . 
+                       "Cek detail pesanan: " . route('orders.my-orders') . "\n\n" .
+                       "Terima kasih!";
+            $this->whatsAppService->sendMessage($repOrder->user->phone, $message);
+        }
+
+        // Notify Staff
+        $staff = User::whereIn('role', ['admin', 'employee'])->get();
+        $notificationData = [
+            'title' => 'Pesanan Group Baru!',
+            'message' => count($orders) . ' pesanan baru (Grup ' . $groupId . ') telah masuk.',
+            'icon' => 'shopping-bag',
+            'color' => 'blue',
+            'url' => Auth::user()->role == 'admin' ? route('admin.orders.index') : route('employee.orders.index'),
+            'type' => 'new_order',
+        ];
+        
+        foreach ($staff as $user) {
+            /** @var \App\Models\User $user */
+            $user->notify(new \App\Notifications\AppNotification($notificationData));
+        }
+
+        return redirect()->route('orders.my-orders')->with('success', 'Semua pesanan Anda berhasil dibuat!');
     }
 
     public function remindPayment(Order $order)
@@ -341,7 +495,11 @@ class OrderController extends Controller
         $bank_name = \App\Models\Setting::where('key', 'bank_name')->first()?->value;
         $bank_account = \App\Models\Setting::where('key', 'bank_account')->first()?->value;
         $bank_holder = \App\Models\Setting::where('key', 'bank_holder')->first()?->value;
-        return view('orders.show', compact('order', 'bank_name', 'bank_account', 'bank_holder'));
+        
+        $groupTotal = $order->group_id ? Order::where('group_id', $order->group_id)->sum('total_price') : $order->total_price;
+        $groupOrders = $order->group_id ? Order::where('group_id', $order->group_id)->get() : collect([$order]);
+
+        return view('orders.show', compact('order', 'bank_name', 'bank_account', 'bank_holder', 'groupTotal', 'groupOrders'));
     }
 
     /**
@@ -368,8 +526,24 @@ class OrderController extends Controller
     {
         $query = Order::with(['user', 'service'])->latest();
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if ($request->has('queue')) {
+            $query->whereNotIn('status', ['completed', 'cancelled']);
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+        } elseif ($request->has('delivery')) {
+            $query->where('is_delivery', true)
+                  ->whereNotIn('status', ['completed', 'cancelled']);
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+        } else {
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            } elseif (!$request->has('status')) {
+                // Default to active orders when accessed from sidebar (no query params)
+                $query->whereNotIn('status', ['completed', 'cancelled']);
+            }
         }
 
         if ($request->filled('search')) {
@@ -406,7 +580,7 @@ class OrderController extends Controller
             'shoe_name' => 'required|string|max:255',
             'shoe_size' => 'required|string|max:10',
             'shoe_quantity' => 'required|integer|min:1',
-            'payment_method' => 'required|in:cash,qris',
+            'payment_method' => 'required|in:cash,qris,transfer',
             'payment_status' => 'required|in:paid,unpaid',
             'status' => 'required|string',
             'shoe_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -471,17 +645,18 @@ class OrderController extends Controller
      */
     public function adminUpdate(Request $request, Order $order)
     {
-        if (Auth::user()->role !== 'admin') {
+        if (!in_array(Auth::user()->role, ['admin', 'employee'])) {
             abort(403);
         }
 
         $request->validate([
+            'queue_number' => 'required|string|max:20',
             'service_id' => 'required|exists:services,id',
             'processing_speed' => 'required|in:regular,express',
             'shoe_name' => 'required|string|max:255',
             'shoe_size' => 'required|string|max:10',
             'shoe_quantity' => 'required|integer|min:1',
-            'payment_method' => 'required|in:cash,qris',
+            'payment_method' => 'required|in:cash,qris,transfer',
             'payment_status' => 'required|in:paid,unpaid',
             'status' => 'required|string',
             'shoe_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -497,6 +672,7 @@ class OrderController extends Controller
         }
 
         $data = [
+            'queue_number' => $request->queue_number,
             'service_id' => $request->service_id,
             'processing_speed' => $request->processing_speed,
             'shoe_name' => $request->shoe_name,
@@ -543,14 +719,28 @@ class OrderController extends Controller
     {
         $status = $request->input('status');
         $category = $request->input('category');
+        $delivery = $request->input('delivery');
         
         $query = Order::with(['user', 'service']);
 
-        if ($status) {
-            $query->where('status', $status);
+        if ($request->has('queue')) {
+            $query->whereNotIn('status', ['completed', 'cancelled']);
+            if ($status) {
+                $query->where('status', $status);
+            }
+        } elseif ($delivery) {
+            $query->where('is_delivery', true)
+                  ->whereNotIn('status', ['completed', 'cancelled']);
+            if ($status) {
+                $query->where('status', $status);
+            }
         } else {
-            // Default to pending to only show orders that need validation (belum divalidasi)
-            $query->where('status', 'pending');
+            if ($status) {
+                $query->where('status', $status);
+            } else {
+                // Default to active orders (not completed/cancelled)
+                $query->whereNotIn('status', ['completed', 'cancelled']);
+            }
         }
 
         if ($category) {
@@ -582,7 +772,7 @@ class OrderController extends Controller
             'shoe_name' => 'required|string|max:255',
             'shoe_size' => 'required|string|max:10',
             'shoe_quantity' => 'required|integer|min:1',
-            'payment_method' => 'required|in:cash,qris',
+            'payment_method' => 'required|in:cash,qris,transfer',
             'payment_status' => 'required|in:paid,unpaid',
             'status' => 'required|string',
             'shoe_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -851,10 +1041,17 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $order->update([
-            'payment_status' => 'paid',
-            'status' => 'processing' // Langsung dikonfirmasi tanpa validasi
-        ]);
+        if ($order->group_id) {
+            Order::where('group_id', $order->group_id)->update([
+                'payment_status' => 'paid',
+                'status' => 'processing'
+            ]);
+        } else {
+            $order->update([
+                'payment_status' => 'paid',
+                'status' => 'processing' // Langsung dikonfirmasi tanpa validasi
+            ]);
+        }
 
         // Notifikasi ke Admin & Karyawan jika manual QRIS/Cash
         $staff = User::whereIn('role', ['admin', 'employee'])->get();
@@ -882,6 +1079,7 @@ class OrderController extends Controller
                        "Total Bayar: Rp " . number_format($order->total_price, 0, ',', '.') . "\n" .
                        "Metode: " . strtoupper($order->payment_method) . "\n" .
                        "Status: *LUNAS*\n" .
+                       "Catatan: Pembayaran ini berlaku untuk seluruh pesanan dalam grup invoice yang sama (jika ada).\n" .
                        "--------------------------\n" .
                        "Terima kasih atas pembayaran Anda!\n" .
                        "Pesanan Anda akan segera diproses.";
@@ -938,5 +1136,50 @@ class OrderController extends Controller
         }
 
         return redirect()->route('orders.my-orders')->with('success', 'Pesanan Anda berhasil dibatalkan.');
+    }
+    public function uploadPaymentProof(Request $request, Order $order)
+    {
+        // Security check: only the owner can upload
+        if ($order->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:5120',
+        ]);
+
+        if ($request->hasFile('payment_proof')) {
+            $proofPath = $request->file('payment_proof')->store('orders/payments', 'public');
+            
+            if ($order->group_id) {
+                Order::where('group_id', $order->group_id)->update([
+                    'payment_proof' => $proofPath,
+                    'status_pembayaran' => 'Menunggu Validasi'
+                ]);
+            } else {
+                $order->update([
+                    'payment_proof' => $proofPath,
+                    'status_pembayaran' => 'Menunggu Validasi'
+                ]);
+            }
+
+            // Notify Admins
+            $admins = User::where('role', 'admin')->get();
+            foreach ($admins as $admin) {
+                /** @var \App\Models\User $admin */
+                $admin->notify(new \App\Notifications\AppNotification([
+                    'title' => 'Bukti Pembayaran Baru',
+                    'message' => 'Pelanggan ' . Auth::user()->name . ' telah mengunggah bukti pembayaran untuk pesanan #' . $order->order_number,
+                    'icon' => 'file-text',
+                    'color' => 'blue',
+                    'url' => route('admin.orders.index'),
+                    'type' => 'payment_proof',
+                ]));
+            }
+
+            return back()->with('success', 'Bukti pembayaran berhasil diunggah dan sedang menunggu validasi admin.');
+        }
+
+        return back()->with('error', 'Gagal mengunggah bukti pembayaran.');
     }
 }

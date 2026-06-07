@@ -98,11 +98,18 @@
     @media (max-width: 768px) {
         .header-section { display: none !important; }
         .stat-card {
-            padding: 12px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border-left-width: 3px !important;
+            min-height: auto;
+        }
+        .stat-card p {
+            font-size: 0.6rem !important;
+            margin-bottom: 2px !important;
         }
         .stat-card h3 {
-            font-size: 1.4rem !important;
-            margin-top: 5px;
+            font-size: 1.1rem !important;
+            margin-top: 0 !important;
         }
         .desktop-table { display: none; }
         .mobile-cards { display: flex; flex-direction: column; gap: 10px; }
@@ -124,22 +131,13 @@
     }
 </style>
 
-<!-- Top Row: Welcome & Quick Actions (Hidden in Mobile) -->
-<div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;">
-    <div>
-        <h2 style="font-size: 2rem; font-weight: 900; margin-bottom: 5px;">Dashboard <span style="color: var(--primary);">Utama</span></h2>
-        <p style="opacity: 0.5; font-size: 0.95rem;">Ringkasan performa CleanUP Shoes hari ini.</p>
-    </div>
-    <div style="display: flex; gap: 10px;">
-        <a href="{{ route('admin.orders.index') }}" style="background: var(--primary); color: #000; padding: 10px 20px; border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 800; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);">Kelola Order</a>
-    </div>
-</div>
+
 
 <!-- KPI Cards -->
 <div class="kpi-grid">
     <div class="stat-card" style="border-left: 4px solid var(--success); background: rgba(16, 185, 129, 0.05);">
-        <p style="color: var(--success); font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Pendapatan</p>
-        <h3 style="font-size: 1.3rem; font-weight: 900; color: #fff;">Rp{{ number_format($todayRevenue, 0, ',', '.') }}</h3>
+        <p style="color: var(--success); font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Total Pendapatan</p>
+        <h3 style="font-size: 1.3rem; font-weight: 900; color: #fff;">Rp{{ number_format($totalRevenue, 0, ',', '.') }}</h3>
     </div>
     <div class="stat-card" style="border-left: 4px solid var(--warning); background: rgba(245, 158, 11, 0.05);">
         <p style="color: var(--warning); font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Pesanan Aktif</p>
@@ -160,9 +158,17 @@
     <div>
         <!-- Revenue Chart -->
         <div class="glass-card" style="margin-bottom: 20px; padding: 25px; border-radius: 28px;">
-            <div class="section-title">
-                <div class="section-title-line"></div>
-                Trend Pendapatan (7 Hari)
+            <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="section-title-line"></div>
+                    Trend Pendapatan
+                </div>
+                <select onchange="window.location.href='?filter=' + this.value" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 5px 10px; font-size: 0.8rem; outline: none; cursor: pointer;">
+                    <option value="day" {{ request('filter') == 'day' ? 'selected' : '' }}>Hari Ini (Per Jam)</option>
+                    <option value="week" {{ request('filter', 'week') == 'week' ? 'selected' : '' }}>7 Hari Terakhir</option>
+                    <option value="month" {{ request('filter') == 'month' ? 'selected' : '' }}>1 Bulan Terakhir</option>
+                    <option value="year" {{ request('filter') == 'year' ? 'selected' : '' }}>1 Tahun Terakhir</option>
+                </select>
             </div>
             <div style="height: 250px;">
                 <canvas id="revenueChart"></canvas>
@@ -264,15 +270,15 @@
             </div>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
                 @foreach([
-                    ['label' => 'Menunggu', 'count' => $statusCounts['pending'] ?? 0, 'color' => 'var(--warning)', 'bg' => 'rgba(245, 158, 11, 0.1)'],
-                    ['label' => 'Proses', 'count' => $statusCounts['processing'] ?? 0, 'color' => '#3b82f6', 'bg' => 'rgba(59, 130, 246, 0.1)'],
-                    ['label' => 'Siap', 'count' => $statusCounts['ready'] ?? 0, 'color' => 'var(--success)', 'bg' => 'rgba(16, 185, 129, 0.1)'],
-                    ['label' => 'Selesai', 'count' => $statusCounts['completed'] ?? 0, 'color' => '#a855f7', 'bg' => 'rgba(168, 85, 247, 0.1)']
+                    ['status' => 'pending', 'label' => 'Menunggu', 'count' => $statusCounts['pending'] ?? 0, 'color' => 'var(--warning)', 'bg' => 'rgba(245, 158, 11, 0.1)'],
+                    ['status' => 'processing', 'label' => 'Proses', 'count' => $statusCounts['processing'] ?? 0, 'color' => '#3b82f6', 'bg' => 'rgba(59, 130, 246, 0.1)'],
+                    ['status' => 'ready', 'label' => 'Siap', 'count' => $statusCounts['ready'] ?? 0, 'color' => 'var(--success)', 'bg' => 'rgba(16, 185, 129, 0.1)'],
+                    ['status' => 'completed', 'label' => 'Selesai', 'count' => $statusCounts['completed'] ?? 0, 'color' => '#a855f7', 'bg' => 'rgba(168, 85, 247, 0.1)']
                 ] as $st)
-                <div style="background: {{ $st['bg'] }}; border: 1px solid rgba(255,255,255,0.05); padding: 1rem; border-radius: 16px;">
-                    <p style="font-size: 0.65rem; opacity: 0.8; text-transform: uppercase; font-weight: 700; margin-bottom: 5px;">{{ $st['label'] }}</p>
+                <a href="{{ route('admin.orders.index', ['queue' => 1, 'status' => $st['status']]) }}" style="text-decoration: none; background: {{ $st['bg'] }}; border: 1px solid rgba(255,255,255,0.05); padding: 1rem; border-radius: 16px; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    <p style="font-size: 0.65rem; opacity: 0.8; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; color: #fff;">{{ $st['label'] }}</p>
                     <div style="font-size: 1.5rem; font-weight: 900; color: {{ $st['color'] }};">{{ $st['count'] }}</div>
-                </div>
+                </a>
                 @endforeach
             </div>
         </div>

@@ -10,10 +10,17 @@
 @section('page_title', 'Invoice #' . $order->order_number)
 
 @section('nav_items')
-    <li class="nav-item"><a href="{{ route('customer.dashboard') }}" class="nav-link">Dashboard</a></li>
-    <li class="nav-item"><a href="{{ route('services.index') }}" class="nav-link">Pesan Layanan</a></li>
-    <li class="nav-item"><a href="{{ route('orders.my-orders') }}" class="nav-link active">Pesanan Saya</a></li>
-    <li class="nav-item"><a href="{{ route('orders.history') }}" class="nav-link">Riwayat</a></li>
+    <li class="nav-item"><a href="{{ route('customer.dashboard') }}" class="nav-link {{ request()->routeIs('customer.dashboard') ? 'active' : '' }}">Dashboard</a></li>
+    <li class="nav-item"><a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}">Layanan Kami</a></li>
+    <li class="nav-item"><a href="{{ route('cart.index') }}" class="nav-link {{ request()->routeIs('cart.index') ? 'active' : '' }}">
+        Keranjang 
+        @if(Session::has('cart') && count(Session::get('cart')) > 0)
+            <span style="background: var(--primary); color: #000; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; font-weight: 800; margin-left: 5px;">{{ count(Session::get('cart')) }}</span>
+        @endif
+    </a></li>
+    <li class="nav-item"><a href="{{ route('orders.my-orders') }}" class="nav-link {{ request()->routeIs('orders.my-orders') ? 'active' : '' }}">Pesanan Saya</a></li>
+    <li class="nav-item"><a href="{{ route('orders.history') }}" class="nav-link {{ request()->routeIs('orders.history') ? 'active' : '' }}">Riwayat</a></li>
+    <li class="nav-item"><a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">Pengaturan</a></li>
 @endsection
 
 @section('content')
@@ -158,9 +165,9 @@
     <div class="receipt-card">
         <div class="receipt-header">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="font-size: 1rem; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: 1px; color: #fff;">Ringkasan Pesanan</h3>
+                <h3 style="font-size: 1rem; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: 1px; color: #fff;">Ringkasan Pesanan {{ $order->group_id ? '(Grup)' : '' }}</h3>
                 <div class="status-pill">
-                    {{ $order->service->category == 'cleaning' ? 'CUCI SEPATU' : 'REPARASI SEPATU' }}
+                    {{ $order->group_id ? count($groupOrders) . ' LAYANAN' : ($order->service->category == 'cleaning' ? 'CUCI SEPATU' : 'REPARASI SEPATU') }}
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="#10b981" stroke="#fff" stroke-width="3" style="border-radius: 50%"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 </div>
             </div>
@@ -247,19 +254,25 @@
             <div style="margin-bottom: 24px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <h4 style="font-size: 0.85rem; font-weight: 800; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin: 0;">Item Terpilih</h4>
-                    <span style="background: rgba(255,255,255,0.05); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.1);">{{ $order->queue_number }}</span>
+                    @if($order->group_id)
+                        <span style="background: rgba(255,255,255,0.05); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.1);">{{ $order->group_id }}</span>
+                    @else
+                        <span style="background: rgba(255,255,255,0.05); color: #fff; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.1);">{{ $order->queue_number }}</span>
+                    @endif
                 </div>
 
-                <div style="display: flex; gap: 14px; align-items: center;">
+                @foreach($groupOrders as $grpOrder)
+                <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
                     <div style="width: 60px; height: 60px; border-radius: 14px; overflow: hidden; background: #0c0c0e; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
-                        <img src="{{ $order->photo_before ? asset('storage/' . $order->photo_before) : ( $order->service->image ? asset('storage/' . $order->service->image) : 'https://via.placeholder.com/60' ) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="{{ $grpOrder->photo_before ? asset('storage/' . $grpOrder->photo_before) : ( $grpOrder->service->image ? asset('storage/' . $grpOrder->service->image) : 'https://via.placeholder.com/60' ) }}" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div style="flex-grow: 1;">
-                        <p style="font-weight: 800; color: #fff; font-size: 1rem; margin: 0;">{{ $order->shoe_quantity ?? 1 }}x {{ $order->service->name }}</p>
-                        <p style="font-size: 0.75rem; color: #6b7280; font-weight: 600; margin-top: 2px;">{{ $order->shoe_name ?: 'Sepatu (Antar Jemput)' }} @if($order->shoe_size) • Size {{ $order->shoe_size }} @endif</p>
+                        <p style="font-weight: 800; color: #fff; font-size: 1rem; margin: 0;">{{ $grpOrder->shoe_quantity ?? 1 }}x {{ $grpOrder->service->name }}</p>
+                        <p style="font-size: 0.75rem; color: #6b7280; font-weight: 600; margin-top: 2px;">{{ $grpOrder->shoe_name ?: 'Sepatu (Antar Jemput)' }} @if($grpOrder->shoe_size) • Size {{ $grpOrder->shoe_size }} @endif</p>
                     </div>
-                    <p style="font-weight: 800; color: #fff; font-size: 0.95rem;">Rp {{ number_format($order->service->price, 0, ',', '.') }}</p>
+                    <p style="font-weight: 800; color: #fff; font-size: 0.95rem;">Rp {{ number_format($grpOrder->total_price - ($grpOrder->id === $groupOrders[0]->id ? $grpOrder->delivery_fee : 0), 0, ',', '.') }}</p>
                 </div>
+                @endforeach
             </div>
 
             <!-- Photos Gallery (For Employees & Admins Especially) -->
@@ -296,12 +309,12 @@
             <div style="display: flex; flex-direction: column; gap: 12px;">
                 <div class="price-row">
                     <span class="price-label">Subtotal</span>
-                    <span class="price-value">Rp {{ number_format($order->total_price - $order->delivery_fee, 0, ',', '.') }}</span>
+                    <span class="price-value">Rp {{ number_format($groupOrders->sum('total_price') - $groupOrders->sum('delivery_fee'), 0, ',', '.') }}</span>
                 </div>
-                @if($order->delivery_fee > 0)
+                @if($groupOrders->sum('delivery_fee') > 0)
                 <div class="price-row">
                     <span class="price-label">Biaya Antar Jemput (> 5km)</span>
-                    <span class="price-value">Rp {{ number_format($order->delivery_fee, 0, ',', '.') }}</span>
+                    <span class="price-value">Rp {{ number_format($groupOrders->sum('delivery_fee'), 0, ',', '.') }}</span>
                 </div>
                 @endif
                 <div class="price-row">
@@ -315,7 +328,7 @@
 
                 <div class="total-row">
                     <span style="font-size: 1rem; font-weight: 800; color: #fff;">Total Pembayaran</span>
-                    <span style="font-size: 1.5rem; font-weight: 900; color: var(--primary);">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
+                    <span style="font-size: 1.5rem; font-weight: 900; color: var(--primary);">Rp {{ number_format($groupTotal, 0, ',', '.') }}</span>
                 </div>
             </div>
 
@@ -360,6 +373,80 @@
                             </div>
                             @endif
                             <p style="font-size: 0.7rem; color: #9ca3af; text-align: center; margin-top: 12px;">Setelah pembayaran, konfirmasi ke admin agar pesanan segera diproses.</p>
+                        </div>
+                    @endif
+                    
+                    @if($order->payment_method == 'transfer')
+                        <div style="background: rgba(249, 115, 22, 0.05); border: 1px solid rgba(249, 115, 22, 0.2); padding: 1.5rem; border-radius: 20px; margin-bottom: 20px;">
+                            <div style="display: flex; gap: 16px; align-items: start; margin-bottom: 16px;">
+                                <div style="width: 48px; height: 48px; background: rgba(249, 115, 22, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                                </div>
+                                <div>
+                                    <p style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--primary); margin-bottom: 4px;">Transfer Bank</p>
+                                    <p style="font-size: 0.8rem; color: #d1d5db; margin: 0; line-height: 1.5;">Silakan transfer ke salah satu rekening berikut sejumlah biaya pesanan Anda.</p>
+                                </div>
+                            </div>
+                            
+                            <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                @php
+                                    $bankAccounts = json_decode(\App\Models\Setting::where('key', 'bank_accounts')->first()?->value ?? '[]', true);
+                                    if (empty($bankAccounts)) {
+                                        $bankAccounts = [
+                                            ['bank_name' => 'BCA', 'account_number' => '0292.771.400', 'account_holder' => 'Melitha Anggraeni'],
+                                            ['bank_name' => 'Mandiri', 'account_number' => '146.001.124.9393', 'account_holder' => 'Melitha Anggraeni']
+                                        ];
+                                    }
+                                    $colors = [
+                                        ['text' => '#3b82f6', 'bg' => 'rgba(59, 130, 246, 0.1)'],
+                                        ['text' => '#eab308', 'bg' => 'rgba(234, 179, 8, 0.1)'],
+                                        ['text' => '#10b981', 'bg' => 'rgba(16, 185, 129, 0.1)'],
+                                        ['text' => '#f43f5e', 'bg' => 'rgba(244, 63, 94, 0.1)'],
+                                        ['text' => '#8b5cf6', 'bg' => 'rgba(139, 92, 246, 0.1)']
+                                    ];
+                                @endphp
+                                
+                                @foreach($bankAccounts as $index => $bank)
+                                @php
+                                    $color = $colors[$index % count($colors)];
+                                    $isLast = $index == count($bankAccounts) - 1;
+                                @endphp
+                                <div style="display: flex; justify-content: space-between; align-items: center; {{ !$isLast ? 'padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 12px;' : '' }}">
+                                    <div>
+                                        <p style="font-size: 0.85rem; font-weight: 800; color: {{ $color['text'] }}; margin: 0 0 2px 0;">{{ $bank['bank_name'] }}</p>
+                                        <p style="font-size: 1rem; font-family: monospace; font-weight: 700; color: #fff; margin: 0 0 2px 0;">{{ $bank['account_number'] }}</p>
+                                        <p style="font-size: 0.75rem; color: #9ca3af; margin: 0;">a.n {{ $bank['account_holder'] }}</p>
+                                    </div>
+                                    <button onclick="copyToClipboard('{{ preg_replace('/[^0-9]/', '', $bank['account_number']) }}')" style="background: {{ $color['bg'] }}; border: none; padding: 6px 12px; border-radius: 6px; color: {{ $color['text'] }}; cursor: pointer; font-size: 0.7rem; font-weight: 800;">SALIN</button>
+                                </div>
+                                @endforeach
+                            </div>
+                            <p style="font-size: 0.7rem; color: #9ca3af; text-align: center; margin-top: 12px; font-weight: bold;">(MOHON KIRIMKAN BUKTI TRANSFER)</p>
+                            <p style="font-size: 0.65rem; color: #6b7280; text-align: center; margin-top: 4px;">Catatan : Setelah Pembayaran, Sepatu/Sandal Masuk Antrian Perbaikan</p>
+                        </div>
+                    @endif
+                    
+                    @if(in_array($order->payment_method, ['qris', 'transfer']))
+                        <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); padding: 1.5rem; border-radius: 20px; margin-bottom: 20px;">
+                            <h5 style="color: #60a5fa; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; margin-top: 0; margin-bottom: 12px;">Konfirmasi Pembayaran</h5>
+                            
+                            @if($order->payment_proof)
+                                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; padding: 1rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; text-align: center; margin-bottom: 12px;">
+                                    Bukti pembayaran telah diunggah dan {{ $order->status_pembayaran == 'Menunggu Validasi' ? 'sedang menunggu validasi admin' : 'telah divalidasi' }}.
+                                </div>
+                                <a href="{{ asset('storage/' . $order->payment_proof) }}" target="_blank" style="display: block; text-align: center; font-size: 0.8rem; color: #60a5fa; text-decoration: underline;">Lihat Bukti Pembayaran Anda</a>
+                            @else
+                                <form action="{{ route('orders.upload_payment_proof', $order->id) }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <div style="margin-bottom: 12px;">
+                                        <label style="display: block; font-size: 0.75rem; color: #9ca3af; margin-bottom: 6px;">Unggah Bukti Pembayaran (Foto/Screenshot)</label>
+                                        <input type="file" name="payment_proof" accept="image/jpeg,image/png,image/jpg" required style="width: 100%; background: rgba(0,0,0,0.2); border: 1px dashed rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; color: #fff; font-size: 0.8rem;">
+                                    </div>
+                                    <button type="submit" style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+                                        KIRIM BUKTI PEMBAYARAN
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     @endif
 

@@ -1,6 +1,6 @@
 @extends('layouts.premium-dashboard')
 
-@section('page_title', 'Kelola Semua Pesanan')
+@section('page_title', request('queue') ? 'Monitor Antrian' : (request('delivery') ? 'Antar Jemput' : 'Kelola Pesanan'))
 
 @section('nav_items')
     <li class="nav-item"><a href="{{ route('admin.dashboard') }}" class="nav-link {{ Route::is('admin.dashboard') ? 'active' : '' }}">Dashboard</a></li>
@@ -133,20 +133,19 @@
 </style>
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
-    <div>
-        <h2 style="font-size: 1.8rem; font-weight: 900; margin-bottom: 5px;">Kelola <span style="color: var(--primary);">Pesanan</span></h2>
-        <p style="opacity: 0.5;">Pantau dan proses semua pesanan pelanggan secara real-time.</p>
-    </div>
+
+    @if(!request('queue'))
     <button onclick="openCreateModal()" style="background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Tambah Pesanan
     </button>
+    @endif
 </div>
 
 <!-- Search & Filter Bar -->
 <form action="{{ route('admin.orders.index') }}" method="GET" class="filter-bar">
     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, No. Order, No. Antrian..." class="filter-input" style="flex: 2; min-width: 250px;">
-    <select name="status" class="filter-input" style="flex: 1; min-width: 150px;">
+    <select name="status" class="filter-input" style="flex: 1; min-width: 150px;" onchange="this.form.submit()">
         <option value="">Semua Status</option>
         <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
         <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>Proses</option>
@@ -154,8 +153,6 @@
         <option value="ready" {{ request('status') == 'ready' ? 'selected' : '' }}>Selesai</option>
         <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Diambil</option>
     </select>
-    <button type="submit" style="background: var(--primary); color: #000; border: none; padding: 10px 25px; border-radius: 12px; font-weight: 800; cursor: pointer;">Saring</button>
-    <a href="{{ route('admin.orders.index') }}" style="background: rgba(255,255,255,0.05); color: #fff; text-decoration: none; padding: 10px 15px; border-radius: 12px; font-size: 0.8rem; display: flex; align-items: center;">Reset</a>
 </form>
 
 @if(session('success'))
@@ -252,6 +249,38 @@
                                 <input type="hidden" name="status" value="cancelled">
                                 <button type="submit" onclick="return confirm('Tolak pesanan?')" style="background: #ef4444; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">Tolak</button>
                             </form>
+                        @else
+                            @php
+                                $nextStatus = null;
+                                $nextLabel = '';
+                                $btnColor = '#3b82f6';
+
+                                if ($order->service->category == 'cleaning') {
+                                    if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Cuci → Jemur'; }
+                                    elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Selesai Jemur → Siap'; }
+                                    elseif ($order->status == 'ready') { 
+                                        if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
+                                        else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                                    }
+                                    elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
+                                } else {
+                                    if ($order->status == 'processing') { $nextStatus = 'ready'; $nextLabel = 'Selesai Repaint/Reparasi → Siap'; }
+                                    elseif ($order->status == 'ready') { 
+                                        if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
+                                        else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                                    }
+                                    elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
+                                }
+                            @endphp
+                            
+                            @if($nextStatus)
+                                <form action="{{ route('admin.orders.status.update', $order) }}" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="status" value="{{ $nextStatus }}">
+                                    <button type="submit" style="background: {{ $btnColor }}; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">{{ $nextLabel }}</button>
+                                </form>
+                            @endif
                         @endif
                         <button class="view-detail-btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">Detail</button>
                     </div>
@@ -311,6 +340,40 @@
                 <button type="submit" onclick="return confirm('Tolak pesanan?')" style="width: 100%; background: #ef4444; color: #fff; border: none; padding: 8px; border-radius: 10px; font-weight: 800; font-size: 0.8rem;">Tolak</button>
             </form>
         </div>
+        @else
+            @php
+                $nextStatus = null;
+                $nextLabel = '';
+                $btnColor = '#3b82f6';
+
+                if ($order->service->category == 'cleaning') {
+                    if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Cuci → Jemur'; }
+                    elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Selesai Jemur → Siap'; }
+                    elseif ($order->status == 'ready') { 
+                        if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
+                        else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                    }
+                    elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
+                } else {
+                    if ($order->status == 'processing') { $nextStatus = 'ready'; $nextLabel = 'Selesai Repaint/Reparasi → Siap'; }
+                    elseif ($order->status == 'ready') { 
+                        if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
+                        else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                    }
+                    elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
+                }
+            @endphp
+            
+            @if($nextStatus)
+            <div style="margin-top: 10px;">
+                <form action="{{ route('admin.orders.status.update', $order) }}" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="status" value="{{ $nextStatus }}">
+                    <button type="submit" style="width: 100%; background: {{ $btnColor }}; color: #fff; border: none; padding: 8px; border-radius: 10px; font-weight: 800; font-size: 0.8rem;">{{ $nextLabel }}</button>
+                </form>
+            </div>
+            @endif
         @endif
     </div>
     @endforeach
@@ -399,6 +462,9 @@
                     <div>
                         <p id="detail_payment_method" style="font-weight: 800; font-size: 0.9rem; margin-bottom: 3px; text-transform: uppercase;">-</p>
                         <span id="detail_payment_status" style="font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">-</span>
+                        <div id="detail_payment_proof_container" style="display: none; margin-top: 8px;">
+                            <a id="detail_payment_proof_link" href="#" target="_blank" style="font-size: 0.75rem; color: #60a5fa; text-decoration: underline;">Lihat Bukti Transfer</a>
+                        </div>
                     </div>
                     
                     <form id="detail_confirm_payment_form" method="POST" style="display: none;">
@@ -512,6 +578,7 @@
                     <select name="payment_method" required class="filter-input" style="width: 100%; background: #1e1e24;">
                         <option value="cash">Tunai (Cash)</option>
                         <option value="qris">QRIS</option>
+                        <option value="transfer">Transfer Bank</option>
                     </select>
                 </div>
             </div>
@@ -564,18 +631,24 @@
                     </select>
                 </div>
                 <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Nomor Antrian</label>
+                    <input type="text" name="queue_number" id="edit_queue_number" required class="filter-input" style="width: 100%; background: #1e1e24;">
+                </div>
+            </div>
+            <div class="modal-grid-2">
+                <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Kecepatan</label>
                     <select name="processing_speed" id="edit_processing_speed" required class="filter-input" style="width: 100%; background: #1e1e24;">
                         <option value="regular">Regular</option>
                         <option value="express">Express</option>
                     </select>
                 </div>
-            </div>
-            <div class="modal-grid-2">
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Nama Sepatu</label>
                     <input type="text" name="shoe_name" id="edit_shoe_name" required class="filter-input" style="width: 100%; background: #1e1e24;">
                 </div>
+            </div>
+            <div class="modal-grid-2">
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Ukuran Sepatu</label>
                     <input type="text" name="shoe_size" id="edit_shoe_size" required class="filter-input" style="width: 100%; background: #1e1e24;">
@@ -591,7 +664,7 @@
                     <select name="payment_method" id="edit_payment_method" required class="filter-input" style="width: 100%; background: #1e1e24;">
                         <option value="cash">Tunai (Cash)</option>
                         <option value="qris">QRIS</option>
-
+                        <option value="transfer">Transfer Bank</option>
                     </select>
                 </div>
             </div>
@@ -641,6 +714,7 @@
     function openEditModal(order, user, service) {
         document.getElementById('editOrderForm').action = `/admin/orders/${order.id}`;
         
+        document.getElementById('edit_queue_number').value = order.queue_number;
         document.getElementById('edit_service_id').value = order.service_id;
         document.getElementById('edit_processing_speed').value = order.processing_speed;
         document.getElementById('edit_shoe_name').value = order.shoe_name || '';
@@ -701,6 +775,15 @@
             paymentStatusEl.style.background = 'rgba(239, 68, 68, 0.15)';
             paymentStatusEl.style.color = '#ef4444';
             paymentStatusEl.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+        }
+        
+        const proofContainer = document.getElementById('detail_payment_proof_container');
+        const proofLink = document.getElementById('detail_payment_proof_link');
+        if (order.payment_proof) {
+            proofLink.href = '/storage/' + order.payment_proof;
+            proofContainer.style.display = 'block';
+        } else {
+            proofContainer.style.display = 'none';
         }
         
         const confirmPaymentForm = document.getElementById('detail_confirm_payment_form');

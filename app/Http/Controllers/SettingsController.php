@@ -23,9 +23,10 @@ class SettingsController extends Controller
         $tab = $request->input('tab', 'profil-toko');
 
         foreach ($data as $key => $value) {
+            $valueToSave = is_array($value) ? json_encode($value) : $value;
             \App\Models\Setting::updateOrCreate(
                 ['key' => $key],
-                ['value' => $value]
+                ['value' => $valueToSave]
             );
         }
 

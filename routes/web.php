@@ -42,6 +42,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/employees/{employee}', [App\Http\Controllers\Admin\EmployeeManagementController::class, 'update'])->name('admin.employees.update');
         Route::delete('/employees/{employee}', [App\Http\Controllers\Admin\EmployeeManagementController::class, 'destroy'])->name('admin.employees.destroy');
         
+        // Customers
+        Route::get('/customers', [App\Http\Controllers\Admin\CustomerManagementController::class, 'index'])->name('admin.customers.index');
+        Route::put('/customers/{customer}', [App\Http\Controllers\Admin\CustomerManagementController::class, 'update'])->name('admin.customers.update');
+        Route::delete('/customers/{customer}', [App\Http\Controllers\Admin\CustomerManagementController::class, 'destroy'])->name('admin.customers.destroy');
+        
         Route::get('/attendance', [App\Http\Controllers\AttendanceController::class, 'index'])->name('admin.attendance.index');
         Route::get('/loans', [App\Http\Controllers\LoanController::class, 'index'])->name('admin.loans.index');
         Route::patch('/loans/{loan}', [App\Http\Controllers\LoanController::class, 'updateStatus'])->name('admin.loans.update');
@@ -72,6 +77,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'employee'])->name('employee.dashboard');
         Route::get('/orders', [App\Http\Controllers\OrderController::class, 'employeeIndex'])->name('employee.orders.index');
         Route::post('/orders', [App\Http\Controllers\OrderController::class, 'employeeStore'])->name('employee.orders.store');
+        Route::put('/orders/{order}', [App\Http\Controllers\OrderController::class, 'adminUpdate'])->name('employee.orders.update');
         Route::patch('/orders/{order}', [App\Http\Controllers\OrderController::class, 'updateStatus'])->name('orders.status.update');
         
         Route::post('/attendance/clock-in', [App\Http\Controllers\AttendanceController::class, 'clockIn'])->name('employee.attendance.clock-in');
@@ -88,6 +94,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/reports/attendance/pdf', [App\Http\Controllers\ReportController::class, 'exportAttendancePdf'])->name('employee.reports.attendance.pdf');
         Route::post('/orders/{order}/confirm-payment', [App\Http\Controllers\OrderController::class, 'confirmPayment'])->name('orders.payment.confirm');
         Route::post('/orders/{order}/remind-payment', [App\Http\Controllers\OrderController::class, 'remindPayment'])->name('orders.payment.remind');
+
+        // Inventories
+        Route::resource('inventories', \App\Http\Controllers\Employee\InventoryController::class)->except(['create', 'edit', 'show'])->names([
+            'index' => 'employee.inventories.index',
+            'store' => 'employee.inventories.store',
+            'update' => 'employee.inventories.update',
+            'destroy' => 'employee.inventories.destroy',
+        ]);
     });
 
     // Notifications (Shared for all roles)
@@ -100,9 +114,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:customer', 'phone_complete'])->prefix('customer')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'customer'])->name('customer.dashboard');
         Route::get('/services', [App\Http\Controllers\ServiceController::class, 'index'])->name('services.index');
+        
+        // Cart Routes
+        Route::get('/cart', [App\Http\Controllers\CartController::class, 'index'])->name('cart.index');
+        Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'add'])->name('cart.add');
+        Route::delete('/cart/remove/{id}', [App\Http\Controllers\CartController::class, 'remove'])->name('cart.remove');
+        Route::get('/checkout', [App\Http\Controllers\CartController::class, 'checkoutForm'])->name('orders.checkout');
+
         Route::get('/my-orders', [App\Http\Controllers\OrderController::class, 'myOrders'])->name('orders.my-orders');
         Route::get('/history', [App\Http\Controllers\OrderController::class, 'history'])->name('orders.history');
-        Route::get('/orders/create', [App\Http\Controllers\OrderController::class, 'create'])->name('orders.create');
+        Route::post('/orders/checkout', [App\Http\Controllers\OrderController::class, 'storeCheckout'])->name('orders.store_checkout');
         Route::post('/orders', [App\Http\Controllers\OrderController::class, 'store'])->name('orders.store');
         Route::post('/orders/{order}/review', [App\Http\Controllers\OrderController::class, 'submitReview'])->name('orders.review.submit');
         Route::post('/orders/{order}/cancel', [App\Http\Controllers\OrderController::class, 'cancel'])->name('orders.cancel');
@@ -117,6 +138,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::get('/customer/orders/{order}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
     Route::get('/customer/orders/{order}/receipt', [App\Http\Controllers\OrderController::class, 'receipt'])->name('orders.receipt');
+    Route::post('/customer/orders/{order}/upload-payment-proof', [App\Http\Controllers\OrderController::class, 'uploadPaymentProof'])->name('orders.upload_payment_proof');
 });
 
 

@@ -3,10 +3,17 @@
 @section('page_title', 'Layanan Terbaik Kami')
 
 @section('nav_items')
-    <li class="nav-item"><a href="{{ route('customer.dashboard') }}" class="nav-link">Dashboard</a></li>
-    <li class="nav-item"><a href="{{ route('services.index') }}" class="nav-link active">Layanan Kami</a></li>
-    <li class="nav-item"><a href="{{ route('orders.my-orders') }}" class="nav-link">Pesanan Saya</a></li>
-    <li class="nav-item"><a href="{{ route('orders.history') }}" class="nav-link">Riwayat</a></li>
+    <li class="nav-item"><a href="{{ route('customer.dashboard') }}" class="nav-link {{ request()->routeIs('customer.dashboard') ? 'active' : '' }}">Dashboard</a></li>
+    <li class="nav-item"><a href="{{ route('services.index') }}" class="nav-link {{ request()->routeIs('services.index') ? 'active' : '' }}">Layanan Kami</a></li>
+    <li class="nav-item"><a href="{{ route('cart.index') }}" class="nav-link {{ request()->routeIs('cart.index') ? 'active' : '' }}">
+        Keranjang 
+        @if(Session::has('cart') && count(Session::get('cart')) > 0)
+            <span style="background: var(--primary); color: #000; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; font-weight: 800; margin-left: 5px;">{{ count(Session::get('cart')) }}</span>
+        @endif
+    </a></li>
+    <li class="nav-item"><a href="{{ route('orders.my-orders') }}" class="nav-link {{ request()->routeIs('orders.my-orders') ? 'active' : '' }}">Pesanan Saya</a></li>
+    <li class="nav-item"><a href="{{ route('orders.history') }}" class="nav-link {{ request()->routeIs('orders.history') ? 'active' : '' }}">Riwayat</a></li>
+    <li class="nav-item"><a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">Pengaturan</a></li>
 @endsection
 
 @section('content')
@@ -159,10 +166,10 @@
                             <span class="price-label">Biaya Mulai</span>
                             <span class="price-value">Rp {{ number_format($service->price, 0, ',', '.') }}</span>
                         </div>
-                        <a href="{{ route('orders.create', ['service_id' => $service->id]) }}" class="btn-order">
-                            PESAN
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
-                        </a>
+                        <button type="button" onclick='openAddToCartModal(@json($service))' class="btn-order" style="border: none; cursor: pointer;">
+                            TAMBAH
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -177,5 +184,63 @@
     <p style="opacity: 0.4; font-size: 1rem;">Belum ada layanan yang tersedia saat ini.</p>
 </div>
 @endif
+
+<!-- Add to Cart Modal -->
+<div id="addToCartModal" class="modal-backdrop" onclick="closeModal('addToCartModal')" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div style="background: #1e293b; padding: 2rem; border-radius: 24px; width: 90%; max-width: 500px; position: relative; border: 1px solid rgba(255,255,255,0.1);" onclick="event.stopPropagation()">
+        <button onclick="closeModal('addToCartModal')" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 1.5rem;">Tambah ke Keranjang</h3>
+        
+        <form action="{{ route('cart.add') }}" method="POST">
+            @csrf
+            <input type="hidden" name="service_id" id="modal_service_id">
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-bottom: 5px;">Layanan Terpilih</label>
+                <div id="modal_service_name" style="font-size: 1rem; font-weight: 800; color: var(--primary);"></div>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-bottom: 5px;">Nama Sepatu <span style="color: #ef4444;">*</span></label>
+                <input type="text" name="shoe_name" required placeholder="Cth: Nike Air Force 1" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-bottom: 5px;">Ukuran (Opsional)</label>
+                    <input type="text" name="shoe_size" placeholder="Cth: 42" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-bottom: 5px;">Jumlah <span style="color: #ef4444;">*</span></label>
+                    <input type="number" name="shoe_quantity" value="1" min="1" required style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-bottom: 5px;">Kecepatan Pengerjaan <span style="color: #ef4444;">*</span></label>
+                <select name="processing_speed" required style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff;">
+                    <option value="regular">Regular (Harga Normal)</option>
+                    <option value="express">Express (+Rp 25.000 / Sepatu)</option>
+                </select>
+            </div>
+
+            <button type="submit" style="width: 100%; background: var(--primary); color: #000; padding: 14px; border-radius: 14px; font-weight: 900; border: none; cursor: pointer; font-size: 0.95rem;">
+                TAMBAH KE KERANJANG
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openAddToCartModal(service) {
+        document.getElementById('modal_service_id').value = service.id;
+        document.getElementById('modal_service_name').innerText = service.name;
+        document.getElementById('addToCartModal').style.display = 'flex';
+    }
+    
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+</script>
 
 @endsection

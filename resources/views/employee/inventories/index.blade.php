@@ -3,13 +3,9 @@
 @section('page_title', 'Stok Barang')
 
 @section('nav_items')
-    <li class="nav-item"><a href="{{ route('admin.dashboard') }}" class="nav-link {{ Route::is('admin.dashboard') ? 'active' : '' }}">Dashboard</a></li>
-    <li class="nav-item"><a href="{{ route('admin.orders.index') }}" class="nav-link {{ Route::is('admin.orders.index') ? 'active' : '' }}">Kelola Pesanan</a></li>
-    <li class="nav-item"><a href="{{ route('admin.services.index') }}" class="nav-link {{ Route::is('admin.services.index') ? 'active' : '' }}">Kelola Layanan</a></li>
-    <li class="nav-item"><a href="{{ route('admin.finances.index') }}" class="nav-link {{ Route::is('admin.finances.index') ? 'active' : '' }}">Keuangan</a></li>
-    <li class="nav-item"><a href="{{ route('admin.employees.index') }}" class="nav-link {{ Route::is('admin.employees.index') ? 'active' : '' }}">Manajemen Staff</a></li>
-    <li class="nav-item"><a href="{{ route('admin.reports.index') }}" class="nav-link {{ Route::is('admin.reports.index') ? 'active' : '' }}">Laporan</a></li>
-    <li class="nav-item"><a href="{{ route('admin.inventories.index') }}" class="nav-link active">Stok Barang</a></li>
+    <li class="nav-item"><a href="{{ route('employee.dashboard') }}" class="nav-link">Dashboard</a></li>
+    <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link">Tugas Saya</a></li>
+    <li class="nav-item"><a href="{{ route('employee.inventories.index') }}" class="nav-link active">Stok Barang</a></li>
 @endsection
 
 @section('content')
@@ -83,7 +79,7 @@
                     <button onclick="editModal({{ $inv->id }}, '{{ $inv->name }}', {{ $inv->stock }}, '{{ $inv->unit }}', {{ $inv->min_stock }})" style="background: rgba(255,255,255,0.05); border: none; color: var(--primary); padding: 0.5rem; border-radius: 8px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
-                    <form action="{{ route('admin.inventories.destroy', $inv->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus barang ini?');">
+                    <form action="{{ route('employee.inventories.destroy', $inv->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus barang ini?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" style="background: rgba(244,63,94,0.05); border: none; color: #f43f5e; padding: 0.5rem; border-radius: 8px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(244,63,94,0.1)'" onmouseout="this.style.background='rgba(244,63,94,0.05)'">
@@ -110,7 +106,7 @@
             <button onclick="closeModal()" style="background: transparent; border: none; color: #fff; cursor: pointer; opacity: 0.5;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
         </div>
         
-        <form id="inventory-form" method="POST" action="{{ route('admin.inventories.store') }}">
+        <form id="inventory-form" method="POST" action="{{ route('employee.inventories.store') }}">
             @csrf
             <input type="hidden" name="_method" id="form-method" value="POST">
             
@@ -161,7 +157,7 @@
         document.getElementById('submit-button').innerText = 'Perbarui Barang';
         
         document.getElementById('form-method').value = 'PUT';
-        document.getElementById('inventory-form').action = '/admin/inventories/' + id;
+        document.getElementById('inventory-form').action = '/employee/inventories/' + id;
         
         document.getElementById('input-name').value = name;
         document.getElementById('input-stock').value = stock;

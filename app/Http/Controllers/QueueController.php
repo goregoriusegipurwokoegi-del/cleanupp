@@ -16,6 +16,14 @@ class QueueController extends Controller
     }
 
     /**
+     * Halaman antrian versi dashboard admin/karyawan
+     */
+    public function dashboardIndex()
+    {
+        return view('queues.dashboard-index');
+    }
+
+    /**
      * API: Ambil data antrian terkini (untuk polling real-time)
      */
     public function getData()

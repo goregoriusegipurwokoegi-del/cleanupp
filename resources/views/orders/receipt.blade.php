@@ -1,190 +1,176 @@
 @extends('layouts.premium-dashboard')
 
-@section('page_title', 'Struk Digital')
+@section('page_title', 'Struk Pembayaran')
 
 @section('content')
-<div style="max-width: 600px; margin: 0 auto; padding-bottom: 4rem;">
-    <div style="margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between;">
-        <a href="{{ route('orders.show', $order->id) }}" style="background: rgba(255,255,255,0.05); color: #fff; padding: 0.6rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 0.5rem; text-decoration: none; font-size: 0.9rem;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+@php
+    $phone = preg_replace('/[^0-9]/', '', $order->user->phone);
+    if (substr($phone, 0, 1) == '0') {
+        $phone = '62' . substr($phone, 1);
+    }
+    
+    $waText = "🧾 *Struk Pembayaran CleanUP Shoes*\n";
+    $waText .= "--------------------------------\n";
+    $waText .= "Pembeli: " . $order->user->name . "\n";
+    $waText .= "Tanggal: " . $order->created_at->format('d/m/Y H:i') . "\n";
+    $waText .= "No Struk: " . $order->order_number . "\n";
+    $waText .= "--------------------------------\n";
+    $waText .= "Layanan: " . $order->service->name . " (" . ($order->processing_speed == 'express' ? 'Express' : 'Reguler') . ")\n";
+    $waText .= "Item: " . $order->shoe_name . "\n";
+    $waText .= "--------------------------------\n";
+    $waText .= "*TOTAL BAYAR: Rp " . number_format($order->total_price, 0, ',', '.') . "*\n";
+    $waText .= "--------------------------------\n";
+    $waText .= "Terima kasih telah mempercayakan sepatu Anda pada kami! ✨";
+@endphp
+
+<div style="max-width: 400px; margin: 0 auto; padding-bottom: 4rem;">
+    <!-- Actions -->
+    <div style="margin-bottom: 2rem; display: flex; gap: 10px; justify-content: center;" class="no-print">
+        <a href="{{ url()->previous() }}" style="background: rgba(255,255,255,0.05); color: #fff; padding: 0.8rem 1.2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: 0.9rem; font-weight: 700;">
             Kembali
         </a>
-        <button onclick="window.print()" style="background: var(--primary); color: #000; border: none; padding: 0.6rem 1.2rem; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-            Cetak Struk
+        <button onclick="window.print()" style="background: #fff; color: #000; border: none; padding: 0.8rem 1.2rem; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 0.9rem;">
+            🖨️ Cetak Struk
         </button>
+        <a href="https://wa.me/{{ $phone }}?text={{ urlencode($waText) }}" target="_blank" style="background: #25D366; color: #fff; text-decoration: none; padding: 0.8rem 1.2rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 5px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            Kirim WA
+        </a>
     </div>
 
-    <div id="print-receipt-area" class="glass-card" style="padding: 3rem; border-radius: 32px; position: relative; overflow: hidden; background: #111114; border: 1px solid rgba(255,255,255,0.05);">
-        <!-- Decorative Circle -->
-        <div class="glow-circle-print" style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--primary); opacity: 0.1; filter: blur(50px); border-radius: 50%;"></div>
-        
+    <!-- Thermal Receipt -->
+    <div class="thermal-receipt" style="background: #fff; color: #000; font-family: 'Courier New', Courier, monospace; padding: 20px; width: 300px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
         <!-- Header -->
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <div style="font-size: 1.8rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 0.5rem; color: #fff;">
-                CleanUP<span style="color: var(--primary);">Shoes</span>
-            </div>
-            <p style="opacity: 0.5; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase;">Bukti Pembayaran Resmi</p>
+        <div style="text-align: center; margin-bottom: 10px;">
+            <h2 style="margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -1px;">CleanUP Shoes</h2>
+            <p style="margin: 0; font-size: 13px;">Premium Shoe Care</p>
+            <p style="margin: 0; font-size: 12px;">Outlet Pusat</p>
         </div>
-
-        <!-- Success Seal -->
-        <div style="display: flex; justify-content: center; margin-bottom: 2.5rem;">
-            <div style="width: 80px; height: 80px; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981; position: relative;">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                <div style="position: absolute; bottom: -10px; background: #10b981; color: #fff; font-size: 0.6rem; font-weight: 900; padding: 2px 8px; border-radius: 20px; text-transform: uppercase;">LUNAS</div>
-            </div>
-        </div>
-
-        <!-- Info Grid -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; padding: 1.5rem; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
-            <div>
-                <label style="display: block; font-size: 0.75rem; opacity: 0.5; margin-bottom: 0.4rem; text-transform: uppercase;">No. Transaksi</label>
-                <p style="font-weight: 800; font-family: 'JetBrains Mono', monospace; font-size: 1rem; color: #fff;">#{{ $order->order_number }}</p>
-            </div>
-            <div style="text-align: right;">
-                <label style="display: block; font-size: 0.75rem; opacity: 0.5; margin-bottom: 0.4rem; text-transform: uppercase;">Tanggal Lunas</label>
-                <p style="font-weight: 700; color: #fff;">{{ now()->format('d M Y, H:i') }}</p>
-            </div>
-            <div>
-                <label style="display: block; font-size: 0.75rem; opacity: 0.5; margin-bottom: 0.4rem; text-transform: uppercase;">Nama Pelanggan</label>
-                <p style="font-weight: 700; color: #fff;">{{ $order->user->name }}</p>
-            </div>
-            <div style="text-align: right;">
-                <label style="display: block; font-size: 0.75rem; opacity: 0.5; margin-bottom: 0.4rem; text-transform: uppercase;">Metode Pembayaran</label>
-                <p style="font-weight: 700; text-transform: uppercase; color: var(--primary);">{{ $order->payment_method }}</p>
-            </div>
-        </div>
-
+        
+        <div style="border-bottom: 1px dashed #000; margin-bottom: 10px;"></div>
+        
+        <!-- Info -->
+        <table style="width: 100%; font-size: 12px; margin-bottom: 10px;">
+            <tr><td style="width: 35%;">Pembeli</td><td>: {{ $order->user->name }} {{ $order->user->phone }}</td></tr>
+            <tr><td>Pembayaran</td><td>: {{ strtoupper($order->payment_method) }}</td></tr>
+            <tr><td>Tanggal</td><td>: {{ $order->created_at->format('d/m/Y H:i') }}</td></tr>
+            <tr><td>No Struk</td><td>: {{ $order->order_number }}</td></tr>
+            <tr><td>Kasir</td><td>: Sistem</td></tr>
+        </table>
+        
+        <div style="border-bottom: 1px dashed #000; margin-bottom: 10px;"></div>
+        
         <!-- Items -->
-        <div style="margin-bottom: 3rem;">
-            <h4 style="font-size: 0.8rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">Rincian Pesanan</h4>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <div>
-                    <p style="font-weight: 800; font-size: 1.1rem; color: #fff;">{{ $order->service->name }}</p>
-                    <p style="font-size: 0.85rem; opacity: 0.5;">Item: {{ $order->shoe_name }} (Size {{ $order->shoe_size }})</p>
+        <div style="font-size: 12px; margin-bottom: 10px;">
+            <!-- Main Service -->
+            <div style="margin-bottom: 5px;">
+                <p style="margin: 0;">1. {{ $order->service->name }} ({{ $order->processing_speed == 'express' ? 'Express' : 'Reguler' }})</p>
+                <div style="display: flex; justify-content: space-between;">
+                    @php $mainPrice = $order->service->price + ($order->processing_speed == 'express' ? 25000 : 0); @endphp
+                    <span>{{ number_format($mainPrice, 0, ',', '.') }} x {{ $order->shoe_quantity }}</span>
+                    <span>{{ number_format($mainPrice * $order->shoe_quantity, 0, ',', '.') }}</span>
                 </div>
-                <p style="font-weight: 800; font-size: 1.1rem; color: #fff;">Rp {{ number_format($order->service->price, 0, ',', '.') }}</p>
             </div>
-
-            @if($order->processing_speed == 'express')
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; opacity: 0.8;">
-                <p style="font-size: 0.9rem; color: #fff;">Layanan Express (1 Hari Selesai)</p>
-                <p style="font-weight: 600; color: #fff;">Rp 25.000</p>
-            </div>
-            @endif
-
+            
+            <!-- Additional Services -->
             @if($order->additional_services)
                 @php
                     $extras = \App\Models\Service::whereIn('id', $order->additional_services)->get();
                 @endphp
-                @foreach($extras as $extra)
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; opacity: 0.8;">
-                    <p style="font-size: 0.9rem; color: #fff;">+ {{ $extra->name }}</p>
-                    <p style="font-weight: 600; color: #fff;">Rp {{ number_format($extra->price, 0, ',', '.') }}</p>
+                @foreach($extras as $index => $extra)
+                <div style="margin-bottom: 5px;">
+                    <p style="margin: 0;">{{ $index + 2 }}. {{ $extra->name }}</p>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>{{ number_format($extra->price, 0, ',', '.') }} x {{ $order->shoe_quantity }}</span>
+                        <span>{{ number_format($extra->price * $order->shoe_quantity, 0, ',', '.') }}</span>
+                    </div>
                 </div>
                 @endforeach
             @endif
-
+            
+            <!-- Delivery Fee -->
             @if($order->delivery_fee > 0)
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; opacity: 0.8;">
-                <p style="font-size: 0.9rem; color: #fff;">+ Biaya Antar Jemput (> 5km)</p>
-                <p style="font-weight: 600; color: #fff;">Rp {{ number_format($order->delivery_fee, 0, ',', '.') }}</p>
+            <div style="margin-bottom: 5px;">
+                <p style="margin: 0;">Antar Jemput</p>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>{{ number_format($order->delivery_fee, 0, ',', '.') }} x 1</span>
+                    <span>{{ number_format($order->delivery_fee, 0, ',', '.') }}</span>
+                </div>
             </div>
             @endif
         </div>
-
+        
+        <div style="border-bottom: 1px dashed #000; margin-bottom: 10px;"></div>
+        
         <!-- Total -->
-        <div class="total-box-print" style="background: var(--primary); color: #000; padding: 2rem; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; box-shadow: 0 20px 40px rgba(249, 115, 22, 0.2);">
-            <div>
-                <p style="font-size: 0.75rem; font-weight: 900; text-transform: uppercase; opacity: 0.6;">Total Terbayar</p>
-                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.5;">Inc. PPN 11%</p>
+        <div style="font-size: 12px; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                <span>TOTAL {{ $order->shoe_quantity }} QTY</span>
+                <span>{{ number_format($order->total_price, 0, ',', '.') }}</span>
             </div>
-            <p style="font-size: 2.2rem; font-weight: 900;">Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
-        </div>
-
-        <!-- QR Code -->
-        <div style="text-align: center; margin-top: 3rem;">
-            <div style="width: 120px; height: 120px; background: #fff; padding: 10px; border-radius: 12px; margin: 0 auto 1.5rem;">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={{ route('orders.show', $order->id) }}" style="width: 100%;">
+            <div style="display: flex; justify-content: space-between;">
+                <span>Bayar</span>
+                <span>{{ number_format($order->total_price, 0, ',', '.') }}</span>
             </div>
-            <p style="font-size: 0.7rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 2px;">Invoice QR Code</p>
+            <div style="display: flex; justify-content: space-between;">
+                <span>Kembali</span>
+                <span>0</span>
+            </div>
         </div>
-
-        <!-- Footer -->
-        <div style="text-align: center; margin-top: 3rem;">
-            <p style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 0.5rem; font-weight: 700; color: #fff;">CleanUP Shoes - Premium Shoe Care</p>
-            <p style="font-size: 0.75rem; opacity: 0.4; line-height: 1.6;">Dokumen ini merupakan bukti pembayaran sah yang diterbitkan oleh sistem CleanUP Shoes secara otomatis.</p>
+        
+        <div style="border-bottom: 1px dashed #000; margin-bottom: 10px;"></div>
+        
+        <!-- Keterangan -->
+        <div style="font-size: 12px;">
+            <p style="margin: 0; font-weight: bold;">Keterangan</p>
+            <p style="margin: 0;">- {{ $order->shoe_name }} (Size {{ $order->shoe_size ?? '-' }})</p>
+            @if($order->notes)
+            <p style="margin: 0;">- Catatan: {{ $order->notes }}</p>
+            @endif
+        </div>
+        
+        <div style="border-bottom: 1px dashed #000; margin-top: 10px; margin-bottom: 10px;"></div>
+        <div style="text-align: center; font-size: 11px;">
+            Terima kasih<br>telah mempercayakan perawatan<br>sepatu Anda pada kami.
         </div>
     </div>
 </div>
 
 <style>
 @media print {
-    /* Hide everything on the page */
     body * {
         visibility: hidden !important;
     }
     
-    /* Show only the receipt card and its children */
-    #print-receipt-area, #print-receipt-area * {
+    .thermal-receipt, .thermal-receipt * {
         visibility: visible !important;
     }
     
-    /* Set page margins to zero and force a solid white background */
+    /* Mengatur halaman print menyesuaikan printer thermal */
+    @page {
+        margin: 0;
+        size: 80mm auto; /* Asumsi menggunakan printer 80mm, jika 58mm ubah jadi 58mm */
+    }
+    
     body {
         background: #ffffff !important;
-        color: #000000 !important;
         margin: 0 !important;
         padding: 0 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
     }
     
-    /* Position the receipt perfectly and strip all transparent dark theme backgrounds */
-    #print-receipt-area {
+    .thermal-receipt {
         position: absolute !important;
-        left: 50% !important;
-        top: 20px !important;
-        transform: translateX(-50%) !important;
+        left: 0 !important;
+        top: 0 !important;
         width: 100% !important;
-        max-width: 500px !important;
-        background: #ffffff !important;
-        border: 1px solid #cbd5e1 !important;
+        max-width: 100% !important;
         box-shadow: none !important;
-        border-radius: 16px !important;
-        padding: 2rem !important;
-        color: #000000 !important;
+        padding: 10px !important;
+        margin: 0 !important;
     }
     
-    /* Ensure all inner elements have dark high-contrast colors */
-    #print-receipt-area * {
-        color: #000000 !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        border-color: #e2e8f0 !important;
-    }
-    
-    /* Keep the total price card clean and visible with a light-gray border container */
-    .total-box-print {
-        background: #f8fafc !important;
-        border: 2px solid #0f172a !important;
-        border-radius: 16px !important;
-        padding: 1.5rem !important;
-    }
-    
-    .total-box-print * {
-        color: #0f172a !important;
-    }
-    
-    /* Hide decorative glow circle from print */
-    .glow-circle-print {
+    .no-print {
         display: none !important;
-    }
-    
-    /* Hide scroll bars */
-    html, body {
-        overflow: hidden !important;
     }
 }
 </style>

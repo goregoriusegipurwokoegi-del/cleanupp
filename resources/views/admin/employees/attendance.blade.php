@@ -13,10 +13,7 @@
 
 @section('content')
 <div class="header-actions" style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-    <div>
-        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">Rekap Absensi</h2>
-        <p style="opacity: 0.6;">Riwayat kehadiran seluruh staf berdasarkan jam kerja yang ditentukan.</p>
-    </div>
+
     <a href="{{ route('admin.employees.index') }}" style="background: rgba(255,255,255,0.05); color: #fff; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 0.5rem;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         Kembali ke Manajemen

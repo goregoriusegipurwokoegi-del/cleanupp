@@ -5,7 +5,7 @@
 @section('nav_items')
     <li class="nav-item"><a href="{{ route('employee.dashboard') }}" class="nav-link active">Dashboard</a></li>
     <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link">Tugas Saya</a></li>
-    <li class="nav-item"><a href="#" class="nav-link">Inventaris</a></li>
+    <li class="nav-item"><a href="{{ route('employee.inventories.index') }}" class="nav-link">Stok Barang</a></li>
 @endsection
 
 @section('content')
@@ -45,10 +45,15 @@
     @media (max-width: 768px) {
         .header-welcome { text-align: left !important; padding: 1.5rem !important; }
         .attendance-btns { grid-template-columns: 1fr 1fr !important; }
-        .grid-monitoring { grid-template-columns: 1fr 1fr !important; gap: 0.8rem !important; }
-        .grid-2 { grid-template-columns: 1fr 1fr !important; gap: 1rem !important; }
-        .stat-card-compact { padding: 1.2rem !important; }
-        .stat-card-compact div { font-size: 1.8rem !important; }
+        .grid-monitoring { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+        .grid-monitoring > a > div { padding: 8px 10px !important; border-radius: 10px !important; }
+        .grid-monitoring .stat-label { font-size: 0.6rem !important; margin-bottom: 2px !important; }
+        .grid-monitoring div[style*="font-size: 1.8rem"] { font-size: 1.1rem !important; }
+        
+        .grid-2 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+        .stat-card-compact { padding: 8px 10px !important; border-radius: 10px !important; }
+        .stat-card-compact .stat-label { font-size: 0.6rem !important; margin-bottom: 2px !important; }
+        .stat-card-compact div { font-size: 1.1rem !important; }
     }
 
     .premium-action-grid {

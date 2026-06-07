@@ -12,10 +12,7 @@
 @endsection
 
 @section('content')
-<div style="margin-bottom: 2rem;">
-    <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">Daftar Kasbon (Hutang)</h2>
-    <p style="opacity: 0.6;">Validasi permintaan pinjaman dari karyawan.</p>
-</div>
+
 
 @if(session('success'))
     <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; padding: 1rem; border-radius: 12px; margin-bottom: 2rem;">

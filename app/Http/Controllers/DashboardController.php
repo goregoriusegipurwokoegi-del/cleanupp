@@ -22,12 +22,12 @@ class DashboardController extends Controller
     public function admin()
     {
         // Total Order Revenue (KPI Cards) - Count all accepted/processed orders as projected/current revenue
-        $orderToday = Order::where('status', '!=', 'pending')
+        $orderToday = Order::where('payment_status', 'paid')
             ->where('status', '!=', 'cancelled')
             ->whereDate('updated_at', now())
             ->sum('total_price');
             
-        $orderMonthly = Order::where('status', '!=', 'pending')
+        $orderMonthly = Order::where('payment_status', 'paid')
             ->where('status', '!=', 'cancelled')
             ->whereMonth('updated_at', now()->month)
             ->whereYear('updated_at', now()->year)
@@ -39,9 +39,15 @@ class DashboardController extends Controller
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
             ->sum('amount');
+            
+        $orderTotal = Order::where('payment_status', 'paid')
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_price');
+        $manualTotal = \App\Models\Finance::where('type', 'income')->sum('amount');
 
         $todayRevenue = $orderToday + $manualToday;
         $monthlyRevenue = $orderMonthly + $manualMonthly;
+        $totalRevenue = $orderTotal + $manualTotal;
         $totalOrdersCount = Order::where('status', '!=', 'cancelled')->count();
         $totalCustomers = User::where('role', 'customer')->count();
         $totalEmployees = User::where('role', 'employee')->count();
@@ -54,22 +60,42 @@ class DashboardController extends Controller
             'completed' => Order::where('status', 'picked_up')->count(),
         ];
 
-        // Grafik Pendapatan (7 days) - Sum all accepted orders
-        $revenueTrends = Order::selectRaw('DATE(updated_at) as date, SUM(total_price) as total')
-            ->where('status', '!=', 'pending')
-            ->where('status', '!=', 'cancelled')
+        // Grafik Pendapatan & Transaksi dengan Filter
+        $filter = request('filter', 'week');
+        $limit = 7;
+        $dateFormat = 'DATE(updated_at)';
+        $dateCreatedFormat = 'DATE(created_at)';
+        
+        $revenueQuery = Order::where('payment_status', 'paid')->where('status', '!=', 'cancelled');
+        $transactionQuery = Order::where('status', '!=', 'cancelled');
+
+        if ($filter === 'day') {
+            $limit = 24;
+            $dateFormat = 'DATE_FORMAT(updated_at, "%H:00")';
+            $dateCreatedFormat = 'DATE_FORMAT(created_at, "%H:00")';
+            $revenueQuery->whereDate('updated_at', now());
+            $transactionQuery->whereDate('created_at', now());
+        } elseif ($filter === 'month') {
+            $limit = 30;
+        } elseif ($filter === 'year') {
+            $limit = 12;
+            $dateFormat = 'DATE_FORMAT(updated_at, "%Y-%m")';
+            $dateCreatedFormat = 'DATE_FORMAT(created_at, "%Y-%m")';
+        }
+
+        $revenueTrends = (clone $revenueQuery)
+            ->selectRaw($dateFormat . ' as date, SUM(total_price) as total')
             ->groupBy('date')
             ->orderBy('date', 'desc')
-            ->limit(7)
+            ->limit($limit)
             ->get()
             ->reverse();
 
-        // Grafik Transaksi (7 days)
-        $transactionTrends = Order::selectRaw('DATE(created_at) as date, COUNT(*) as count')
-            ->where('status', '!=', 'cancelled')
+        $transactionTrends = (clone $transactionQuery)
+            ->selectRaw($dateCreatedFormat . ' as date, COUNT(*) as count')
             ->groupBy('date')
             ->orderBy('date', 'desc')
-            ->limit(7)
+            ->limit($limit)
             ->get()
             ->reverse();
 
@@ -99,7 +125,7 @@ class DashboardController extends Controller
             ->get();
 
         return view('dashboards.admin', compact(
-            'todayRevenue', 'monthlyRevenue', 'totalOrdersCount', 'totalCustomers', 'totalEmployees',
+            'totalRevenue', 'todayRevenue', 'monthlyRevenue', 'totalOrdersCount', 'totalCustomers', 'totalEmployees',
             'statusCounts', 'revenueTrends', 'transactionTrends', 'popularServices', 'recentOrders', 'activeStaff'
         ));
     }

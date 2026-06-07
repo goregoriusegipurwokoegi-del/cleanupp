@@ -73,10 +73,7 @@
     .tab-content { animation: fadeIn 0.4s ease; max-width: 800px; }
 </style>
 
-<div style="margin-bottom: 1.5rem;">
-    <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">Pengaturan Sistem</h2>
-    <p style="opacity: 0.6;">Kelola profil toko, integrasi, dan akun Anda di sini.</p>
-</div>
+
 
 @if(session('success'))
 <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: 700;">
@@ -160,9 +157,36 @@
         <input type="hidden" name="tab" value="pembayaran">
         <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 1.5rem;">Pengaturan Pembayaran</h3>
         
-        <div class="setting-group">
-            <label class="setting-label">Nomor Rekening Bank Transfer (Manual)</label>
-            <input type="text" name="bank_account" class="setting-input" value="{{ $settings['bank_account'] ?? '' }}" placeholder="BCA 123456789 a.n CleanUP Shoes">
+        <div class="setting-group" id="bank-accounts-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <label class="setting-label" style="margin-bottom: 0;">Daftar Rekening Bank</label>
+                <button type="button" onclick="addBankAccount()" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">+ Tambah Rekening</button>
+            </div>
+            
+            <div id="bank-list">
+                @php
+                    $banks = json_decode($settings['bank_accounts'] ?? '[]', true);
+                    if (empty($banks)) {
+                        $banks = [
+                            ['bank_name' => 'BCA', 'account_number' => '0292.771.400', 'account_holder' => 'Melitha Anggraeni'],
+                            ['bank_name' => 'Mandiri', 'account_number' => '146.001.124.9393', 'account_holder' => 'Melitha Anggraeni']
+                        ];
+                    }
+                @endphp
+                
+                @foreach($banks as $index => $bank)
+                <div class="bank-row" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-start;">
+                    <div style="flex: 1;">
+                        <input type="text" name="bank_accounts[{{ $index }}][bank_name]" class="setting-input" value="{{ $bank['bank_name'] }}" placeholder="Nama Bank (mis: BCA)" required style="margin-bottom: 8px; padding: 0.8rem 1rem;">
+                        <input type="text" name="bank_accounts[{{ $index }}][account_number]" class="setting-input" value="{{ $bank['account_number'] }}" placeholder="Nomor Rekening" required style="margin-bottom: 8px; padding: 0.8rem 1rem;">
+                        <input type="text" name="bank_accounts[{{ $index }}][account_holder]" class="setting-input" value="{{ $bank['account_holder'] }}" placeholder="Atas Nama" required style="padding: 0.8rem 1rem;">
+                    </div>
+                    <button type="button" onclick="this.closest('.bank-row').remove()" style="background: rgba(244, 63, 94, 0.1); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.2); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>
+                @endforeach
+            </div>
         </div>
         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 2rem 0;">
 
@@ -170,6 +194,27 @@
             <button type="submit" class="save-btn">Simpan Perubahan</button>
         </div>
     </form>
+    <script>
+    let bankCount = {{ isset($banks) ? count($banks) : 2 }};
+    function addBankAccount() {
+        const container = document.getElementById('bank-list');
+        const row = document.createElement('div');
+        row.className = 'bank-row';
+        row.style.cssText = 'display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-start;';
+        row.innerHTML = `
+            <div style="flex: 1;">
+                <input type="text" name="bank_accounts[${bankCount}][bank_name]" class="setting-input" placeholder="Nama Bank (mis: BCA)" required style="margin-bottom: 8px; padding: 0.8rem 1rem;">
+                <input type="text" name="bank_accounts[${bankCount}][account_number]" class="setting-input" placeholder="Nomor Rekening" required style="margin-bottom: 8px; padding: 0.8rem 1rem;">
+                <input type="text" name="bank_accounts[${bankCount}][account_holder]" class="setting-input" placeholder="Atas Nama" required style="padding: 0.8rem 1rem;">
+            </div>
+            <button type="button" onclick="this.closest('.bank-row').remove()" style="background: rgba(244, 63, 94, 0.1); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.2); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+        `;
+        container.appendChild(row);
+        bankCount++;
+    }
+    </script>
     @endif
 
     {{-- TAB: ANTAR JEMPUT --}}

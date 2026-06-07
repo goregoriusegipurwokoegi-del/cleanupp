@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property int $id
+ * @property string|null $group_id
  * @property int $user_id
  * @property int $service_id
  * @property int|null $employee_id
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $payment_status
  * @property string|null $status_pembayaran
  * @property string|null $snap_token
+ * @property string|null $payment_proof
  * @property string|null $complaint
  * @property string|null $handling_notes
  * @property string|null $photo_before
@@ -46,8 +48,8 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
-        'user_id', 'service_id', 'additional_services', 'processing_speed', 'order_number', 'queue_number', 'status', 'total_price', 'delivery_fee',
-        'payment_method', 'payment_status', 'status_pembayaran', 'snap_token', 'complaint', 'handling_notes',
+        'group_id', 'user_id', 'service_id', 'additional_services', 'processing_speed', 'order_number', 'queue_number', 'status', 'total_price', 'delivery_fee',
+        'payment_method', 'payment_status', 'status_pembayaran', 'snap_token', 'payment_proof', 'complaint', 'handling_notes',
         'photo_before', 'photo_before_2', 'photo_after', 'reception_date', 'completion_date',
         'rating', 'review', 'shoe_name', 'shoe_size', 'employee_id', 'storage_location',
         'is_delivery', 'delivery_address', 'shoe_quantity', 'latitude', 'longitude'

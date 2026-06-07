@@ -12,10 +12,7 @@
 @endsection
 
 @section('content')
-<div style="margin-bottom: 2rem;">
-    <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">Data Absensi</h2>
-    <p style="opacity: 0.6;">Pantau kehadiran staf secara real-time.</p>
-</div>
+
 
 <div class="glass-card" style="border-radius: 24px; overflow: hidden;">
     <table style="width: 100%; border-collapse: collapse; text-align: left;">

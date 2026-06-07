@@ -7,8 +7,6 @@
     <!-- Header & Stats -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
         <div class="lg:col-span-8">
-            <h1 class="text-2xl font-bold text-white mb-2">Kepuasan Pelanggan</h1>
-            <p class="text-gray-400 text-sm">Evaluasi kualitas layanan dan performa karyawan berdasarkan feedback pelanggan.</p>
             
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
                 <div class="glass-card p-4 text-center">
