@@ -88,7 +88,7 @@ class AppNotification extends Notification
                     ->subject($this->details['title'] ?? 'Notifikasi CleanUP Shoes')
                     ->view('emails.notification', [
                         'title' => $this->details['title'] ?? 'Notifikasi CleanUP Shoes',
-                        'message' => $this->details['message'],
+                        'body' => $this->details['message'],
                         'url' => url($this->details['url'] ?? '/dashboard'),
                         'notifiable' => $notifiable
                     ]);

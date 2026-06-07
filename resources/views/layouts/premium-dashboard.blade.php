@@ -201,7 +201,7 @@
                 margin-left: 0;
                 width: 100%;
                 padding: 0.9rem;
-                padding-bottom: 90px !important;
+                padding-bottom: 120px !important;
             }
             .menu-toggle {
                 display: block;
@@ -241,7 +241,7 @@
         @media (max-width: 480px) {
             .main-content {
                 padding: 0.7rem;
-                padding-bottom: 90px !important;
+                padding-bottom: 120px !important;
             }
             .glass-card {
                 padding: 1rem !important;
@@ -382,6 +382,26 @@
             }
         }
     </style>
+    @if(Auth::user()->role != 'customer')
+    <style>
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 0 !important;
+            }
+            .main-content {
+                padding-bottom: 0 !important;
+            }
+            .mobile-bottom-nav {
+                display: none !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .main-content {
+                padding-bottom: 0 !important;
+            }
+        }
+    </style>
+    @endif
     @stack('styles')
 </head>
 <body>
@@ -421,9 +441,21 @@
                 </style>
 
                 <li class="nav-item">
-                    <a href="{{ route('employee.reports.index') }}" class="nav-link {{ request()->routeIs('employee.reports.*') ? 'active' : '' }}">
-                        Laporan
+                    <a href="#" class="nav-link {{ request()->routeIs('employee.reports.*') ? 'active' : '' }}" onclick="toggleSubmenu(event, this)">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span>Laporan</span>
+                            <svg class="submenu-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.3s; transform: {{ request()->routeIs('employee.reports.*') ? 'rotate(180deg)' : 'rotate(0)' }}"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
                     </a>
+                    <ul class="submenu" style="display: {{ request()->routeIs('employee.reports.*') ? 'block' : 'none' }}; list-style: none; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem;">
+                        <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#ringkasan" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Ringkasan Kinerja</a></li>
+                        <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#tugas" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Tugas Saya</a></li>
+                        <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#riwayat" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Riwayat Pekerjaan</a></li>
+                        <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#absensi" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Rekap Absensi</a></li>
+                        <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#rating" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Rating Pelanggan</a></li>
+                        <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#statistik" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Statistik Kerja</a></li>
+                        <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#antar_jemput" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Antar Jemput</a></li>
+                    </ul>
                 </li>
             @elseif(Auth::user()->role == 'admin')
                 <li class="nav-item">
@@ -445,8 +477,13 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                        Laporan
+                    <a href="#" class="nav-link">
+                        Antar Jemput
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        Pelanggan
                     </a>
                 </li>
                 <li class="nav-item">
@@ -455,8 +492,18 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('admin.inventories.index') }}" class="nav-link {{ request()->routeIs('admin.inventories.*') ? 'active' : '' }}">
+                        Stok Barang
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('admin.finances.index') }}" class="nav-link {{ request()->routeIs('admin.finances.*') ? 'active' : '' }}">
                         Keuangan
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                        Laporan
                     </a>
                 </li>
                 <li class="nav-item">
@@ -548,6 +595,12 @@
                         <a href="{{ route('notifications.index') }}" style="display: block; padding: 1rem; text-align: center; font-size: 0.85rem; color: var(--text); text-decoration: none; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='rgba(255,255,255,0.02)'">Lihat Semua</a>
                     </div>
                 </div>
+
+                @if(Auth::user()->role == 'customer')
+                <a href="{{ route('addresses.index') }}" title="Pengaturan Alamat" style="padding: 0.5rem; border-radius: 12px; transition: 0.3s; color: {{ request()->routeIs('addresses.*') ? 'var(--primary)' : 'var(--text)' }}; background: {{ request()->routeIs('addresses.*') ? 'rgba(255,255,255,0.05)' : 'transparent' }}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.color='var(--primary)'" onmouseout="this.style.background='{{ request()->routeIs('addresses.*') ? 'rgba(255,255,255,0.05)' : 'transparent' }}'; this.style.color='{{ request()->routeIs('addresses.*') ? 'var(--primary)' : 'var(--text)' }}'">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </a>
+                @endif
 
                 <a href="{{ route('profile.edit') }}" class="user-profile" style="text-decoration: none; color: inherit; transition: 0.3s; padding: 0.5rem 0.8rem; border-radius: 16px;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
                     <div class="user-info" style="text-align: right;">
@@ -645,122 +698,121 @@
             fetchNotifications();
         }
 
-        // Poll for notifications every 3 seconds for near-realtime updates
-        setInterval(fetchNotifications, 3000);
-        fetchNotifications(); // Initial fetch
+        // Smart adaptive notification polling
+        // - 30s default (vs 3s before = 10x less server load)
+        // - 15s when dropdown is open for faster updates
+        // - Pauses when tab is hidden (saves resources)
+        // - Exponential backoff on errors (prevents hammering downed server)
+        const POLL_INTERVAL_NORMAL = 30000;   // 30 detik
+        const POLL_INTERVAL_ACTIVE = 15000;   // 15 detik saat dropdown terbuka
+        const POLL_MAX_BACKOFF = 120000;       // Max 2 menit saat error
+        let pollTimer = null;
+        let pollBackoff = 0;
+        let lastUnreadCount = -1;
+
+        function getPollingInterval() {
+            if (pollBackoff > 0) {
+                return Math.min(POLL_INTERVAL_NORMAL * Math.pow(2, pollBackoff), POLL_MAX_BACKOFF);
+            }
+            return notificationDropdown.style.display === 'block' 
+                ? POLL_INTERVAL_ACTIVE 
+                : POLL_INTERVAL_NORMAL;
+        }
+
+        function scheduleNextPoll() {
+            if (pollTimer) clearTimeout(pollTimer);
+            pollTimer = setTimeout(async () => {
+                await fetchNotifications();
+                scheduleNextPoll();
+            }, getPollingInterval());
+        }
+
+        // Wrap original fetch to support backoff & badge animation
+        const _originalFetch = fetchNotifications;
+        fetchNotifications = async function() {
+            try {
+                await _originalFetch();
+                pollBackoff = 0; // Reset backoff on success
+            } catch (e) {
+                pollBackoff = Math.min(pollBackoff + 1, 5);
+                console.warn(`Notification poll error (backoff level ${pollBackoff}):`, e);
+            }
+        };
+
+        // Pause polling when tab is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (pollTimer) clearTimeout(pollTimer);
+            } else {
+                fetchNotifications();
+                scheduleNextPoll();
+            }
+        });
+
+        // Restart polling rhythm when dropdown toggles
+        notificationBtn.addEventListener('click', () => scheduleNextPoll());
+
+        // Initial fetch & start polling
+        fetchNotifications();
+        scheduleNextPoll();
     </script>
 
     <!-- Mobile Sticky Bottom Navigation (Android Native style) -->
+    @if(Auth::user()->role == 'customer')
     <div class="mobile-bottom-nav">
-        @if(Auth::user()->role == 'employee')
-            <a href="{{ route('employee.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('employee.dashboard') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                </div>
-                Utama
-            </a>
-            <a href="{{ route('employee.orders.index') }}" class="mobile-nav-item {{ request()->routeIs('employee.orders.*') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
-                    @php
-                        $empPendingCount = \App\Models\Order::where('status', 'pending')->count();
-                    @endphp
-                    @if($empPendingCount > 0)
-                        <span class="mobile-nav-badge">{{ $empPendingCount }}</span>
-                    @endif
-                </div>
-                Orderan
-            </a>
-
-            <a href="{{ route('employee.reports.index') }}" class="mobile-nav-item {{ request()->routeIs('employee.reports.*') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                </div>
-                Laporan
-            </a>
-            <a href="{{ route('profile.edit') }}" class="mobile-nav-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                </div>
-                Profil
-            </a>
-        @elseif(Auth::user()->role == 'admin')
-            <a href="{{ route('admin.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                </div>
-                Utama
-            </a>
-            <a href="{{ route('admin.orders.index') }}" class="mobile-nav-item {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
-                    @php
-                        $adminPendingCount = \App\Models\Order::where('status', 'pending')->count();
-                    @endphp
-                    @if($adminPendingCount > 0)
-                        <span class="mobile-nav-badge">{{ $adminPendingCount }}</span>
-                    @endif
-                </div>
-                Orderan
-            </a>
-            <a href="{{ route('admin.finances.index') }}" class="mobile-nav-item {{ request()->routeIs('admin.finances.*') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                Keuangan
-            </a>
-            <a href="{{ route('admin.employees.index') }}" class="mobile-nav-item {{ request()->routeIs('admin.employees.*') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                </div>
-                Karyawan
-            </a>
-            <a href="{{ route('profile.edit') }}" class="mobile-nav-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                </div>
-                Profil
-            </a>
-        @else
-            <a href="{{ route('customer.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('customer.dashboard') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                </div>
-                Utama
-            </a>
-            <a href="{{ route('services.index') }}" class="mobile-nav-item {{ request()->routeIs('services.index') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                </div>
-                Layanan
-            </a>
-            <a href="{{ route('orders.my-orders') }}" class="mobile-nav-item {{ request()->routeIs('orders.my-orders') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
-                    @php
-                        $custActiveCount = \App\Models\Order::where('user_id', Auth::id())->whereNotIn('status', ['completed', 'cancelled'])->count();
-                    @endphp
-                    @if($custActiveCount > 0)
-                        <span class="mobile-nav-badge">{{ $custActiveCount }}</span>
-                    @endif
-                </div>
-                Pesanan
-            </a>
-            <a href="{{ route('orders.history') }}" class="mobile-nav-item {{ request()->routeIs('orders.history') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-                Riwayat
-            </a>
-            <a href="{{ route('profile.edit') }}" class="mobile-nav-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
-                <div class="mobile-nav-icon-wrapper">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                </div>
-                Profil
-            </a>
-        @endif
+        <a href="{{ route('customer.dashboard') }}" class="mobile-nav-item {{ request()->routeIs('customer.dashboard') ? 'active' : '' }}">
+            <div class="mobile-nav-icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            Utama
+        </a>
+        <a href="{{ route('services.index') }}" class="mobile-nav-item {{ request()->routeIs('services.index') ? 'active' : '' }}">
+            <div class="mobile-nav-icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            </div>
+            Layanan
+        </a>
+        <a href="{{ route('orders.my-orders') }}" class="mobile-nav-item {{ request()->routeIs('orders.my-orders') ? 'active' : '' }}">
+            <div class="mobile-nav-icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
+                @php
+                    $custActiveCount = \App\Models\Order::where('user_id', Auth::id())->whereNotIn('status', ['completed', 'cancelled'])->count();
+                @endphp
+                @if($custActiveCount > 0)
+                    <span class="mobile-nav-badge">{{ $custActiveCount }}</span>
+                @endif
+            </div>
+            Pesanan
+        </a>
+        <a href="{{ route('orders.history') }}" class="mobile-nav-item {{ request()->routeIs('orders.history') ? 'active' : '' }}">
+            <div class="mobile-nav-icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            Riwayat
+        </a>
+        <a href="{{ route('profile.edit') }}" class="mobile-nav-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+            <div class="mobile-nav-icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            Profil
+        </a>
     </div>
+    @endif
 
+    <script>
+        function toggleSubmenu(e, el) {
+            e.preventDefault();
+            const submenu = el.nextElementSibling;
+            const icon = el.querySelector('.submenu-icon');
+            if (submenu.style.display === 'none' || !submenu.style.display) {
+                submenu.style.display = 'block';
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                submenu.style.display = 'none';
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+    </script>
     @stack('scripts')
 </body>
 </html>

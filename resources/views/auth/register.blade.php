@@ -112,6 +112,42 @@
 
         @keyframes slideIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
         .step-content { animation: slideIn 0.4s ease-out; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #374151;
+        }
+        .divider:not(:empty)::before { margin-right: 1rem; }
+        .divider:not(:empty)::after { margin-left: 1rem; }
+
+        .btn-google {
+            width: 100%;
+            padding: 0.9rem;
+            background: transparent;
+            border: 1px solid #374151;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .btn-google:hover { background: rgba(255, 255, 255, 0.05); }
+        .btn-google img { width: 18px; height: 18px; }
     </style>
 </head>
 <body>
@@ -136,7 +172,7 @@
                 <div id="step1" class="step-content">
                     <div class="form-group">
                         <label>Nama Lengkap</label>
-                        <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus placeholder="Masukkan nama Anda">
+                        <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus placeholder="Masukkan nama Anda" oninput="this.value = this.value.replace(/[0-9]/g, '');">
                     </div>
                     <div class="form-group">
                         <label>No. HP (WhatsApp)</label>
@@ -182,6 +218,13 @@
                     </div>
                 </div>
             </form>
+
+            <div class="divider">atau</div>
+
+            <a href="{{ url('auth/google') }}" class="btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Lanjutkan dengan Google
+            </a>
 
             <div class="register-footer">
                 Sudah punya akun? <a href="{{ route('login') }}">Masuk</a>

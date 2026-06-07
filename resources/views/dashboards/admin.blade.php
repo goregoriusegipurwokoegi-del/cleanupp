@@ -70,6 +70,31 @@
     .mobile-cards { display: none; }
     .desktop-table { display: block; }
     
+    /* Layout Grids */
+    .main-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+    }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    
+    @media (max-width: 1024px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .main-grid {
+            grid-template-columns: 1.5fr 1fr;
+            gap: 15px;
+        }
+    }
+    
     @media (max-width: 768px) {
         .header-section { display: none !important; }
         .stat-card {
@@ -91,6 +116,12 @@
             border-radius: 20px !important;
         }
     }
+    @media (max-width: 480px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+    }
 </style>
 
 <!-- Top Row: Welcome & Quick Actions (Hidden in Mobile) -->
@@ -105,7 +136,7 @@
 </div>
 
 <!-- KPI Cards -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 25px;">
+<div class="kpi-grid">
     <div class="stat-card" style="border-left: 4px solid var(--success); background: rgba(16, 185, 129, 0.05);">
         <p style="color: var(--success); font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Pendapatan</p>
         <h3 style="font-size: 1.3rem; font-weight: 900; color: #fff;">Rp{{ number_format($todayRevenue, 0, ',', '.') }}</h3>
@@ -124,7 +155,7 @@
     </div>
 </div>
 
-<div class="main-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+<div class="main-grid">
     <!-- LEFT COLUMN -->
     <div>
         <!-- Revenue Chart -->
@@ -278,7 +309,5 @@
         }
     });
 
-    // Auto-refresh stats every 30 seconds
-    setTimeout(() => { window.location.reload(); }, 30000);
 </script>
 @endsection

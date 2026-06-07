@@ -14,7 +14,7 @@
     <!-- Notification Message -->
     <tr>
         <td style="padding-bottom: 35px; font-size: 15px; color: #cbd5e1; line-height: 1.6;">
-            {!! nl2br(e($message)) !!}
+            {!! nl2br(e($body ?? '')) !!}
         </td>
     </tr>
     

@@ -240,8 +240,4 @@
     </div>
 </div>
 
-    <script>
-        // Auto refresh every 5 seconds for instant dashboard updates
-        setTimeout(() => { window.location.reload(); }, 5000);
-    </script>
 @endsection

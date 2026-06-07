@@ -5,9 +5,6 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-<script type="text/javascript"
-        src="https://app.{{ config('services.midtrans.is_production') ? '' : 'sandbox.' }}midtrans.com/snap/snap.js"
-        data-client-key="{{ $midtrans_client_key }}" defer></script>
 @endpush
 
 @section('page_title', 'Invoice #' . $order->order_number)
@@ -145,6 +142,17 @@
             <p style="font-size: 0.9rem; font-weight: 800; color: var(--primary);">CleanUP Shoes</p>
         </div>
     </div>
+
+    @if(session('success'))
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; padding: 1rem; border-radius: 16px; margin-bottom: 20px; font-size: 13px; font-weight: 700;">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 1rem; border-radius: 16px; margin-bottom: 20px; font-size: 13px; font-weight: 700;">
+            {{ session('error') }}
+        </div>
+    @endif
 
     <!-- The Receipt -->
     <div class="receipt-card">
@@ -355,22 +363,28 @@
                         </div>
                     @endif
 
-                    @if($order->snap_token)
-                        <button id="pay-button" style="width: 100%; background: var(--primary); color: #000; border: none; height: 56px; border-radius: 18px; font-weight: 900; font-size: 1rem; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(249, 115, 22, 0.2); text-transform: uppercase; margin-bottom: 12px;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Bayar Sekarang</button>
-                    @endif
+
                 @else
                     <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1rem; border-radius: 20px; text-align: center; color: #10b981; font-weight: 800; font-size: 0.9rem; margin-bottom: 20px;">
                         PEMBAYARAN DITERIMA • LUNAS
                     </div>
                 @endif
 
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    @if($order->status == 'pending')
+                        <form action="{{ route('orders.cancel', $order->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')" style="flex: 1; min-width: 150px; margin: 0; display: inline;">
+                            @csrf
+                            <button type="submit" style="width: 100%; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); text-align: center; height: 50px; border-radius: 16px; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
+                                BATALKAN PESANAN
+                            </button>
+                        </form>
+                    @endif
                     @if($order->payment_status == 'paid')
-                        <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="flex: 1; background: #fff; color: #000; text-decoration: none; text-align: center; height: 50px; border-radius: 16px; font-weight: 900; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="flex: 1; min-width: 150px; background: #fff; color: #000; text-decoration: none; text-align: center; height: 50px; border-radius: 16px; font-weight: 900; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
                             CETAK STRUK
                         </a>
                     @endif
-                    <a href="https://wa.me/6281234567890?text=Halo Admin CleanUP Shoes, saya mau tanya status pesanan aktif saya #{{ $order->order_number }}" target="_blank" style="flex: 1; background: transparent; color: #9ca3af; text-decoration: none; text-align: center; height: 50px; border-radius: 16px; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <a href="https://wa.me/6281234567890?text=Halo Admin CleanUP Shoes, saya mau tanya status pesanan aktif saya #{{ $order->order_number }}" target="_blank" style="flex: 1; min-width: 150px; background: transparent; color: #9ca3af; text-decoration: none; text-align: center; height: 50px; border-radius: 16px; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(255,255,255,0.05);">
                         TANYA ADMIN
                     </a>
                 </div>
@@ -414,26 +428,6 @@
         });
     }
 
-    @if($order->snap_token && $order->payment_status == 'unpaid')
-    const payButton = document.getElementById('pay-button');
-    if (payButton) {
-        payButton.addEventListener('click', function () {
-            window.snap.pay('{{ $order->snap_token }}', {
-                onSuccess: function (result) { window.location.reload(); },
-                onPending: function (result) { window.location.reload(); },
-                onError: function (result) { alert("Pembayaran gagal!"); },
-                onClose: function () { console.log('Snap closed'); }
-            });
-        });
 
-        @if(session('trigger_payment'))
-            window.addEventListener('DOMContentLoaded', (event) => {
-                setTimeout(() => {
-                    payButton.click();
-                }, 800);
-            });
-        @endif
-    }
-    @endif
 </script>
 @endsection

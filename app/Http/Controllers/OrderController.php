@@ -5,19 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\WhatsAppService;
-use App\Services\MidtransService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
     protected $whatsAppService;
-    protected $midtransService;
 
-    public function __construct(WhatsAppService $whatsAppService, MidtransService $midtransService)
+    public function __construct(WhatsAppService $whatsAppService)
     {
         $this->whatsAppService = $whatsAppService;
-        $this->midtransService = $midtransService;
     }
     /**
      * Display a listing of the customer's active orders.
@@ -92,11 +89,22 @@ class OrderController extends Controller
         $bank_account = \App\Models\Setting::where('key', 'bank_account')->first()?->value;
         $bank_holder = \App\Models\Setting::where('key', 'bank_holder')->first()?->value;
 
-        $storeLat = env('STORE_LATITUDE', '-0.0513462');
-        $storeLng = env('STORE_LONGITUDE', '109.3210380');
-        $deliveryFeeAmount = env('DELIVERY_FEE_AMOUNT', 15000);
+        $storeLat = \App\Models\Setting::where('key', 'store_latitude')->first()?->value ?? '-0.0513462';
+        $storeLng = \App\Models\Setting::where('key', 'store_longitude')->first()?->value ?? '109.3210380';
+        $deliveryThresholdKm = \App\Models\Setting::where('key', 'delivery_threshold_km')->first()?->value ?? 5;
+        $deliveryFeeAboveThreshold = \App\Models\Setting::where('key', 'delivery_fee_above_threshold')->first()?->value ?? 25000;
 
-        return view('orders.create', compact('services', 'selectedService', 'bank_name', 'bank_account', 'bank_holder', 'storeLat', 'storeLng', 'deliveryFeeAmount'));
+        $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
+        $isProfileComplete = $mainAddress && 
+                             !empty($mainAddress->recipient_name) && 
+                             !empty($mainAddress->phone) && 
+                             !empty($mainAddress->full_address) && 
+                             !empty($mainAddress->kecamatan) && 
+                             !empty($mainAddress->postal_code) &&
+                             !empty($mainAddress->latitude) &&
+                             !empty($mainAddress->longitude);
+
+        return view('orders.create', compact('services', 'selectedService', 'bank_name', 'bank_account', 'bank_holder', 'storeLat', 'storeLng', 'deliveryThresholdKm', 'deliveryFeeAboveThreshold', 'mainAddress', 'isProfileComplete'));
     }
 
     /**
@@ -109,7 +117,7 @@ class OrderController extends Controller
             'additional_services' => 'nullable|array',
             'additional_services.*' => 'exists:services,id',
             'processing_speed' => 'required|in:regular,express',
-            'payment_method' => 'required|in:cash,transfer,qris,midtrans',
+            'payment_method' => 'required|in:cash,qris',
             'is_delivery' => 'required|boolean',
             'delivery_address' => 'required_if:is_delivery,1|nullable|string',
             'shoe_quantity' => 'required_if:is_delivery,1|integer|min:1',
@@ -121,20 +129,21 @@ class OrderController extends Controller
             'shoe_photo_2' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // Jika antar jemput, validasi kelengkapan profil
+        // Jika antar jemput, validasi kelengkapan profil (dari alamat utama)
         if ($request->is_delivery) {
-            $user = Auth::user();
-            $isProfileComplete = !empty($user->name) &&
-                                 !empty($user->phone) &&
-                                 !empty($user->address) &&
-                                 !empty($user->kecamatan) &&
-                                 !empty($user->postal_code) &&
-                                 !empty($user->latitude) &&
-                                 !empty($user->longitude);
+            $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
+            $isProfileComplete = $mainAddress &&
+                                 !empty($mainAddress->recipient_name) &&
+                                 !empty($mainAddress->phone) &&
+                                 !empty($mainAddress->full_address) &&
+                                 !empty($mainAddress->kecamatan) &&
+                                 !empty($mainAddress->postal_code) &&
+                                 !empty($mainAddress->latitude) &&
+                                 !empty($mainAddress->longitude);
 
             if (!$isProfileComplete) {
-                return redirect()->route('profile.edit')
-                    ->with('warning', 'Profil pengiriman Anda belum lengkap. Silakan lengkapi Nama, No. WhatsApp, Alamat, Kecamatan, Kode Pos, dan Pin Lokasi terlebih dahulu.');
+                return redirect()->route('addresses.index')
+                    ->with('warning', 'Profil pengiriman Anda belum lengkap. Silakan tambah dan lengkapi Alamat Utama Anda terlebih dahulu (Nama, No. WhatsApp, Alamat, Kecamatan, Kode Pos, dan Pin Lokasi).');
             }
         }
 
@@ -164,19 +173,25 @@ class OrderController extends Controller
             $photoPath2 = $request->file('shoe_photo_2')->store('orders/photos', 'public');
         }
 
-        // Calculate Delivery Fee based on distance (pakai koordinat dari profil user)
+        // Calculate Delivery Fee based on distance (pakai koordinat dari alamat utama)
         $deliveryFee = 0;
-        $userLat = Auth::user()->latitude;
-        $userLng = Auth::user()->longitude;
-        if ($request->is_delivery && $userLat && $userLng) {
-            $storeLat = env('STORE_LATITUDE', '-0.0513462');
-            $storeLng = env('STORE_LONGITUDE', '109.3210380');
+        
+        if ($request->is_delivery) {
+            $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
+            $userLat = $mainAddress ? $mainAddress->latitude : null;
+            $userLng = $mainAddress ? $mainAddress->longitude : null;
+            
+            if ($userLat && $userLng) {
+            $storeLat = \App\Models\Setting::where('key', 'store_latitude')->first()?->value ?? '-0.0513462';
+            $storeLng = \App\Models\Setting::where('key', 'store_longitude')->first()?->value ?? '109.3210380';
+            $deliveryThresholdKm = \App\Models\Setting::where('key', 'delivery_threshold_km')->first()?->value ?? 5;
+            $deliveryFeeAboveThreshold = \App\Models\Setting::where('key', 'delivery_fee_above_threshold')->first()?->value ?? 25000;
             
             $earthRadius = 6371; // Radius of the earth in km
-            $latFrom = deg2rad($storeLat);
-            $lonFrom = deg2rad($storeLng);
-            $latTo = deg2rad($userLat);
-            $lonTo = deg2rad($userLng);
+            $latFrom = deg2rad((float) str_replace(',', '.', $storeLat));
+            $lonFrom = deg2rad((float) str_replace(',', '.', $storeLng));
+            $latTo = deg2rad((float) str_replace(',', '.', $userLat));
+            $lonTo = deg2rad((float) str_replace(',', '.', $userLng));
             
             $latDelta = $latTo - $latFrom;
             $lonDelta = $lonTo - $lonFrom;
@@ -186,10 +201,11 @@ class OrderController extends Controller
             
             $distance = $angle * $earthRadius;
             
-            if ($distance > 5) {
-                $deliveryFee = env('DELIVERY_FEE_AMOUNT', 15000);
+            if ($distance > $deliveryThresholdKm) {
+                $deliveryFee = $deliveryFeeAboveThreshold;
                 $totalPrice += $deliveryFee;
             }
+        }
         }
 
         // Generate Order Number & Queue Number
@@ -198,15 +214,18 @@ class OrderController extends Controller
         $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
         $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
-        // Jika antar jemput, gunakan alamat & koordinat dari profil user
+        // Jika antar jemput, gunakan alamat & koordinat dari alamat utama
         $deliveryAddress = null;
         $orderLat = null;
         $orderLng = null;
         if ($request->is_delivery) {
-            $u = Auth::user();
-            $deliveryAddress = $u->address . ', Kec. ' . $u->kecamatan . ', ' . $u->postal_code;
-            $orderLat = $u->latitude;
-            $orderLng = $u->longitude;
+            $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
+            if ($mainAddress) {
+                $deliveryAddress = $mainAddress->full_address . ', ' . $mainAddress->village . ', ' . $mainAddress->kecamatan . ', ' . $mainAddress->city . ', ' . $mainAddress->province . ' ' . $mainAddress->postal_code . ' (Penerima: ' . $mainAddress->recipient_name . ' - ' . $mainAddress->phone . ')';
+                if ($mainAddress->address_landmark) $deliveryAddress .= ' [Patokan: ' . $mainAddress->address_landmark . ']';
+                $orderLat = $mainAddress->latitude;
+                $orderLng = $mainAddress->longitude;
+            }
         }
 
         Order::create([
@@ -235,17 +254,6 @@ class OrderController extends Controller
 
         $order = Order::latest()->first(); // Get the created order
 
-        // Generate Snap token if Midtrans is selected
-        if ($order->payment_method == 'midtrans') {
-            try {
-                $snapToken = $this->midtransService->getSnapToken($order);
-                $order->snap_token = $snapToken;
-                $order->save();
-            } catch (\Exception $e) {
-                // Keep order but log error if Midtrans is unreachable
-                logger()->error('Failed to generate Midtrans Snap Token: ' . $e->getMessage());
-            }
-        }
 
         // Send WhatsApp Notification to Customer
         if ($order->user->phone) {
@@ -255,17 +263,18 @@ class OrderController extends Controller
             } elseif ($order->payment_method == 'qris') {
                 $paymentInstruction = "Metode Pembayaran: QRIS\n" .
                                      "Silakan scan kode QRIS di halaman detail pesanan untuk melakukan pembayaran.\n";
-            } elseif ($order->payment_method == 'midtrans') {
-                $paymentInstruction = "Metode Pembayaran: ONLINE PAYMENT (Midtrans)\n" .
-                                     "Silakan selesaikan pembayaran online Anda di halaman detail pesanan.\n";
             } else {
                 $paymentInstruction = "Metode Pembayaran: TRANSFER BANK\n" .
                                      "Silakan transfer ke rekening outlet dan konfirmasi ke admin.\n";
             }
 
+            $storeLat = env('STORE_LATITUDE', '-0.0513462');
+            $storeLng = env('STORE_LONGITUDE', '109.3210380');
+            $mapLink = "https://maps.google.com/?q={$storeLat},{$storeLng}";
+
             $deliveryInstruction = $order->is_delivery 
                                  ? "\nKami akan segera mengambil sepatu ke alamat Anda:\n" . $order->delivery_address . "\n"
-                                 : "\nSilakan antar sepatu Anda ke outlet kami.\n";
+                                 : "\nSilakan antar sepatu Anda ke outlet kami.\nLokasi Toko: " . $mapLink . "\n";
 
             $message = "Halo *" . $order->user->name . "*, pesanan CleanUP Shoes Anda telah diterima! 👟✨\n\n" .
                        "No. Pesanan: #" . $order->order_number . "\n" .
@@ -295,11 +304,6 @@ class OrderController extends Controller
             $user->notify(new \App\Notifications\AppNotification($notificationData));
         }
 
-        if ($order->payment_method == 'midtrans') {
-            return redirect()->route('orders.show', $order->id)
-                ->with('success', 'Pesanan Anda berhasil dibuat! Silakan selesaikan pembayaran Anda.')
-                ->with('trigger_payment', true);
-        }
 
         return redirect()->route('orders.my-orders')->with('success', 'Pesanan Anda berhasil dibuat! Silakan bawa sepatu Anda ke outlet kami.');
     }
@@ -337,9 +341,7 @@ class OrderController extends Controller
         $bank_name = \App\Models\Setting::where('key', 'bank_name')->first()?->value;
         $bank_account = \App\Models\Setting::where('key', 'bank_account')->first()?->value;
         $bank_holder = \App\Models\Setting::where('key', 'bank_holder')->first()?->value;
-        $midtrans_client_key = config('services.midtrans.client_key');
-
-        return view('orders.show', compact('order', 'bank_name', 'bank_account', 'bank_holder', 'midtrans_client_key'));
+        return view('orders.show', compact('order', 'bank_name', 'bank_account', 'bank_holder'));
     }
 
     /**
@@ -382,9 +384,157 @@ class OrderController extends Controller
         }
 
         $orders = $query->get();
+        $customers = User::where('role', 'customer')->get();
+        $services = \App\Models\Service::all();
             
-        return view('admin.orders.index', compact('orders'));
+        return view('admin.orders.index', compact('orders', 'customers', 'services'));
     }
+
+    /**
+     * Store a new order created by admin.
+     */
+    public function adminStore(Request $request)
+    {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'service_id' => 'required|exists:services,id',
+            'processing_speed' => 'required|in:regular,express',
+            'shoe_name' => 'required|string|max:255',
+            'shoe_size' => 'required|string|max:10',
+            'shoe_quantity' => 'required|integer|min:1',
+            'payment_method' => 'required|in:cash,qris',
+            'payment_status' => 'required|in:paid,unpaid',
+            'status' => 'required|string',
+            'shoe_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $mainService = \App\Models\Service::findOrFail($request->service_id);
+        $shoeQuantity = $request->input('shoe_quantity', 1);
+        $totalPrice = $mainService->price * $shoeQuantity;
+
+        if ($request->processing_speed === 'express') {
+            $totalPrice += (25000 * $shoeQuantity);
+        }
+
+        $photoPath = null;
+        if ($request->hasFile('shoe_photo')) {
+            $photoPath = $request->file('shoe_photo')->store('orders/photos', 'public');
+        }
+
+        $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(8));
+        $lastOrder = Order::orderBy('id', 'desc')->first();
+        $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
+        $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+        $customerName = Auth::user()->name;
+        $customerPhone = Auth::user()->phone;
+        $customerAddress = Auth::user()->address;
+        
+        if ($request->is_delivery) {
+            $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
+            if ($mainAddress) {
+                $customerName = $mainAddress->recipient_name;
+                $customerPhone = $mainAddress->phone;
+                $customerAddress = $mainAddress->full_address . ', ' . $mainAddress->village . ', ' . $mainAddress->kecamatan . ', ' . $mainAddress->city;
+            }
+        }
+
+        Order::create([
+            'order_number' => $orderNumber,
+            'user_id' => $request->user_id,
+            'service_id' => $mainService->id,
+            'customer_name' => $customerName,
+            'customer_phone' => $customerPhone,
+            'customer_address' => $customerAddress,
+            'processing_speed' => $request->processing_speed,
+            'queue_number' => $queueNumber,
+            'status' => $request->status,
+            'total_price' => $totalPrice,
+            'payment_method' => $request->payment_method,
+            'payment_status' => $request->payment_status,
+            'reception_date' => now(),
+            'shoe_name' => $request->shoe_name,
+            'shoe_size' => $request->shoe_size,
+            'photo_before' => $photoPath,
+            'shoe_quantity' => $shoeQuantity,
+        ]);
+
+        return redirect()->route('admin.orders.index')->with('success', 'Pesanan baru berhasil dibuat oleh admin!');
+    }
+
+    /**
+     * Update an order edited by admin.
+     */
+    public function adminUpdate(Request $request, Order $order)
+    {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $request->validate([
+            'service_id' => 'required|exists:services,id',
+            'processing_speed' => 'required|in:regular,express',
+            'shoe_name' => 'required|string|max:255',
+            'shoe_size' => 'required|string|max:10',
+            'shoe_quantity' => 'required|integer|min:1',
+            'payment_method' => 'required|in:cash,qris',
+            'payment_status' => 'required|in:paid,unpaid',
+            'status' => 'required|string',
+            'shoe_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'photo_after' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $mainService = \App\Models\Service::findOrFail($request->service_id);
+        $shoeQuantity = $request->input('shoe_quantity', 1);
+        $totalPrice = $mainService->price * $shoeQuantity;
+
+        if ($request->processing_speed === 'express') {
+            $totalPrice += (25000 * $shoeQuantity);
+        }
+
+        $data = [
+            'service_id' => $request->service_id,
+            'processing_speed' => $request->processing_speed,
+            'shoe_name' => $request->shoe_name,
+            'shoe_size' => $request->shoe_size,
+            'shoe_quantity' => $shoeQuantity,
+            'payment_method' => $request->payment_method,
+            'payment_status' => $request->payment_status,
+            'status' => $request->status,
+            'total_price' => $totalPrice,
+        ];
+
+        if ($request->hasFile('shoe_photo')) {
+            $data['photo_before'] = $request->file('shoe_photo')->store('orders/photos', 'public');
+        }
+
+        if ($request->hasFile('photo_after')) {
+            $data['photo_after'] = $request->file('photo_after')->store('orders/photos', 'public');
+        }
+
+        $order->update($data);
+
+        return back()->with('success', 'Pesanan berhasil diperbarui!');
+    }
+
+    /**
+     * Delete an order.
+     */
+    public function adminDestroy(Order $order)
+    {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $order->delete();
+
+        return back()->with('success', 'Pesanan berhasil dihapus.');
+    }
+
 
     /**
      * Employee view: List all assigned/active orders.
@@ -410,8 +560,86 @@ class OrderController extends Controller
         }
 
         $orders = $query->latest()->get();
+        $customers = User::where('role', 'customer')->get();
+        $services = \App\Models\Service::all();
             
-        return view('employee.orders.index', compact('orders', 'status'));
+        return view('employee.orders.index', compact('orders', 'status', 'customers', 'services'));
+    }
+
+    /**
+     * Store a new order created by employee.
+     */
+    public function employeeStore(Request $request)
+    {
+        if (Auth::user()->role !== 'employee') {
+            abort(403);
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'service_id' => 'required|exists:services,id',
+            'processing_speed' => 'required|in:regular,express',
+            'shoe_name' => 'required|string|max:255',
+            'shoe_size' => 'required|string|max:10',
+            'shoe_quantity' => 'required|integer|min:1',
+            'payment_method' => 'required|in:cash,qris',
+            'payment_status' => 'required|in:paid,unpaid',
+            'status' => 'required|string',
+            'shoe_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $mainService = \App\Models\Service::findOrFail($request->service_id);
+        $shoeQuantity = $request->input('shoe_quantity', 1);
+        $totalPrice = $mainService->price * $shoeQuantity;
+
+        if ($request->processing_speed === 'express') {
+            $totalPrice += (25000 * $shoeQuantity);
+        }
+
+        $photoPath = null;
+        if ($request->hasFile('shoe_photo')) {
+            $photoPath = $request->file('shoe_photo')->store('orders/photos', 'public');
+        }
+
+        $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(8));
+        $lastOrder = Order::orderBy('id', 'desc')->first();
+        $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
+        $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+        $customerName = Auth::user()->name;
+        $customerPhone = Auth::user()->phone;
+        $customerAddress = Auth::user()->address;
+        
+        if ($request->is_delivery) {
+            $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
+            if ($mainAddress) {
+                $customerName = $mainAddress->recipient_name;
+                $customerPhone = $mainAddress->phone;
+                $customerAddress = $mainAddress->full_address . ', ' . $mainAddress->village . ', ' . $mainAddress->kecamatan . ', ' . $mainAddress->city;
+            }
+        }
+
+        Order::create([
+            'order_number' => $orderNumber,
+            'user_id' => $request->user_id,
+            'service_id' => $mainService->id,
+            'customer_name' => $customerName,
+            'customer_phone' => $customerPhone,
+            'customer_address' => $customerAddress,
+            'processing_speed' => $request->processing_speed,
+            'queue_number' => $queueNumber,
+            'status' => $request->status,
+            'total_price' => $totalPrice,
+            'payment_method' => $request->payment_method,
+            'payment_status' => $request->payment_status,
+            'reception_date' => now(),
+            'shoe_name' => $request->shoe_name,
+            'shoe_size' => $request->shoe_size,
+            'photo_before' => $photoPath,
+            'shoe_quantity' => $shoeQuantity,
+        ]);
+
+        return redirect()->route('employee.orders.index')->with('success', 'Pesanan baru berhasil dibuat oleh karyawan!');
     }
 
     /**
@@ -623,7 +851,24 @@ class OrderController extends Controller
             abort(403);
         }
 
-        $order->update(['payment_status' => 'paid']);
+        $order->update([
+            'payment_status' => 'paid',
+            'status' => 'processing' // Langsung dikonfirmasi tanpa validasi
+        ]);
+
+        // Notifikasi ke Admin & Karyawan jika manual QRIS/Cash
+        $staff = User::whereIn('role', ['admin', 'employee'])->get();
+        foreach ($staff as $user) {
+            /** @var User $user */
+            $user->notify(new \App\Notifications\AppNotification([
+                'title' => '💳 Pembayaran ' . strtoupper($order->payment_method) . ' Berhasil',
+                'message' => 'Pembayaran pesanan #' . $order->order_number . ' sebesar Rp ' . number_format($order->total_price, 0, ',', '.') . ' telah dikonfirmasi. Nominal otomatis masuk pendapatan dan status pesanan langsung diproses.',
+                'icon' => 'check-circle',
+                'color' => 'green',
+                'url' => route('admin.orders.index'),
+                'type' => 'payment_success',
+            ]));
+        }
 
         // Send WhatsApp Receipt to Customer
         if ($order->user->phone) {
@@ -645,5 +890,53 @@ class OrderController extends Controller
         }
 
         return back()->with('success', 'Pembayaran tunai berhasil dikonfirmasi!');
+    }
+
+    /**
+     * Cancel the specified order by customer.
+     */
+    public function cancel(Order $order)
+    {
+        // Security check: only the owner can cancel
+        if ($order->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Only allow cancellation of 'pending' orders
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Pesanan yang sedang diproses tidak dapat dibatalkan.');
+        }
+
+        // Update status to cancelled
+        $order->update([
+            'status' => 'cancelled'
+        ]);
+
+        // Notify Admins and Customer
+        try {
+            $admins = User::where('role', 'admin')->get();
+            foreach ($admins as $admin) {
+                /** @var User $admin */
+                $admin->notify(new \App\Notifications\AppNotification([
+                    'title' => 'Pesanan Dibatalkan',
+                    'message' => 'Pesanan #' . $order->order_number . ' telah dibatalkan oleh pelanggan (' . Auth::user()->name . ')',
+                    'icon' => 'x-circle',
+                    'color' => 'red',
+                    'url' => route('admin.orders.index'),
+                    'type' => 'status_update',
+                ]));
+            }
+
+            if ($order->user->phone) {
+                $waMessage = "Halo " . $order->user->name . ",\n\n" .
+                             "Pesanan Anda #" . $order->order_number . " (" . $order->shoe_name . ") *TELAH BERHASIL DIBATALKAN*.\n\n" .
+                             "Terima kasih.";
+                $this->whatsAppService->sendMessage($order->user->phone, $waMessage);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Cancellation notification failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('orders.my-orders')->with('success', 'Pesanan Anda berhasil dibatalkan.');
     }
 }

@@ -22,7 +22,7 @@
 
         <div>
             <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
+            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" oninput="this.value = this.value.replace(/[0-9]/g, '');" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
@@ -52,7 +52,7 @@
 
         <div>
             <x-input-label for="phone" :value="__('Phone Number')" />
-            <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->phone)" placeholder="08123456789" />
+            <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" :value="old('phone', $user->phone)" placeholder="08123456789" oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
             <x-input-error class="mt-2" :messages="$errors->get('phone')" />
         </div>
 

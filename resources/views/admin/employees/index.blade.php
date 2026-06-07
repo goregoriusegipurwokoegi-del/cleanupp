@@ -104,7 +104,7 @@
             @csrf
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Nama Lengkap</label>
-                <input type="text" name="name" required placeholder="Nama karyawan" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                <input type="text" name="name" required placeholder="Nama karyawan" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" oninput="this.value = this.value.replace(/[0-9]/g, '');">
             </div>
 
             <div style="margin-bottom: 1.5rem;">
@@ -146,7 +146,7 @@
             @method('PUT')
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Nama Lengkap</label>
-                <input type="text" name="name" id="edit-name" required style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none;">
+                <input type="text" name="name" id="edit-name" required style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none;" oninput="this.value = this.value.replace(/[0-9]/g, '');">
             </div>
 
             <div style="margin-bottom: 1.5rem;">

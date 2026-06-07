@@ -8,6 +8,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string|null $phone
+ * @property string|null $address
+ * @property string|null $latitude
+ * @property string|null $longitude
+ * @property string|null $kecamatan
+ * @property string|null $postal_code
+ * @property string $password
+ * @property string|null $password_plain
+ * @property string $role
+ * @property string|null $google_id
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -59,5 +74,10 @@ class User extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function addresses()
+    {
+        return $this->hasMany(UserAddress::class);
     }
 }

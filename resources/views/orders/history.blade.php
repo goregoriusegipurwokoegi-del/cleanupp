@@ -149,10 +149,12 @@
 <div class="history-container">
     <!-- Tabs -->
     <div class="history-tabs">
-        <a href="{{ route('orders.history', ['status_filter' => 'completed']) }}" class="history-tab {{ $status_filter == 'completed' ? 'active' : '' }}">Selesai</a>
-        <a href="{{ route('orders.history', ['status_filter' => 'dikirim']) }}" class="history-tab {{ $status_filter == 'dikirim' ? 'active' : '' }}">Dikirim</a>
-        <a href="{{ route('orders.history', ['status_filter' => 'cancelled']) }}" class="history-tab {{ $status_filter == 'cancelled' ? 'active' : '' }}">Dibatalkan</a>
         <a href="{{ route('orders.history', ['status_filter' => 'all']) }}" class="history-tab {{ $status_filter == 'all' ? 'active' : '' }}">Semua</a>
+        <a href="{{ route('orders.history', ['status_filter' => 'pending']) }}" class="history-tab {{ $status_filter == 'pending' ? 'active' : '' }}">Menunggu Penjemputan</a>
+        <a href="{{ route('orders.history', ['status_filter' => 'processing']) }}" class="history-tab {{ $status_filter == 'processing' ? 'active' : '' }}">Diproses</a>
+        <a href="{{ route('orders.history', ['status_filter' => 'dikirim']) }}" class="history-tab {{ $status_filter == 'dikirim' ? 'active' : '' }}">Dikirim</a>
+        <a href="{{ route('orders.history', ['status_filter' => 'completed']) }}" class="history-tab {{ $status_filter == 'completed' ? 'active' : '' }}">Selesai</a>
+        <a href="{{ route('orders.history', ['status_filter' => 'cancelled']) }}" class="history-tab {{ $status_filter == 'cancelled' ? 'active' : '' }}">Dibatalkan</a>
     </div>
 
 

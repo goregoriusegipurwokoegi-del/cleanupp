@@ -11,6 +11,9 @@
 @endsection
 
 @section('content')
+{{-- Leaflet Map (needed for delivery address picker) --}}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
     .order-grid {
         display: grid; 
@@ -178,37 +181,42 @@
                     </div>
 
                     <!-- Detail Antar Jemput -->
-                    @php
-                        $isProfileComplete = !empty(Auth::user()->name) && 
-                                             !empty(Auth::user()->phone) && 
-                                             !empty(Auth::user()->address) && 
-                                             !empty(Auth::user()->kecamatan) && 
-                                             !empty(Auth::user()->postal_code) &&
-                                             !empty(Auth::user()->latitude) &&
-                                             !empty(Auth::user()->longitude);
-                    @endphp
 
                     @if($isProfileComplete)
                     <!-- Detail Antar Jemput (Jika Lengkap) -->
                     <div id="delivery_details" style="display: none; margin-bottom: 2rem; background: rgba(249, 115, 22, 0.05); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(249, 115, 22, 0.2);">
                         <div style="margin-bottom: 1.5rem;">
-                            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;">Informasi Antar Jemput</h4>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h4 style="font-size: 0.95rem; font-weight: 700; margin: 0; color: #fff; text-transform: uppercase; letter-spacing: 0.5px;">Informasi Antar Jemput</h4>
+                                @if($mainAddress->address_label)
+                                    <span style="font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: rgba(255,255,255,0.1); color: #ccc;">{{ $mainAddress->address_label }}</span>
+                                @endif
+                            </div>
+
+                            <div style="margin-bottom: 1.5rem; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                                <div id="map" style="height: 200px; width: 100%; z-index: 1;"></div>
+                                <div style="background: rgba(0,0,0,0.5); padding: 0.5rem 1rem; font-size: 0.8rem; color: #fff; display: flex; align-items: center; justify-content: space-between;">
+                                    <span style="opacity: 0.8;">Jarak ke Toko:</span>
+                                    <strong id="distance_info" style="color: var(--primary);">Menghitung jarak...</strong>
+                                </div>
+                            </div>
+
                             <div style="display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.9rem; opacity: 0.9;">
-                                <div><strong style="color: var(--primary);">Nama Penerima:</strong> <span style="color:#fff;">{{ Auth::user()->name }}</span></div>
-                                <div><strong style="color: var(--primary);">No. WhatsApp:</strong> <span style="color:#fff;">{{ Auth::user()->phone }}</span></div>
-                                <div><strong style="color: var(--primary);">Alamat Lengkap:</strong> <span style="color:#fff;">{{ Auth::user()->address }}</span></div>
-                                <div><strong style="color: var(--primary);">Kecamatan:</strong> <span style="color:#fff;">{{ Auth::user()->kecamatan }}</span></div>
-                                <div><strong style="color: var(--primary);">Kode Pos:</strong> <span style="color:#fff;">{{ Auth::user()->postal_code }}</span></div>
+                                <div><strong style="color: var(--primary);">Nama Penerima:</strong> <span style="color:#fff;">{{ $mainAddress->recipient_name }}</span></div>
+                                <div><strong style="color: var(--primary);">No. WhatsApp:</strong> <span style="color:#fff;">{{ $mainAddress->phone }}</span></div>
+                                <div><strong style="color: var(--primary);">Alamat Lengkap:</strong> <span style="color:#fff;">{{ $mainAddress->full_address }}</span></div>
+                                <div><strong style="color: var(--primary);">Kecamatan:</strong> <span style="color:#fff;">{{ $mainAddress->kecamatan }}</span></div>
+                                <div><strong style="color: var(--primary);">Kode Pos:</strong> <span style="color:#fff;">{{ $mainAddress->postal_code }}</span></div>
                             </div>
                             <p style="font-size: 0.75rem; opacity: 0.5; margin-top: 1.2rem; line-height: 1.4; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.8rem;">
-                                *Jika alamat penjemputan di atas tidak sesuai, silakan ubah terlebih dahulu di <a href="{{ route('profile.edit') }}" style="color: var(--primary); text-decoration: underline;">Pengaturan Profil</a> sebelum memesan.
+                                *Sistem otomatis menggunakan <strong>Alamat Utama</strong> Anda. Jika ingin mengganti alamat, silakan atur di <a href="{{ route('addresses.index') }}" style="color: var(--primary); text-decoration: underline;">Buku Alamat</a>.
                             </p>
                         </div>
                         
                         <!-- Hidden inputs for form submit -->
-                        <input type="hidden" name="delivery_address" value="{{ Auth::user()->address }}, Kec. {{ Auth::user()->kecamatan }}, {{ Auth::user()->postal_code }}">
-                        <input type="hidden" name="latitude" id="latitude" value="{{ Auth::user()->latitude }}">
-                        <input type="hidden" name="longitude" id="longitude" value="{{ Auth::user()->longitude }}">
+                        <input type="hidden" name="delivery_address" value="1">
+                        <input type="hidden" name="latitude" id="latitude" value="{{ $mainAddress->latitude }}">
+                        <input type="hidden" name="longitude" id="longitude" value="{{ $mainAddress->longitude }}">
 
                         <div>
                             <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Jumlah Sepatu</label>
@@ -216,17 +224,7 @@
                         </div>
                     </div>
                     @else
-                    <!-- Warning Lengkapi Profil (Jika Belum Lengkap) -->
-                    <div id="delivery_details" style="display: none; margin-bottom: 2rem; background: rgba(239, 68, 68, 0.05); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(239, 68, 68, 0.2);">
-                        <div style="text-align: center; padding: 1rem 0;">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" style="margin-bottom: 1rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                            <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.6rem; color: #fff;">Profil Pengiriman Belum Lengkap</h4>
-                            <p style="font-size: 0.82rem; opacity: 0.7; line-height: 1.5; margin-bottom: 1.5rem; color: #fff;">
-                                Untuk memesan layanan Antar Jemput, Anda wajib melengkapi Nama, No. WhatsApp, Alamat Lengkap, Kecamatan, Kode Pos, dan Pin Lokasi di menu Pengaturan terlebih dahulu.
-                            </p>
-                            <a href="{{ route('profile.edit') }}" style="display: inline-block; padding: 0.8rem 1.5rem; background: var(--primary); color: #0f172a; font-weight: 800; border-radius: 12px; text-decoration: none; transition: 0.3s; font-size: 0.85rem;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">Lengkapi di Pengaturan</a>
-                        </div>
-                    </div>
+                    <!-- No warning box needed, handled via JS redirect -->
                     @endif
 
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 2rem;">
@@ -278,25 +276,6 @@
                                 </div>
                             </label>
 
-                            <!-- Transfer Bank -->
-                            <div style="padding: 0.6rem 1.2rem; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <p style="font-size: 0.65rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Transfer Bank</p>
-                            </div>
-                            <label style="display: flex; align-items: center; justify-content: space-between; padding: 1.2rem; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
-                                <input type="radio" name="payment_method" value="transfer" style="display: none;" onchange="updatePaymentUI(this, 'Transfer Bank')">
-                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                    <div style="width: 36px; height: 36px; background: rgba(59, 130, 246, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                                    </div>
-                                    <div>
-                                        <span style="font-weight: 700; font-size: 0.95rem; color: #fff; display: block;">Transfer Bank</span>
-                                        <span style="font-size: 0.78rem; color: var(--text-secondary);">Transfer ke rekening outlet, konfirmasi via admin</span>
-                                    </div>
-                                </div>
-                                <div class="checkmark-icon" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); background: transparent; display: flex; align-items: center; justify-content: center; transition: 0.3s; flex-shrink: 0;">
-                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4" style="display: none;"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                </div>
-                            </label>
 
                             <!-- QRIS -->
                             <div style="padding: 0.6rem 1.2rem; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
@@ -311,26 +290,6 @@
                                     <div>
                                         <span style="font-weight: 700; font-size: 0.95rem; color: #fff; display: block;">QRIS</span>
                                         <span style="font-size: 0.78rem; color: var(--text-secondary);">Scan QR Code — Gopay, OVO, Dana, dll</span>
-                                    </div>
-                                </div>
-                                <div class="checkmark-icon" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); background: transparent; display: flex; align-items: center; justify-content: center; transition: 0.3s; flex-shrink: 0;">
-                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="4" style="display: none;"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                </div>
-                            </label>
-
-                            <!-- Midtrans Online Payment -->
-                            <div style="padding: 0.6rem 1.2rem; background: rgba(255,255,255,0.03); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <p style="font-size: 0.65rem; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 1px;">Pembayaran Instan</p>
-                            </div>
-                            <label style="display: flex; align-items: center; justify-content: space-between; padding: 1.2rem; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
-                                <input type="radio" name="payment_method" value="midtrans" style="display: none;" onchange="updatePaymentUI(this, 'Pembayaran Online (Midtrans)')">
-                                <div style="display: flex; align-items: center; gap: 1rem;">
-                                    <div style="width: 36px; height: 36px; background: rgba(16, 185, 129, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M12 2v20"/></svg>
-                                    </div>
-                                    <div>
-                                        <span style="font-weight: 700; font-size: 0.95rem; color: #fff; display: block;">Pembayaran Online (Midtrans)</span>
-                                        <span style="font-size: 0.78rem; color: var(--text-secondary);">Gopay, ShopeePay, Virtual Account, Credit Card</span>
                                     </div>
                                 </div>
                                 <div class="checkmark-icon" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); background: transparent; display: flex; align-items: center; justify-content: center; transition: 0.3s; flex-shrink: 0;">
@@ -379,7 +338,7 @@
                         <span id="display_price" style="font-weight: 600;">Rp 0</span>
                     </div>
                     <div id="delivery_fee_row" style="display: none; justify-content: space-between; margin-bottom: 1rem;">
-                        <span style="opacity: 0.6;">Biaya Antar Jemput (> 5km)</span>
+                        <span style="opacity: 0.6;" id="delivery_fee_label">Biaya Ekstra Antar Jemput (> {{ $deliveryThresholdKm }}km)</span>
                         <span id="display_delivery_fee" style="font-weight: 600;">Rp 0</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
@@ -417,11 +376,14 @@
     let baseShoeQuantity = 1;
     let map;
     let marker;
-    let userLat = @json(Auth::user()->latitude);
-    let userLng = @json(Auth::user()->longitude);
-    let storeLat = {{ $storeLat ?? -0.0513462 }};
-    let storeLng = {{ $storeLng ?? 109.3210380 }};
-    let deliveryFeeAmount = {{ $deliveryFeeAmount ?? 15000 }};
+    let rawUserLat = @json($mainAddress ? $mainAddress->latitude : null);
+    let rawUserLng = @json($mainAddress ? $mainAddress->longitude : null);
+    let userLat = rawUserLat ? parseFloat(String(rawUserLat).replace(',', '.')) : null;
+    let userLng = rawUserLng ? parseFloat(String(rawUserLng).replace(',', '.')) : null;
+    let storeLat = parseFloat(String(@json($storeLat)).replace(',', '.'));
+    let storeLng = parseFloat(String(@json($storeLng)).replace(',', '.'));
+    let deliveryThresholdKm = parseFloat(String(@json($deliveryThresholdKm)).replace(',', '.'));
+    let deliveryFeeAboveThreshold = parseFloat(String(@json($deliveryFeeAboveThreshold)).replace(',', '.'));
     let currentDeliveryFee = 0;
 
     function initMap() {
@@ -495,13 +457,25 @@
     function calculateDeliveryFee() {
         const isDelivery = document.querySelector('input[name="is_delivery"][value="1"]').checked;
         currentDeliveryFee = 0;
+        let distanceText = '';
 
         if (isDelivery && userLat !== null && userLng !== null) {
             const distance = calculateDistance(storeLat, storeLng, userLat, userLng);
-            if (distance > 5) {
-                currentDeliveryFee = deliveryFeeAmount;
+            distanceText = `${distance.toFixed(1)} km`;
+            
+            if (distance > deliveryThresholdKm) {
+                currentDeliveryFee = deliveryFeeAboveThreshold;
+                distanceText += ` (Di atas ${deliveryThresholdKm}km)`;
+            } else {
+                distanceText += ' (Gratis)';
             }
         }
+        
+        const distInfo = document.getElementById('distance_info');
+        if (distInfo) {
+            distInfo.innerText = distanceText;
+        }
+        
         updatePrice();
     }
 
@@ -540,7 +514,14 @@
 
         const isDelivery = el.value === '1';
         const deliveryDetails = document.getElementById('delivery_details');
+        const isProfileComplete = {{ $isProfileComplete ? 'true' : 'false' }};
         
+        if (isDelivery && !isProfileComplete) {
+            alert('Alamat pengiriman Anda belum lengkap. Anda akan diarahkan ke pengaturan alamat.');
+            window.location.href = "{{ route('address.edit') }}";
+            return;
+        }
+
         if (isDelivery) {
             deliveryDetails.style.display = 'block';
             setTimeout(() => {

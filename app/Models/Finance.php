@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class Finance extends Model
 {
-    protected $fillable = ['type', 'amount', 'description', 'date'];
+    protected $fillable = ['type', 'category', 'amount', 'description', 'date'];
 }

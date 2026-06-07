@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
         :root {
@@ -168,7 +169,12 @@
 
                 <div class="form-group">
                     <label>Kata Sandi</label>
-                    <input type="password" name="password" required placeholder="••••••••" autocomplete="new-password">
+                    <div style="position: relative;">
+                        <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password" style="padding-right: 3rem;">
+                        <button type="button" onclick="togglePassword('password', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="eye" size="18"></i>
+                        </button>
+                    </div>
                     <a href="{{ route('password.request') }}" class="forgot-link">Lupa Password?</a>
                 </div>
 
@@ -188,5 +194,22 @@
         </div>
     </div>
 
+    <script>
+        lucide.createIcons();
+
+        function togglePassword(fieldId, btn) {
+            const field = document.getElementById(fieldId);
+            const icon = btn.querySelector('i');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                field.type = 'password';
+                icon.setAttribute('data-lucide', 'eye');
+            }
+            lucide.createIcons();
+        }
+    </script>
 </body>
 </html>

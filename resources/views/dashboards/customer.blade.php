@@ -161,8 +161,4 @@
         100% { background-position: 50px 50px; }
     }
 </style>
-    <script>
-        // Auto refresh every 5 seconds for instant tracking status updates
-        setTimeout(() => { window.location.reload(); }, 5000);
-    </script>
 @endsection

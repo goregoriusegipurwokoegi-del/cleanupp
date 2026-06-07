@@ -4,9 +4,23 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class NotificationController extends Controller
 {
+    /**
+     * Cache TTL for recent notifications (in seconds).
+     */
+    private const CACHE_TTL = 15;
+
+    /**
+     * Get the cache key for the current user's recent notifications.
+     */
+    private function getCacheKey(): string
+    {
+        return 'notifications:recent:' . Auth::id();
+    }
+
     /**
      * Display the notification center.
      */
@@ -26,21 +40,28 @@ class NotificationController extends Controller
 
     /**
      * Get recent notifications for the dropdown (AJAX).
+     * Results are cached per-user for 15 seconds to reduce DB load.
      */
     public function getRecent()
     {
-        $user = Auth::user();
-        return response()->json([
-            'unread_count' => $user->unreadNotifications->count(),
-            'recent' => $user->notifications()->take(5)->get()->map(function($n) {
-                return [
-                    'id' => $n->id,
-                    'data' => $n->data,
-                    'read_at' => $n->read_at,
-                    'created_at' => $n->created_at->diffForHumans(),
-                ];
-            })
-        ]);
+        $cacheKey = $this->getCacheKey();
+
+        $data = Cache::remember($cacheKey, self::CACHE_TTL, function () {
+            $user = Auth::user();
+            return [
+                'unread_count' => $user->unreadNotifications->count(),
+                'recent' => $user->notifications()->take(5)->get()->map(function($n) {
+                    return [
+                        'id' => $n->id,
+                        'data' => $n->data,
+                        'read_at' => $n->read_at,
+                        'created_at' => $n->created_at->diffForHumans(),
+                    ];
+                })->toArray()
+            ];
+        });
+
+        return response()->json($data);
     }
 
     /**
@@ -52,6 +73,9 @@ class NotificationController extends Controller
         if ($notification) {
             $notification->markAsRead();
         }
+
+        // Invalidate cache so next poll reflects the change
+        Cache::forget($this->getCacheKey());
 
         if (request()->ajax()) {
             return response()->json(['success' => true]);
@@ -66,7 +90,10 @@ class NotificationController extends Controller
     public function markAllAsRead()
     {
         Auth::user()->unreadNotifications->markAsRead();
-        
+
+        // Invalidate cache so next poll reflects the change
+        Cache::forget($this->getCacheKey());
+
         if (request()->ajax()) {
             return response()->json(['success' => true]);
         }
@@ -83,6 +110,9 @@ class NotificationController extends Controller
         if ($notification) {
             $notification->delete();
         }
+
+        // Invalidate cache so next poll reflects the change
+        Cache::forget($this->getCacheKey());
 
         if (request()->ajax()) {
             return response()->json(['success' => true]);

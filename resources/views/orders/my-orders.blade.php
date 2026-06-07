@@ -40,12 +40,14 @@
     .progress-labels span { font-size: 10px; color: #475569; font-weight: 600; transition: 0.3s; }
     .progress-labels .active { color: #fb923c; font-weight: 800; text-shadow: 0 0 8px rgba(251, 146, 60, 0.3); }
     
-    .card-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+    .card-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; align-items: center; }
     .btn-action { padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; text-decoration: none; transition: 0.3s; cursor: pointer; border: none; }
     .btn-detail { background: var(--primary); color: #000; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2); }
     .btn-detail:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(249, 115, 22, 0.3); }
     .btn-wa { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); display: flex; align-items: center; }
     .btn-wa:hover { background: rgba(16, 185, 129, 0.2); }
+    .btn-cancel { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); display: flex; align-items: center; }
+    .btn-cancel:hover { background: rgba(239, 68, 68, 0.2); }
     
     @media (max-width: 600px) {
         .card-body { grid-template-columns: 60px 1fr; }
@@ -58,6 +60,12 @@
     @if(session('success'))
         <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; padding: 1rem; border-radius: 12px; margin-bottom: 20px; font-size: 13px;">
             {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 1rem; border-radius: 12px; margin-bottom: 20px; font-size: 13px;">
+            {{ session('error') }}
         </div>
     @endif
 
@@ -159,6 +167,12 @@
 
             <!-- Aksi -->
             <div class="card-actions">
+                @if($order->status == 'pending')
+                    <form action="{{ route('orders.cancel', $order->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')" style="margin: 0; display: inline;">
+                        @csrf
+                        <button type="submit" class="btn-action btn-cancel">Batalkan Pesanan</button>
+                    </form>
+                @endif
                 <a href="https://wa.me/6281234567890?text=Halo Admin CleanUP Shoes, saya mau tanya status pesanan aktif saya #{{ $order->order_number }}" target="_blank" class="btn-action btn-wa">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right: 4px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-13.3 8.38 8.38 0 0 1 3.9.9L22 4l-1.5 6.5z"></path></svg>
                     Tanya Admin

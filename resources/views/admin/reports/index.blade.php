@@ -1,6 +1,6 @@
 @extends('layouts.premium-dashboard')
 
-@section('page_title', 'Laporan Operasional')
+@section('page_title', 'Laporan & Analisis')
 
 @section('nav_items')
     <li class="nav-item"><a href="{{ route('admin.dashboard') }}" class="nav-link {{ Route::is('admin.dashboard') ? 'active' : '' }}">Dashboard</a></li>
@@ -25,12 +25,6 @@
         border: 1px solid rgba(255,255,255,0.05);
         border-radius: 20px;
         padding: 1.2rem;
-        margin-bottom: 1rem;
-    }
-    .report-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
         margin-bottom: 1.5rem;
     }
     .tab-bar {
@@ -41,14 +35,15 @@
         border: 1px solid rgba(255,255,255,0.06);
         border-radius: 16px;
         padding: 0.4rem;
+        overflow-x: auto;
     }
     .tab-btn {
         flex: 1;
         text-align: center;
-        padding: 0.7rem 1.2rem;
+        padding: 0.7rem 1rem;
         border-radius: 12px;
         font-weight: 700;
-        font-size: 0.88rem;
+        font-size: 0.85rem;
         cursor: pointer;
         text-decoration: none;
         color: rgba(255,255,255,0.5);
@@ -57,6 +52,7 @@
         align-items: center;
         justify-content: center;
         gap: 0.4rem;
+        white-space: nowrap;
     }
     .tab-btn.active {
         background: var(--primary);
@@ -75,223 +71,341 @@
 
 <div class="no-print" style="margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
     <div>
-        <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.2rem;">Laporan &amp; Analisis</h2>
-        <p style="opacity: 0.6; font-size: 0.85rem;">Filter dan unduh data transaksi &amp; pinjaman CleanUP Shoes.</p>
+        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem;">Laporan &amp; Analisis</h2>
+        <p style="opacity: 0.6;">Lihat metrik, performa layanan, dan rekap data operasional.</p>
     </div>
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        @if($tab == 'orders')
-        <a href="{{ route('admin.reports.export.excel', request()->all()) }}" style="background: #10b981; color: #fff; text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; transition: 0.3s; white-space: nowrap;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            Export Excel
-        </a>
-        @endif
-    </div>
-</div>
-
-{{-- Filter --}}
-<div class="filter-card no-print">
-    <form action="{{ route('admin.reports.index') }}" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.2rem; align-items: flex-end;">
-        <input type="hidden" name="tab" value="{{ $tab }}">
-        <div>
-            <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.6rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Dari Tanggal</label>
-            <input type="date" name="start_date" value="{{ $startDate }}" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 12px; color: #fff; outline: none;">
-        </div>
-        <div>
-            <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.6rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Sampai Tanggal</label>
-            <input type="date" name="end_date" value="{{ $endDate }}" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 12px; color: #fff; outline: none;">
-        </div>
-        @if($tab == 'orders')
-        <div>
-            <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.6rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Kategori Layanan</label>
-            <select name="category" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 12px; color: #fff; outline: none; cursor: pointer;">
-                <option value="" style="color: #000;">Semua Layanan</option>
-                <option value="cleaning" {{ request('category') == 'cleaning' ? 'selected' : '' }} style="color: #000;">Cuci Sepatu</option>
-                <option value="repair" {{ request('category') == 'repair' ? 'selected' : '' }} style="color: #000;">Reparasi</option>
-            </select>
-        </div>
-        @endif
-        <div>
-            <button type="submit" style="width: 100%; background: var(--primary); color: #0f172a; border: none; padding: 0.85rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                Cari Data
-            </button>
-        </div>
-    </form>
 </div>
 
 {{-- Tab Bar --}}
 <div class="tab-bar no-print">
-    <a href="{{ route('admin.reports.index', array_merge(request()->all(), ['tab' => 'orders'])) }}" class="tab-btn {{ $tab == 'orders' ? 'active' : '' }}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Transaksi Order
-    </a>
-    <a href="{{ route('admin.reports.index', array_merge(request()->all(), ['tab' => 'loans'])) }}" class="tab-btn {{ $tab == 'loans' ? 'active' : '' }}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        Pinjaman / Kasbon
-        @if($loans->where('status','pending')->count() > 0)
-            <span style="background: #f59e0b; color: #000; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; display: inline-flex; align-items: center; justify-content: center; font-weight: 900;">{{ $loans->where('status','pending')->count() }}</span>
-        @endif
-    </a>
+    <a href="{{ route('admin.reports.index', ['tab' => 'ringkasan']) }}" class="tab-btn {{ $tab == 'ringkasan' ? 'active' : '' }}">Ringkasan</a>
+    <a href="{{ route('admin.reports.index', ['tab' => 'pesanan']) }}" class="tab-btn {{ $tab == 'pesanan' ? 'active' : '' }}">Pesanan</a>
+    <a href="{{ route('admin.reports.index', ['tab' => 'pendapatan']) }}" class="tab-btn {{ $tab == 'pendapatan' ? 'active' : '' }}">Pendapatan</a>
+    <a href="{{ route('admin.reports.index', ['tab' => 'laba-rugi']) }}" class="tab-btn {{ $tab == 'laba-rugi' ? 'active' : '' }}">Laba Rugi</a>
+    <a href="{{ route('admin.reports.index', ['tab' => 'terlaris']) }}" class="tab-btn {{ $tab == 'terlaris' ? 'active' : '' }}">Layanan Terlaris</a>
+    <a href="{{ route('admin.reports.index', ['tab' => 'pinjaman']) }}" class="tab-btn {{ $tab == 'pinjaman' ? 'active' : '' }}">Pinjaman / Kasbon</a>
+    <a href="{{ route('admin.reports.index', ['tab' => 'export']) }}" class="tab-btn {{ $tab == 'export' ? 'active' : '' }}">Export Data</a>
 </div>
 
-{{-- ===================== TAB: ORDERS ===================== --}}
-@if($tab == 'orders')
+{{-- Date Filter (Only show for tabs that need it) --}}
+@if($tab != 'export')
+<div class="filter-card no-print">
+    <form action="{{ route('admin.reports.index') }}" method="GET" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+        <input type="hidden" name="tab" value="{{ $tab }}">
+        <div style="flex: 1; min-width: 150px;">
+            <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Dari Tanggal</label>
+            <input type="date" name="start_date" value="{{ $startDate }}" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 12px; color: #fff; outline: none;">
+        </div>
+        <div style="flex: 1; min-width: 150px;">
+            <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Sampai Tanggal</label>
+            <input type="date" name="end_date" value="{{ $endDate }}" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 12px; color: #fff; outline: none;">
+        </div>
+        
+        @if($tab == 'pesanan')
+        <div style="flex: 1; min-width: 150px;">
+            <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Kategori</label>
+            <select name="category" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 12px; color: #fff; outline: none;">
+                <option value="" style="color: #000;">Semua Kategori</option>
+                <option value="cleaning" {{ request('category') == 'cleaning' ? 'selected' : '' }} style="color: #000;">Cleaning</option>
+                <option value="repair" {{ request('category') == 'repair' ? 'selected' : '' }} style="color: #000;">Repair</option>
+            </select>
+        </div>
+        @endif
+
+        <div>
+            <button type="submit" style="background: var(--primary); color: #0f172a; border: none; padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;">Filter Laporan</button>
+        </div>
+    </form>
+</div>
+@endif
+
+{{-- ================= TAB: RINGKASAN ================= --}}
+@if($tab == 'ringkasan')
 <div class="tab-content">
-    {{-- Summary Cards --}}
-    <div class="report-stats">
-        <div class="glass-card" id="total-transactions-card"
-            onclick="toggleDetails('transaction-details', 'total-transactions-card')"
-            style="text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);"
-            onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='var(--primary)'"
-            onmouseout="this.style.transform='translateY(0)'; if(document.getElementById('transaction-details').style.display === 'none') this.style.borderColor='rgba(255,255,255,0.05)'">
-            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem;">Total Transaksi <br><small style="color:var(--primary)">(Klik Lihat Detail)</small></p>
-            <h3 style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">{{ $totalOrders }}</h3>
+    <div class="grid-3" style="margin-bottom: 2rem;">
+        <div class="glass-card" style="border-top: 4px solid var(--primary);">
+            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">Total Pesanan Valid</p>
+            <h3 style="font-size: 2rem; font-weight: 800;">{{ $totalOrders }} <span style="font-size: 1rem; font-weight: 500; opacity: 0.6;">Pesanan</span></h3>
         </div>
-        <div class="glass-card" style="text-align: center; border-bottom: 4px solid var(--success);">
-            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem;">Total Pendapatan</p>
-            <h3 style="font-size: 1.8rem; font-weight: 800; color: var(--success);">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</h3>
+        <div class="glass-card" style="border-top: 4px solid var(--success);">
+            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">Total Pendapatan Pesanan</p>
+            <h3 style="font-size: 2rem; font-weight: 800; color: var(--success);">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</h3>
         </div>
-        <div class="glass-card" style="text-align: center;">
-            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem;">Periode</p>
-            <h3 style="font-size: 1rem; font-weight: 700;">{{ \Carbon\Carbon::parse($startDate)->format('d M') }} - {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</h3>
+        <div class="glass-card" style="border-top: 4px solid #3b82f6;">
+            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">Layanan Tersedia</p>
+            <h3 style="font-size: 2rem; font-weight: 800;">{{ $activeServices }} <span style="font-size: 1rem; font-weight: 500; opacity: 0.6;">Layanan</span></h3>
         </div>
     </div>
 
-    {{-- Table --}}
-    <div class="table-container" id="transaction-details" style="margin-bottom: 3rem; display: none; animation: fadeIn 0.5s ease-in-out;">
-        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02);">
-            <h4 style="font-weight: 800; opacity: 0.8;">Data Detail Transaksi</h4>
-        </div>
+    <div class="glass-card">
+        <h4 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 1.5rem;">Tren Pendapatan (7 Hari Terakhir)</h4>
+        <canvas id="revenueChart" height="100"></canvas>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($chartData['labels']) !!},
+                datasets: [{
+                    label: 'Pendapatan Pesanan (Rp)',
+                    data: {!! json_encode($chartData['revenue']) !!},
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#aaa' } }, x: { grid: { display: false }, ticks: { color: '#aaa' } } }, plugins: { legend: { labels: { color: '#fff' } } } }
+        });
+    });
+</script>
+@endif
+
+{{-- ================= TAB: PESANAN ================= --}}
+@if($tab == 'pesanan')
+<div class="tab-content">
+    <div class="table-container">
         <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 800px;">
             <thead>
                 <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Tanggal</th>
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">No. Antrian</th>
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Pelanggan</th>
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Layanan</th>
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Status</th>
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5; text-align: right;">Total</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Tanggal</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">ID Pesanan</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Pelanggan</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Layanan</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Status</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6; text-align: right;">Total Harga</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($orders as $order)
+                @foreach($orders as $order)
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
-                    <td style="padding: 1.2rem; opacity: 0.8;">{{ $order->created_at->format('d/m/Y') }}</td>
-                    <td style="padding: 1.2rem; font-weight: 800; color: var(--primary);">#{{ $order->queue_number }}</td>
-                    <td style="padding: 1.2rem; font-weight: 700;">{{ $order->user->name }}</td>
-                    <td style="padding: 1.2rem; opacity: 0.8;">{{ $order->service->name }}</td>
-                    <td style="padding: 1.2rem;">
-                        @php
-                            $statusLabel = match($order->status) {
-                                'pending' => ['text' => 'MENUNGGU', 'bg' => 'rgba(100, 116, 139, 0.1)', 'color' => '#64748b'],
-                                'washing', 'drying', 'finishing' => ['text' => 'DIPROSES', 'bg' => 'rgba(245, 158, 11, 0.1)', 'color' => '#f59e0b'],
-                                'ready' => ['text' => 'SELESAI', 'bg' => 'rgba(0, 210, 255, 0.1)', 'color' => '#00d2ff'],
-                                'uncollected' => ['text' => 'BELUM DIAMBIL', 'bg' => 'rgba(168, 85, 247, 0.1)', 'color' => '#a855f7'],
-                                'picked_up' => ['text' => 'DIAMBIL', 'bg' => 'rgba(16, 185, 129, 0.1)', 'color' => '#10b981'],
-                                default => ['text' => strtoupper($order->status), 'bg' => 'rgba(255,255,255,0.05)', 'color' => '#fff'],
-                            };
-                        @endphp
-                        <span style="font-size: 0.7rem; font-weight: 800; padding: 0.3rem 0.6rem; border-radius: 6px; background: {{ $statusLabel['bg'] }}; color: {{ $statusLabel['color'] }};">
-                            {{ $statusLabel['text'] }}
+                    <td style="padding: 1.5rem;">{{ $order->created_at->format('d/m/Y') }}</td>
+                    <td style="padding: 1.5rem; font-weight: 700; color: var(--primary);">#{{ $order->queue_number }}</td>
+                    <td style="padding: 1.5rem;">{{ $order->user->name }}</td>
+                    <td style="padding: 1.5rem;">{{ $order->service->name }}</td>
+                    <td style="padding: 1.5rem;">
+                        <span style="background: rgba(255,255,255,0.1); padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">
+                            {{ strtoupper($order->status) }}
                         </span>
                     </td>
-                    <td style="padding: 1.2rem; text-align: right; font-weight: 800;">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
+                    <td style="padding: 1.5rem; text-align: right; font-weight: 700;">Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
                 </tr>
-                @empty
-                <tr>
-                    <td colspan="6" style="padding: 5rem; text-align: center; opacity: 0.3;">Tidak ada data ditemukan untuk periode ini.</td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
+        @if($orders->isEmpty())
+            <div style="padding: 4rem; text-align: center; opacity: 0.4;">Belum ada data pesanan.</div>
+        @endif
     </div>
 </div>
 @endif
 
-{{-- ===================== TAB: LOANS ===================== --}}
-@if($tab == 'loans')
+{{-- ================= TAB: PENDAPATAN ================= --}}
+@if($tab == 'pendapatan')
 <div class="tab-content">
-    {{-- Loan Summary Cards --}}
-    <div class="report-stats">
-        <div class="glass-card" style="text-align: center; border-bottom: 4px solid #10b981;">
-            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem;">Total Disetujui</p>
-            <h3 style="font-size: 1.6rem; font-weight: 800; color: #10b981;">Rp {{ number_format($totalLoansApproved, 0, ',', '.') }}</h3>
-        </div>
-        <div class="glass-card" style="text-align: center; border-bottom: 4px solid #f59e0b;">
-            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem;">Menunggu Konfirmasi</p>
-            <h3 style="font-size: 1.6rem; font-weight: 800; color: #f59e0b;">Rp {{ number_format($totalLoansPending, 0, ',', '.') }}</h3>
-        </div>
-        <div class="glass-card" style="text-align: center; border-bottom: 4px solid #f43f5e;">
-            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem;">Ditolak</p>
-            <h3 style="font-size: 1.6rem; font-weight: 800; color: #f43f5e;">{{ $totalLoansRejected }} Pengajuan</h3>
-        </div>
-        <div class="glass-card" style="text-align: center;">
-            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem;">Total Pengajuan</p>
-            <h3 style="font-size: 1.6rem; font-weight: 800; color: var(--primary);">{{ $loans->count() }}</h3>
-        </div>
+    <div class="glass-card" style="margin-bottom: 2rem; border-left: 4px solid var(--success);">
+        <p style="opacity: 0.6; font-size: 0.9rem; margin-bottom: 0.5rem;">Total Pendapatan Pesanan (Periode {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }})</p>
+        <h3 style="font-size: 2.5rem; font-weight: 900; color: var(--success);">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</h3>
     </div>
 
-    {{-- Loan Table --}}
-    <div class="table-container" style="margin-bottom: 3rem;">
-        <div style="padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center;">
-            <h4 style="font-weight: 800; opacity: 0.8;">Riwayat Pinjaman / Kasbon</h4>
-            <span style="font-size: 0.78rem; opacity: 0.5;">{{ \Carbon\Carbon::parse($startDate)->format('d M') }} – {{ \Carbon\Carbon::parse($endDate)->format('d M Y') }}</span>
-        </div>
-        <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 700px;">
+    <div class="table-container">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;">
             <thead>
                 <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Tanggal</th>
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Karyawan</th>
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Alasan</th>
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Status</th>
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Catatan Admin</th>
-                    <th style="padding: 1.2rem; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5; text-align: right;">Nominal</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Tanggal</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">No. Order</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Sumber Layanan</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6; text-align: right;">Pendapatan</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($loans as $loan)
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.02); transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.01)'" onmouseout="this.style.background='transparent'">
-                    <td style="padding: 1.2rem; opacity: 0.8; white-space: nowrap;">{{ $loan->created_at->format('d/m/Y') }}</td>
-                    <td style="padding: 1.2rem; font-weight: 700;">{{ $loan->user->name }}</td>
-                    <td style="padding: 1.2rem; opacity: 0.8; max-width: 200px;">{{ $loan->reason }}</td>
-                    <td style="padding: 1.2rem;">
-                        @if($loan->status == 'pending')
-                            <span style="background: rgba(245,158,11,0.1); color: #f59e0b; padding: 0.3rem 0.7rem; border-radius: 8px; font-size: 0.72rem; font-weight: 800;">MENUNGGU</span>
-                        @elseif($loan->status == 'approved')
-                            <span style="background: rgba(16,185,129,0.1); color: #10b981; padding: 0.3rem 0.7rem; border-radius: 8px; font-size: 0.72rem; font-weight: 800;">DISETUJUI</span>
+                @foreach($orders as $order)
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                    <td style="padding: 1.5rem;">{{ $order->created_at->format('d/m/Y') }}</td>
+                    <td style="padding: 1.5rem;">#{{ $order->order_number }}</td>
+                    <td style="padding: 1.5rem;">{{ $order->service->name }}</td>
+                    <td style="padding: 1.5rem; text-align: right; font-weight: 700; color: var(--success);">+ Rp {{ number_format($order->total_price, 0, ',', '.') }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @if($orders->isEmpty())
+            <div style="padding: 4rem; text-align: center; opacity: 0.4;">Belum ada pendapatan.</div>
+        @endif
+    </div>
+</div>
+@endif
+
+{{-- ================= TAB: LABA RUGI ================= --}}
+@if($tab == 'laba-rugi')
+<div class="tab-content">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h3 style="font-weight: 800; font-size: 1.5rem;">Laporan Laba Rugi</h3>
+        <p style="opacity: 0.6;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
+    </div>
+
+    <div class="grid-2" style="margin-bottom: 1.5rem;">
+        <div class="glass-card" style="text-align: center;">
+            <p style="opacity: 0.6; font-size: 0.9rem; margin-bottom: 0.5rem;">Total Pendapatan (Pesanan + Manual)</p>
+            <h3 style="font-size: 2rem; font-weight: 800; color: var(--success);">Rp {{ number_format($totalIncome, 0, ',', '.') }}</h3>
+        </div>
+        <div class="glass-card" style="text-align: center;">
+            <p style="opacity: 0.6; font-size: 0.9rem; margin-bottom: 0.5rem;">Total Biaya (Pengeluaran)</p>
+            <h3 style="font-size: 2rem; font-weight: 800; color: #f43f5e;">Rp {{ number_format($totalExpense, 0, ',', '.') }}</h3>
+        </div>
+    </div>
+    
+    <div class="glass-card" style="text-align: center; background: rgba(255,255,255,0.05);">
+        <p style="opacity: 0.6; font-size: 1rem; margin-bottom: 0.5rem;">Laba/Rugi Bersih</p>
+        <h3 style="font-size: 3rem; font-weight: 900; color: {{ $netBalance >= 0 ? 'var(--primary)' : '#f43f5e' }};">
+            Rp {{ number_format($netBalance, 0, ',', '.') }}
+        </h3>
+        @if($netBalance > 0)
+            <p style="color: var(--success); font-weight: 700; margin-top: 10px;">▲ Profit / Untung</p>
+        @elseif($netBalance < 0)
+            <p style="color: #f43f5e; font-weight: 700; margin-top: 10px;">▼ Rugi</p>
+        @else
+            <p style="opacity: 0.6; font-weight: 700; margin-top: 10px;">Break Even (Impas)</p>
+        @endif
+    </div>
+</div>
+@endif
+
+{{-- ================= TAB: TERLARIS ================= --}}
+@if($tab == 'terlaris')
+<div class="tab-content">
+    <div class="table-container">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;">
+            <thead>
+                <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Peringkat</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Nama Layanan</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Kategori</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6; text-align: center;">Jumlah Dipesan</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6; text-align: right;">Total Nilai</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($popularServices as $index => $item)
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                    <td style="padding: 1.5rem; font-weight: 800; font-size: 1.2rem; color: {{ $index == 0 ? 'var(--primary)' : '#fff' }};">#{{ $index + 1 }}</td>
+                    <td style="padding: 1.5rem; font-weight: 700;">{{ $item['service'] }}</td>
+                    <td style="padding: 1.5rem; opacity: 0.8;">{{ $item['category'] }}</td>
+                    <td style="padding: 1.5rem; text-align: center; font-weight: 800;">{{ $item['count'] }}</td>
+                    <td style="padding: 1.5rem; text-align: right; color: var(--success); font-weight: 700;">Rp {{ number_format($item['revenue'], 0, ',', '.') }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @if($popularServices->isEmpty())
+            <div style="padding: 4rem; text-align: center; opacity: 0.4;">Belum ada pesanan selesai.</div>
+        @endif
+    </div>
+</div>
+@endif
+
+{{-- ================= TAB: PINJAMAN ================= --}}
+@if($tab == 'pinjaman')
+<div class="tab-content">
+    <div class="grid-3" style="margin-bottom: 2rem;">
+        <div class="glass-card" style="border-left: 4px solid #f59e0b;">
+            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">Menunggu Persetujuan</p>
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: #f59e0b;">Rp {{ number_format($totalLoansPending, 0, ',', '.') }}</h3>
+        </div>
+        <div class="glass-card" style="border-left: 4px solid var(--success);">
+            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">Disetujui (Periode Ini)</p>
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--success);">Rp {{ number_format($totalLoansApproved, 0, ',', '.') }}</h3>
+        </div>
+        <div class="glass-card" style="border-left: 4px solid #f43f5e;">
+            <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 0.5rem; text-transform: uppercase;">Ditolak</p>
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: #f43f5e;">{{ $totalLoansRejected }} <span style="font-size: 1rem; font-weight: 500; opacity: 0.6;">Pengajuan</span></h3>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;">
+            <thead>
+                <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Tanggal</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Karyawan</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Keterangan</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Status</th>
+                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6; text-align: right;">Nominal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($loans as $loan)
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.02); transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.01)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 1.5rem;">{{ $loan->created_at->format('d/m/Y') }}</td>
+                    <td style="padding: 1.5rem; font-weight: 700;">{{ $loan->user->name }}</td>
+                    <td style="padding: 1.5rem; opacity: 0.9;">{{ $loan->reason }}</td>
+                    <td style="padding: 1.5rem;">
+                        @if($loan->status == 'approved')
+                            <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">DISETUJUI</span>
+                        @elseif($loan->status == 'rejected')
+                            <span style="background: rgba(244, 63, 94, 0.1); color: #f43f5e; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">DITOLAK</span>
                         @else
-                            <span style="background: rgba(244,63,94,0.1); color: #f43f5e; padding: 0.3rem 0.7rem; border-radius: 8px; font-size: 0.72rem; font-weight: 800;">DITOLAK</span>
+                            <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">PENDING</span>
                         @endif
                     </td>
-                    <td style="padding: 1.2rem; opacity: 0.6; font-size: 0.85rem;">{{ $loan->admin_note ?? '-' }}</td>
-                    <td style="padding: 1.2rem; text-align: right; font-weight: 800; color: {{ $loan->status == 'approved' ? '#10b981' : ($loan->status == 'rejected' ? '#f43f5e' : '#f59e0b') }};">
+                    <td style="padding: 1.5rem; text-align: right; font-weight: 700; color: {{ $loan->status == 'approved' ? 'var(--success)' : '#fff' }};">
                         Rp {{ number_format($loan->amount, 0, ',', '.') }}
                     </td>
                 </tr>
-                @empty
-                <tr>
-                    <td colspan="6" style="padding: 5rem; text-align: center; opacity: 0.3;">Tidak ada data pinjaman untuk periode ini.</td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
+        @if($loans->isEmpty())
+            <div style="padding: 4rem; text-align: center; opacity: 0.4;">Belum ada pengajuan pinjaman/kasbon.</div>
+        @endif
     </div>
 </div>
 @endif
 
+{{-- ================= TAB: EXPORT ================= --}}
+@if($tab == 'export')
+<div class="tab-content">
+    <div class="glass-card" style="max-width: 700px; margin: 0 auto; text-align: center;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="margin-bottom: 1rem;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">Cetak & Unduh Laporan</h3>
+        <p style="opacity: 0.6; margin-bottom: 2rem;">Pilih rentang tanggal dan jenis laporan yang ingin Anda ekspor.</p>
+        
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem; text-align: left;">
+            <div style="flex: 1;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Dari Tanggal</label>
+                <input type="date" id="exp_start" value="{{ $startDate }}" style="width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none;">
+            </div>
+            <div style="flex: 1;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Sampai Tanggal</label>
+                <input type="date" id="exp_end" value="{{ $endDate }}" style="width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none;">
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <button type="button" onclick="exportData('{{ route('admin.reports.export.excel') }}')" style="background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 1rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(16,185,129,0.2)'" onmouseout="this.style.background='rgba(16,185,129,0.1)'">
+                Unduh Data Pesanan (Excel)
+            </button>
+            <button type="button" onclick="exportData('{{ route('admin.reports.export.revenue.excel') }}')" style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #3b82f6; padding: 1rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'">
+                Unduh Rekap Pendapatan (Excel)
+            </button>
+            <button type="button" onclick="exportData('{{ route('admin.reports.export.revenue.pdf') }}')" style="grid-column: span 2; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.3); color: #f43f5e; padding: 1rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(244,63,94,0.2)'" onmouseout="this.style.background='rgba(244,63,94,0.1)'">
+                Cetak Laporan Pendapatan (PDF)
+            </button>
+        </div>
+    </div>
+</div>
 <script>
-    function toggleDetails(detailId, cardId) {
-        const details = document.getElementById(detailId);
-        const card = document.getElementById(cardId);
-        if (!details) return;
-        if (details.style.display === 'none' || details.style.display === '') {
-            details.style.display = 'block';
-            if (card) card.style.borderColor = 'var(--primary)';
-            details.scrollIntoView({ behavior: 'smooth' });
-        } else {
-            details.style.display = 'none';
-            if (card) card.style.borderColor = 'rgba(255,255,255,0.05)';
-        }
+    function exportData(baseUrl) {
+        const start = document.getElementById('exp_start').value;
+        const end = document.getElementById('exp_end').value;
+        window.location.href = baseUrl + '?start_date=' + start + '&end_date=' + end;
     }
 </script>
+@endif
+
 @endsection

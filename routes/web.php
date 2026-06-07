@@ -27,9 +27,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/services/{service}', [App\Http\Controllers\ServiceController::class, 'update'])->name('admin.services.update');
         Route::delete('/services/{service}', [App\Http\Controllers\ServiceController::class, 'destroy'])->name('admin.services.destroy');
         Route::get('/orders', [App\Http\Controllers\OrderController::class, 'adminIndex'])->name('admin.orders.index');
+        Route::post('/orders', [App\Http\Controllers\OrderController::class, 'adminStore'])->name('admin.orders.store');
+        Route::put('/orders/{order}', [App\Http\Controllers\OrderController::class, 'adminUpdate'])->name('admin.orders.update');
+        Route::patch('/orders/{order}/status', [App\Http\Controllers\OrderController::class, 'updateStatus'])->name('admin.orders.status.update');
+        Route::delete('/orders/{order}', [App\Http\Controllers\OrderController::class, 'adminDestroy'])->name('admin.orders.destroy');
         Route::get('/finances', [App\Http\Controllers\FinanceController::class, 'index'])->name('admin.finances.index');
         Route::post('/finances', [App\Http\Controllers\FinanceController::class, 'store'])->name('admin.finances.store');
         Route::delete('/finances/{finance}', [App\Http\Controllers\FinanceController::class, 'destroy'])->name('admin.finances.destroy');
+        Route::get('/finances/export/cashbook', [App\Http\Controllers\FinanceController::class, 'exportCashbookExcel'])->name('admin.finances.export.cashbook');
         
         Route::get('/employees', [App\Http\Controllers\Admin\EmployeeManagementController::class, 'index'])->name('admin.employees.index');
         Route::get('/employees/attendance', [App\Http\Controllers\Admin\EmployeeManagementController::class, 'attendance'])->name('admin.employees.attendance');
@@ -40,19 +45,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/attendance', [App\Http\Controllers\AttendanceController::class, 'index'])->name('admin.attendance.index');
         Route::get('/loans', [App\Http\Controllers\LoanController::class, 'index'])->name('admin.loans.index');
         Route::patch('/loans/{loan}', [App\Http\Controllers\LoanController::class, 'updateStatus'])->name('admin.loans.update');
-        
+        // Laporan Operasional
         Route::get('/reports', [App\Http\Controllers\ReportController::class, 'index'])->name('admin.reports.index');
         Route::get('/reports/export/excel', [App\Http\Controllers\ReportController::class, 'exportExcel'])->name('admin.reports.export.excel');
+        Route::get('/reports/export/revenue/excel', [App\Http\Controllers\ReportController::class, 'exportRevenueExcel'])->name('admin.reports.export.revenue.excel');
+        Route::get('/reports/export/revenue/pdf', [App\Http\Controllers\ReportController::class, 'exportRevenuePdf'])->name('admin.reports.export.revenue.pdf');
+        
+        // Settings
+        Route::get('/settings', [App\Http\Controllers\SettingsController::class, 'index'])->name('admin.settings.index');
+        Route::post('/settings', [App\Http\Controllers\SettingsController::class, 'update'])->name('admin.settings.update');
+        Route::post('/settings/admin', [App\Http\Controllers\SettingsController::class, 'updateAdmin'])->name('admin.settings.update-admin');
         
         Route::get('/testimonials', [App\Http\Controllers\Admin\TestimonialController::class, 'index'])->name('admin.testimonials.index');
         
-        Route::get('/settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
-        Route::post('/settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('admin.settings.update');
+        // Inventories
+        Route::resource('inventories', \App\Http\Controllers\Admin\InventoryController::class)->except(['create', 'edit', 'show'])->names([
+            'index' => 'admin.inventories.index',
+            'store' => 'admin.inventories.store',
+            'update' => 'admin.inventories.update',
+            'destroy' => 'admin.inventories.destroy',
+        ]);
+
     });
 
     Route::middleware(['role:employee'])->prefix('employee')->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'employee'])->name('employee.dashboard');
         Route::get('/orders', [App\Http\Controllers\OrderController::class, 'employeeIndex'])->name('employee.orders.index');
+        Route::post('/orders', [App\Http\Controllers\OrderController::class, 'employeeStore'])->name('employee.orders.store');
         Route::patch('/orders/{order}', [App\Http\Controllers\OrderController::class, 'updateStatus'])->name('orders.status.update');
         
         Route::post('/attendance/clock-in', [App\Http\Controllers\AttendanceController::class, 'clockIn'])->name('employee.attendance.clock-in');
@@ -73,7 +92,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Notifications (Shared for all roles)
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
-    Route::get('/api/notifications/recent', [App\Http\Controllers\NotificationController::class, 'getRecent'])->name('notifications.recent');
+    Route::get('/api/notifications/recent', [App\Http\Controllers\NotificationController::class, 'getRecent'])->middleware('throttle:15,1')->name('notifications.recent');
     Route::post('/notifications/{id}/read', [App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
     Route::post('/notifications/read-all', [App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
     Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
@@ -86,13 +105,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/orders/create', [App\Http\Controllers\OrderController::class, 'create'])->name('orders.create');
         Route::post('/orders', [App\Http\Controllers\OrderController::class, 'store'])->name('orders.store');
         Route::post('/orders/{order}/review', [App\Http\Controllers\OrderController::class, 'submitReview'])->name('orders.review.submit');
-    });
+        Route::post('/orders/{order}/cancel', [App\Http\Controllers\OrderController::class, 'cancel'])->name('orders.cancel');
+        
+        // Address Book Routes
+        Route::resource('addresses', \App\Http\Controllers\UserAddressController::class)->except(['show']);
+        
+        // Legacy Address Route (Redirect to new Address Book)
+        Route::redirect('/address', '/customer/addresses')->name('address.edit');
+        
 
+    });
     Route::get('/customer/orders/{order}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
     Route::get('/customer/orders/{order}/receipt', [App\Http\Controllers\OrderController::class, 'receipt'])->name('orders.receipt');
 });
 
-Route::post('/midtrans/callback', [App\Http\Controllers\MidtransController::class, 'callback'])->name('midtrans.callback');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
