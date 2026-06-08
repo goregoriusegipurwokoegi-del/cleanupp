@@ -26,7 +26,13 @@
     <a href="{{ route('services.index', ['category' => 'cleaning']) }}" style="text-decoration: none; color: inherit; display: block;">
         <div class="glass-card" style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(234, 88, 12, 0.1)); border: 1px solid rgba(249, 115, 22, 0.2); transition: 0.4s; height: 100%; position: relative; overflow: hidden; padding: 1rem;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(249, 115, 22, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(249, 115, 22, 0.2)'">
             <div style="background: var(--primary); width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem; box-shadow: 0 4px 10px rgba(249, 115, 22, 0.3);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 6h5.426a1 1 0 0 1 .863 .496l1.064 1.823a3 3 0 0 0 1.896 1.407l4.677 1.114a4 4 0 0 1 3.074 3.89v2.27a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-10a1 1 0 0 1 1 -1" />
+                    <path d="M14 13l1 -2" />
+                    <path d="M8 18v-1a4 4 0 0 0 -4 -4h-1" />
+                    <path d="M10 12l1.5 -3" />
+                    <path d="M18 3l.5 1.5l1.5 .5l-1.5 .5l-.5 1.5l-.5 -1.5l-1.5 -.5l1.5 -.5z" fill="white" stroke="none" />
+                </svg>
             </div>
             <h4 style="font-size: 0.95rem; margin-bottom: 0.3rem; color: #fff; font-weight: 800;">Cuci Sepatu</h4>
             <p style="font-size: 0.65rem; opacity: 0.5; line-height: 1.3; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Bersih menyeluruh, noda & bakteri hilang.</p>
@@ -41,7 +47,15 @@
     <a href="{{ route('services.index', ['category' => 'repair']) }}" style="text-decoration: none; color: inherit; display: block;">
         <div class="glass-card" style="background: linear-gradient(135deg, rgba(251, 146, 60, 0.1), rgba(249, 115, 22, 0.1)); border: 1px solid rgba(251, 146, 60, 0.2); transition: 0.4s; height: 100%; position: relative; overflow: hidden; padding: 1rem;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(251, 146, 60, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(251, 146, 60, 0.2)'">
             <div style="background: var(--secondary); width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.8rem; box-shadow: 0 4px 10px rgba(251, 146, 60, 0.3);">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a2 2 0 0 1-2.83-2.83l-3.94 3.6z"/><path d="m20 13-6.83 6.83a2 2 0 0 1-2.83 0l-1.07-1.07-1.59 1.59a1 1 0 0 1-1.4 0l-1.61-1.61a1 1 0 0 1 0-1.4l1.59-1.59-1.07-1.07a2 2 0 0 1 0-2.83L11 5"/><path d="m6.41 11.59 3.18 3.18"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 6h5.426a1 1 0 0 1 .863 .496l1.064 1.823a3 3 0 0 0 1.896 1.407l4.677 1.114a4 4 0 0 1 3.074 3.89v2.27a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-10a1 1 0 0 1 1 -1" />
+                    <path d="M14 13l1 -2" />
+                    <path d="M8 18v-1a4 4 0 0 0 -4 -4h-1" />
+                    <path d="M10 12l1.5 -3" />
+                    <g transform="translate(11, -1) scale(0.55)">
+                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                    </g>
+                </svg>
             </div>
             <h4 style="font-size: 0.95rem; margin-bottom: 0.3rem; color: #fff; font-weight: 800;">Reparasi</h4>
             <p style="font-size: 0.65rem; opacity: 0.5; line-height: 1.3; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">Sol lepas, jahit ulang & restorasi total.</p>

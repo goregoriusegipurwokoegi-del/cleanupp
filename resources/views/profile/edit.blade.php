@@ -267,7 +267,7 @@
 
             <div class="field-group" style="margin-bottom: 1.5rem;">
                 <label class="form-label">Nomor WhatsApp</label>
-                <input type="text" name="phone" class="form-input" value="{{ old('phone', $user->phone ?? '') }}" placeholder="Contoh: 08123456789" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                <input type="text" name="phone" class="form-input" value="{{ old('phone', $user->phone ?? '') }}" required placeholder="Contoh: 08123456789" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                 <p style="opacity: 0.45; font-size: 0.73rem; margin-top: 0.4rem;">Format: 08xxx atau 628xxx</p>
                 @if($errors->get('phone'))
                     <p class="field-error">{{ $errors->get('phone')[0] }}</p>

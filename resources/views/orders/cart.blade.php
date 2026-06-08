@@ -40,7 +40,45 @@
         <a href="{{ route('services.index') }}" style="background: var(--primary); color: #000; padding: 12px 24px; border-radius: 14px; font-weight: 800; text-decoration: none; display: inline-block;">Lihat Layanan Kami</a>
     </div>
 @else
-    <div style="display: grid; grid-template-columns: 1fr 350px; gap: 30px; align-items: start;">
+    <style>
+        .cart-layout {
+            display: grid; 
+            grid-template-columns: 1fr 350px; 
+            gap: 30px; 
+            align-items: start;
+        }
+        .cart-item-card {
+            background: rgba(255,255,255,0.02); 
+            border: 1px solid rgba(255,255,255,0.05); 
+            padding: 16px; 
+            border-radius: 20px; 
+            display: flex; 
+            gap: 16px; 
+            align-items: center;
+        }
+        @media (max-width: 900px) {
+            .cart-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 480px) {
+            .cart-item-card {
+                padding: 12px;
+                gap: 12px;
+            }
+            .item-title {
+                font-size: 1rem !important;
+            }
+            .item-details {
+                font-size: 0.75rem !important;
+            }
+            .item-price {
+                font-size: 1rem !important;
+            }
+        }
+    </style>
+
+    <div class="cart-layout">
         <!-- Cart Items -->
         <div style="display: flex; flex-direction: column; gap: 15px;">
             @php $totalAmount = 0; @endphp
@@ -52,8 +90,8 @@
                     }
                     $totalAmount += $itemPrice;
                 @endphp
-                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; display: flex; gap: 20px; align-items: center;">
-                    <div style="width: 80px; height: 80px; border-radius: 16px; overflow: hidden; background: #000; flex-shrink: 0;">
+                <div class="cart-item-card">
+                    <div style="width: 80px; height: 80px; border-radius: 14px; overflow: hidden; background: #0f172a; flex-shrink: 0; position: relative;">
                         @if($item['service_image'])
                             <img src="{{ asset('storage/' . $item['service_image']) }}" style="width: 100%; height: 100%; object-fit: cover;">
                         @else
@@ -64,28 +102,28 @@
                     </div>
                     
                     <div style="flex-grow: 1;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
-                            <h4 style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #fff;">{{ $item['service_name'] }}</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                            <h4 class="item-title" style="font-size: 1.1rem; font-weight: 800; margin: 0; color: #fff; line-height: 1.2;">{{ $item['service_name'] }}</h4>
                             <form action="{{ route('cart.remove', $id) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                <button type="submit" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                 </button>
                             </form>
                         </div>
                         
-                        <p style="font-size: 0.8rem; color: #94a3b8; margin: 0 0 10px 0;">
+                        <p class="item-details" style="font-size: 0.8rem; color: #94a3b8; margin: 0 0 8px 0; line-height: 1.4;">
                             Sepatu: {{ $item['shoe_name'] }} 
                             @if($item['shoe_size']) (Size: {{ $item['shoe_size'] }}) @endif
                             | Jumlah: {{ $item['shoe_quantity'] }}
                         </p>
                         
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.75rem; font-weight: 700; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 6px; text-transform: uppercase;">
-                                {{ $item['processing_speed'] == 'express' ? '⚡ Express (+25k)' : 'Regular' }}
+                            <span style="font-size: 0.65rem; font-weight: 800; background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 6px; text-transform: uppercase; color: {{ $item['processing_speed'] == 'express' ? '#f59e0b' : '#fff' }};">
+                                {{ $item['processing_speed'] == 'express' ? '⚡ Express' : 'Regular' }}
                             </span>
-                            <span style="font-weight: 800; font-size: 1.1rem; color: var(--primary);">Rp {{ number_format($itemPrice, 0, ',', '.') }}</span>
+                            <span class="item-price" style="font-weight: 900; font-size: 1.1rem; color: var(--primary);">Rp {{ number_format($itemPrice, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
@@ -93,42 +131,31 @@
         </div>
 
         <!-- Summary -->
-        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 24px; border-radius: 20px; position: sticky; top: 20px;">
-            <h4 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 20px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 15px;">Ringkasan Belanja</h4>
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; position: sticky; top: 20px;">
+            <h4 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 12px;">Ringkasan Belanja</h4>
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <span style="font-size: 0.85rem; color: #94a3b8;">Total Item</span>
-                <span style="font-weight: 800;">{{ count($cart) }} Layanan</span>
+                <span style="font-weight: 800; font-size: 0.9rem;">{{ count($cart) }} Layanan</span>
             </div>
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <span style="font-size: 0.85rem; color: #94a3b8;">Subtotal Layanan</span>
-                <span style="font-weight: 800;">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
+                <span style="font-weight: 900; font-size: 1.1rem; color: var(--primary);">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
             </div>
 
-            <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 20px; margin-bottom: 24px;">
-                <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 5px;">Biaya pengiriman/jemput dihitung saat Checkout.</p>
+            <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 16px; margin-bottom: 20px;">
+                <p style="font-size: 0.7rem; color: #64748b; margin-bottom: 0; line-height: 1.4;">Biaya pengiriman/jemput dihitung otomatis pada saat Checkout.</p>
             </div>
 
-            <a href="{{ route('orders.checkout') }}" style="display: block; width: 100%; text-align: center; background: var(--primary); color: #000; padding: 14px; border-radius: 14px; font-weight: 900; font-size: 0.95rem; text-decoration: none; transition: 0.3s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <a href="{{ route('orders.checkout') }}" style="display: block; width: 100%; text-align: center; background: var(--primary); color: #000; padding: 12px; border-radius: 12px; font-weight: 900; font-size: 0.9rem; text-decoration: none; transition: 0.3s; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                 LANJUT CHECKOUT
             </a>
             
-            <a href="{{ route('services.index') }}" style="display: block; width: 100%; text-align: center; margin-top: 15px; font-size: 0.8rem; color: #94a3b8; font-weight: 700; text-decoration: none;">
+            <a href="{{ route('services.index') }}" style="display: block; width: 100%; text-align: center; margin-top: 12px; font-size: 0.8rem; color: #94a3b8; font-weight: 700; text-decoration: none;">
                 Tambah Layanan Lain
             </a>
         </div>
     </div>
-    
-    <style>
-        @media (max-width: 768px) {
-            .grid-template-columns {
-                grid-template-columns: 1fr !important;
-            }
-        }
-    </style>
-    <script>
-        document.querySelector('.grid-template-columns')?.classList.add('grid-template-columns');
-    </script>
 @endif
 @endsection

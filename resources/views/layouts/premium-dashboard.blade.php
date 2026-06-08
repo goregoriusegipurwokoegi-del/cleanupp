@@ -594,6 +594,19 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('cart.index') }}" class="nav-link {{ request()->routeIs('cart.index') ? 'active' : '' }}" style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                            <span>Keranjang Saya</span>
+                        </div>
+                        @if(Session::has('cart') && count(Session::get('cart')) > 0)
+                            <span style="background: var(--primary); color: #000; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4); margin-left: 0.5rem; line-height: 1;">
+                                {{ count(Session::get('cart')) }}
+                            </span>
+                        @endif
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('orders.my-orders') }}" class="nav-link {{ request()->routeIs('orders.my-orders') ? 'active' : '' }}" style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 0.8rem;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
@@ -854,11 +867,14 @@
             </div>
             Pesanan
         </a>
-        <a href="{{ route('orders.history') }}" class="mobile-nav-item {{ request()->routeIs('orders.history') ? 'active' : '' }}">
+        <a href="{{ route('cart.index') }}" class="mobile-nav-item {{ request()->routeIs('cart.index') ? 'active' : '' }}">
             <div class="mobile-nav-icon-wrapper">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                @if(Session::has('cart') && count(Session::get('cart')) > 0)
+                    <span class="mobile-nav-badge">{{ count(Session::get('cart')) }}</span>
+                @endif
             </div>
-            Riwayat
+            Keranjang
         </a>
         <a href="{{ route('profile.edit') }}" class="mobile-nav-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
             <div class="mobile-nav-icon-wrapper">

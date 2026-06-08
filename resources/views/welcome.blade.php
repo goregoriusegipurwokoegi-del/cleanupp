@@ -444,12 +444,32 @@
             <div class="services-grid">
                 <div class="service-card cuci">
                     <!-- Clean Lucide Icon instead of OS emoji -->
-                    <h3><i data-lucide="droplets" size="24" style="color: #3b82f6;"></i> Cuci Sepatu</h3>
+                    <h3>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                            <path d="M4 6h5.426a1 1 0 0 1 .863 .496l1.064 1.823a3 3 0 0 0 1.896 1.407l4.677 1.114a4 4 0 0 1 3.074 3.89v2.27a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-10a1 1 0 0 1 1 -1" />
+                            <path d="M14 13l1 -2" />
+                            <path d="M8 18v-1a4 4 0 0 0 -4 -4h-1" />
+                            <path d="M10 12l1.5 -3" />
+                            <path d="M18 3l.5 1.5l1.5 .5l-1.5 .5l-.5 1.5l-.5 -1.5l-1.5 -.5l1.5 -.5z" fill="#3b82f6" stroke="none" />
+                        </svg>
+                        Cuci Sepatu
+                    </h3>
                     <p>Pembersihan mendalam untuk semua jenis material, menghilangkan noda membandel dan bau tidak sedap.</p>
                 </div>
                 <div class="service-card reparasi">
                     <!-- Clean Lucide Icon instead of OS emoji -->
-                    <h3><i data-lucide="wrench" size="24" style="color: #94a3b8;"></i> Reparasi Sepatu</h3>
+                    <h3>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                            <path d="M4 6h5.426a1 1 0 0 1 .863 .496l1.064 1.823a3 3 0 0 0 1.896 1.407l4.677 1.114a4 4 0 0 1 3.074 3.89v2.27a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-10a1 1 0 0 1 1 -1" />
+                            <path d="M14 13l1 -2" />
+                            <path d="M8 18v-1a4 4 0 0 0 -4 -4h-1" />
+                            <path d="M10 12l1.5 -3" />
+                            <g transform="translate(11, -1) scale(0.55)">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+                            </g>
+                        </svg>
+                        Reparasi Sepatu
+                    </h3>
                     <p>Perbaikan sol, jahitan, hingga restorasi warna agar sepatu lama Anda kembali terlihat seperti baru.</p>
                 </div>
             </div>

@@ -19,27 +19,32 @@
 @section('content')
 <style>
     .service-card {
-        background: #1e293b;
-        border-radius: 28px;
+        background: #1e293b; /* Fallback */
+        background: var(--card-bg, #1e293b);
+        border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.05);
         overflow: hidden;
-        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
-        flex-direction: column;
-        height: 100%;
+        flex-direction: row;
+        align-items: stretch;
+        padding: 12px;
+        gap: 16px;
         position: relative;
     }
     .service-card:hover {
-        transform: translateY(-10px);
-        border-color: var(--primary);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        transform: translateY(-4px);
+        border-color: rgba(249, 115, 22, 0.5); /* subtle primary border */
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
     }
     .service-image-container {
-        width: 100%;
-        height: 200px;
+        width: 100px;
+        height: 100px;
+        flex-shrink: 0;
         position: relative;
         overflow: hidden;
         background: #0f172a;
+        border-radius: 14px;
     }
     .service-image {
         width: 100%;
@@ -48,78 +53,101 @@
         transition: 0.6s;
     }
     .service-card:hover .service-image {
-        transform: scale(1.1);
+        transform: scale(1.05);
     }
     .service-badge {
         position: absolute;
-        top: 15px;
-        right: 15px;
-        background: rgba(0,0,0,0.6);
-        backdrop-filter: blur(10px);
-        padding: 6px 12px;
-        border-radius: 12px;
-        font-size: 0.7rem;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(4px);
+        padding: 4px;
+        font-size: 0.6rem;
+        text-align: center;
         font-weight: 800;
         color: #fff;
-        border: 1px solid rgba(255,255,255,0.1);
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
     }
     .service-content {
-        padding: 24px;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
+        justify-content: center;
+        padding: 0;
     }
     .service-title {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
         font-weight: 800;
         color: #fff;
-        margin-bottom: 10px;
+        margin-bottom: 4px;
+        line-height: 1.2;
     }
     .service-desc {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         color: #94a3b8;
-        line-height: 1.6;
-        margin-bottom: 20px;
-        flex-grow: 1;
+        line-height: 1.4;
+        margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
     .service-footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-top: auto;
-        padding-top: 20px;
-        border-top: 1px solid rgba(255,255,255,0.05);
     }
     .price-label {
-        font-size: 0.65rem;
+        font-size: 0.6rem;
         color: #64748b;
         text-transform: uppercase;
         font-weight: 700;
         display: block;
+        margin-bottom: 2px;
     }
     .price-value {
-        font-size: 1.15rem;
+        font-size: 1.05rem;
         font-weight: 900;
-        color: #fff;
+        color: var(--primary);
     }
     .btn-order {
         background: var(--primary);
         color: #000;
-        padding: 10px 20px;
-        border-radius: 14px;
-        font-weight: 900;
-        font-size: 0.85rem;
+        padding: 8px 14px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 0.8rem;
         text-decoration: none;
         transition: 0.3s;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
+        border: none;
+        cursor: pointer;
     }
     .btn-order:hover {
-        box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+        box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
         transform: scale(1.05);
+    }
+    /* Mobile optimization */
+    @media (max-width: 480px) {
+        .service-image-container {
+            width: 85px;
+            height: 85px;
+        }
+        .service-title {
+            font-size: 1rem;
+        }
+        .price-value {
+            font-size: 0.95rem;
+        }
+        .btn-order {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+        }
     }
 </style>
 
