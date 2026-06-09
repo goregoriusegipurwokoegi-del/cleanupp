@@ -425,13 +425,15 @@
             </div>
             <div class="modal-grid-2">
                 <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Layanan</label>
-                    <select name="service_id" required class="filter-input" style="width: 100%; background: #1e1e24;">
-                        <option value="">Pilih Layanan</option>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Layanan (Bisa Pilih Lebih dari Satu)</label>
+                    <div style="background: #1e1e24; border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;" class="custom-scroll">
                         @foreach($services as $serv)
-                            <option value="{{ $serv->id }}">{{ $serv->name }} (Rp{{ number_format($serv->price, 0, ',', '.') }})</option>
+                            <label style="display: flex; align-items: center; gap: 10px; color: #fff; font-size: 0.85rem; cursor: pointer; user-select: none;">
+                                <input type="checkbox" name="service_ids[]" value="{{ $serv->id }}" style="width: 18px; height: 18px; accent-color: var(--primary);">
+                                <span>{{ $serv->name }} <span style="color: var(--primary); font-weight: 700;">(Rp{{ number_format($serv->price, 0, ',', '.') }})</span></span>
+                            </label>
                         @endforeach
-                    </select>
+                    </div>
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Kecepatan</label>

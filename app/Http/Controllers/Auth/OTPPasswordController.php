@@ -67,10 +67,13 @@ class OTPPasswordController extends Controller
 
     public function resetPassword(Request $request)
     {
+        $user = User::where('email', $request->email)->first();
+        $minPasswordLength = ($user && $user->role === 'admin') ? 12 : 8;
+
         $request->validate([
             'email' => 'required|email',
             'otp' => 'required',
-            'password' => 'required|min:8|confirmed',
+            'password' => 'required|min:' . $minPasswordLength . '|confirmed',
         ]);
 
         $record = DB::table('password_reset_otps')

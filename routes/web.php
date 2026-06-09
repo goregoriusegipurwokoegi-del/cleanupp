@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         // Customers
         Route::get('/customers', [App\Http\Controllers\Admin\CustomerManagementController::class, 'index'])->name('admin.customers.index');
+        Route::post('/customers', [App\Http\Controllers\Admin\CustomerManagementController::class, 'store'])->name('admin.customers.store');
         Route::put('/customers/{customer}', [App\Http\Controllers\Admin\CustomerManagementController::class, 'update'])->name('admin.customers.update');
         Route::delete('/customers/{customer}', [App\Http\Controllers\Admin\CustomerManagementController::class, 'destroy'])->name('admin.customers.destroy');
         

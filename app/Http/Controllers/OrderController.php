@@ -575,7 +575,9 @@ class OrderController extends Controller
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'service_id' => 'required|exists:services,id',
+            'service_id' => 'required_without:service_ids|nullable|exists:services,id',
+            'service_ids' => 'required_without:service_id|nullable|array',
+            'service_ids.*' => 'exists:services,id',
             'processing_speed' => 'required|in:regular,express',
             'shoe_name' => 'required|string|max:255',
             'shoe_size' => 'required|string|max:10',
@@ -586,56 +588,64 @@ class OrderController extends Controller
             'shoe_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $mainService = \App\Models\Service::findOrFail($request->service_id);
         $shoeQuantity = $request->input('shoe_quantity', 1);
-        $totalPrice = $mainService->price * $shoeQuantity;
-
-        if ($request->processing_speed === 'express') {
-            $totalPrice += (25000 * $shoeQuantity);
-        }
+        $groupId = 'INV-' . strtoupper(\Illuminate\Support\Str::random(8));
 
         $photoPath = null;
         if ($request->hasFile('shoe_photo')) {
             $photoPath = $request->file('shoe_photo')->store('orders/photos', 'public');
         }
 
-        $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(8));
-        $lastOrder = Order::orderBy('id', 'desc')->first();
-        $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
-        $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-
-        $customerName = Auth::user()->name;
-        $customerPhone = Auth::user()->phone;
-        $customerAddress = Auth::user()->address;
+        $customer = User::findOrFail($request->user_id);
+        $customerName = $customer->name;
+        $customerPhone = $customer->phone;
+        $customerAddress = $customer->address;
         
-        if ($request->is_delivery) {
-            $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
-            if ($mainAddress) {
-                $customerName = $mainAddress->recipient_name;
-                $customerPhone = $mainAddress->phone;
-                $customerAddress = $mainAddress->full_address . ', ' . $mainAddress->village . ', ' . $mainAddress->kecamatan . ', ' . $mainAddress->city;
-            }
+        $mainAddress = $customer->addresses()->where('is_main_address', true)->first();
+        if ($mainAddress) {
+            $customerName = $mainAddress->recipient_name;
+            $customerPhone = $mainAddress->phone;
+            $customerAddress = $mainAddress->full_address . ', ' . $mainAddress->village . ', ' . $mainAddress->kecamatan . ', ' . $mainAddress->city;
         }
 
-        Order::create([
-            'order_number' => $orderNumber,
-            'user_id' => $request->user_id,
-            'service_id' => $mainService->id,
-            'customer_name' => $customerName,
-            'customer_phone' => $customerPhone,
-            'customer_address' => $customerAddress,
-            'processing_speed' => $request->processing_speed,
-            'queue_number' => $queueNumber,
-            'status' => $request->status,
-            'total_price' => $totalPrice,
-            'payment_method' => $request->payment_method,
-            'payment_status' => $request->payment_status,
-            'reception_date' => now(),
-            'shoe_name' => $request->shoe_name,
-            'shoe_size' => $request->shoe_size,
-            'photo_before' => $photoPath,
-            'shoe_quantity' => $shoeQuantity,
-        ]);
+        $serviceIds = $request->has('service_ids') ? $request->service_ids : [$request->service_id];
+
+        foreach ($serviceIds as $serviceId) {
+            if (!$serviceId) continue;
+            
+            $mainService = \App\Models\Service::findOrFail($serviceId);
+            $totalPrice = $mainService->price * $shoeQuantity;
+
+            if ($request->processing_speed === 'express') {
+                $totalPrice += (25000 * $shoeQuantity);
+            }
+
+            $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(8));
+            $lastOrder = Order::orderBy('id', 'desc')->first();
+            $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
+            $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+            Order::create([
+                'group_id' => $groupId,
+                'order_number' => $orderNumber,
+                'user_id' => $request->user_id,
+                'service_id' => $mainService->id,
+                'customer_name' => $customerName,
+                'customer_phone' => $customerPhone,
+                'customer_address' => $customerAddress,
+                'processing_speed' => $request->processing_speed,
+                'queue_number' => $queueNumber,
+                'status' => $request->status,
+                'total_price' => $totalPrice,
+                'payment_method' => $request->payment_method,
+                'payment_status' => $request->payment_status,
+                'reception_date' => now(),
+                'shoe_name' => $request->shoe_name,
+                'shoe_size' => $request->shoe_size,
+                'photo_before' => $photoPath,
+                'shoe_quantity' => $shoeQuantity,
+            ]);
+        }
 
         return redirect()->route('admin.orders.index')->with('success', 'Pesanan baru berhasil dibuat oleh admin!');
     }
@@ -767,7 +777,9 @@ class OrderController extends Controller
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'service_id' => 'required|exists:services,id',
+            'service_id' => 'required_without:service_ids|nullable|exists:services,id',
+            'service_ids' => 'required_without:service_id|nullable|array',
+            'service_ids.*' => 'exists:services,id',
             'processing_speed' => 'required|in:regular,express',
             'shoe_name' => 'required|string|max:255',
             'shoe_size' => 'required|string|max:10',
@@ -778,56 +790,64 @@ class OrderController extends Controller
             'shoe_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $mainService = \App\Models\Service::findOrFail($request->service_id);
         $shoeQuantity = $request->input('shoe_quantity', 1);
-        $totalPrice = $mainService->price * $shoeQuantity;
-
-        if ($request->processing_speed === 'express') {
-            $totalPrice += (25000 * $shoeQuantity);
-        }
+        $groupId = 'INV-' . strtoupper(\Illuminate\Support\Str::random(8));
 
         $photoPath = null;
         if ($request->hasFile('shoe_photo')) {
             $photoPath = $request->file('shoe_photo')->store('orders/photos', 'public');
         }
 
-        $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(8));
-        $lastOrder = Order::orderBy('id', 'desc')->first();
-        $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
-        $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-
-        $customerName = Auth::user()->name;
-        $customerPhone = Auth::user()->phone;
-        $customerAddress = Auth::user()->address;
+        $customer = User::findOrFail($request->user_id);
+        $customerName = $customer->name;
+        $customerPhone = $customer->phone;
+        $customerAddress = $customer->address;
         
-        if ($request->is_delivery) {
-            $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
-            if ($mainAddress) {
-                $customerName = $mainAddress->recipient_name;
-                $customerPhone = $mainAddress->phone;
-                $customerAddress = $mainAddress->full_address . ', ' . $mainAddress->village . ', ' . $mainAddress->kecamatan . ', ' . $mainAddress->city;
-            }
+        $mainAddress = $customer->addresses()->where('is_main_address', true)->first();
+        if ($mainAddress) {
+            $customerName = $mainAddress->recipient_name;
+            $customerPhone = $mainAddress->phone;
+            $customerAddress = $mainAddress->full_address . ', ' . $mainAddress->village . ', ' . $mainAddress->kecamatan . ', ' . $mainAddress->city;
         }
 
-        Order::create([
-            'order_number' => $orderNumber,
-            'user_id' => $request->user_id,
-            'service_id' => $mainService->id,
-            'customer_name' => $customerName,
-            'customer_phone' => $customerPhone,
-            'customer_address' => $customerAddress,
-            'processing_speed' => $request->processing_speed,
-            'queue_number' => $queueNumber,
-            'status' => $request->status,
-            'total_price' => $totalPrice,
-            'payment_method' => $request->payment_method,
-            'payment_status' => $request->payment_status,
-            'reception_date' => now(),
-            'shoe_name' => $request->shoe_name,
-            'shoe_size' => $request->shoe_size,
-            'photo_before' => $photoPath,
-            'shoe_quantity' => $shoeQuantity,
-        ]);
+        $serviceIds = $request->has('service_ids') ? $request->service_ids : [$request->service_id];
+
+        foreach ($serviceIds as $serviceId) {
+            if (!$serviceId) continue;
+            
+            $mainService = \App\Models\Service::findOrFail($serviceId);
+            $totalPrice = $mainService->price * $shoeQuantity;
+
+            if ($request->processing_speed === 'express') {
+                $totalPrice += (25000 * $shoeQuantity);
+            }
+
+            $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(8));
+            $lastOrder = Order::orderBy('id', 'desc')->first();
+            $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
+            $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+            Order::create([
+                'group_id' => $groupId,
+                'order_number' => $orderNumber,
+                'user_id' => $request->user_id,
+                'service_id' => $mainService->id,
+                'customer_name' => $customerName,
+                'customer_phone' => $customerPhone,
+                'customer_address' => $customerAddress,
+                'processing_speed' => $request->processing_speed,
+                'queue_number' => $queueNumber,
+                'status' => $request->status,
+                'total_price' => $totalPrice,
+                'payment_method' => $request->payment_method,
+                'payment_status' => $request->payment_status,
+                'reception_date' => now(),
+                'shoe_name' => $request->shoe_name,
+                'shoe_size' => $request->shoe_size,
+                'photo_before' => $photoPath,
+                'shoe_quantity' => $shoeQuantity,
+            ]);
+        }
 
         return redirect()->route('employee.orders.index')->with('success', 'Pesanan baru berhasil dibuat oleh karyawan!');
     }
