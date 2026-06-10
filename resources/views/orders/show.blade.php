@@ -511,7 +511,19 @@
 
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
-            alert('Nomor pesanan berhasil disalin!');
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil disalin!',
+                text: 'Nomor pesanan telah disalin ke clipboard.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                background: '#121214',
+                color: '#fff',
+                iconColor: '#f97316'
+            });
         });
     }
 

@@ -190,7 +190,7 @@
                     </span>
                     <span class="order-date-text">{{ $order->created_at->format('d M Y, H:i') }}</span>
                 </div>
-                <a href="{{ route('orders.create', ['service_id' => $order->service_id]) }}" class="btn-reorder-compact">Pesan Lagi</a>
+                <a href="{{ route('services.index') }}" class="btn-reorder-compact">Pesan Lagi</a>
             </div>
         </div>
     @empty

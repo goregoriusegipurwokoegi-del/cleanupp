@@ -174,11 +174,32 @@
         from { opacity: 0; transform: translateY(20px) scale(0.97); }
         to   { opacity: 1; transform: translateY(0)  scale(1); }
     }
-    .modal-img {
+    .modal-img-container {
         width: 100%;
-        height: 220px;
-        object-fit: cover;
+        height: 250px;
+        position: relative;
+        overflow: hidden;
         border-radius: 24px 24px 0 0;
+        background: #0f172a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-img-blur {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        filter: blur(15px) brightness(0.4);
+        transform: scale(1.1);
+        z-index: 1;
+    }
+    .modal-img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        position: relative;
+        z-index: 2;
         display: block;
     }
     .modal-body { padding: 1.75rem; }
@@ -195,6 +216,7 @@
         display: flex; align-items: center; justify-content: center;
         line-height: 1;
         transition: background 0.2s;
+        z-index: 10;
     }
     .modal-close:hover { background: rgba(239,68,68,0.7); }
     .modal-badge {
@@ -285,12 +307,12 @@
         animation: modalIn 0.25s cubic-bezier(0.4,0,0.2,1);
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 576px) {
         .service-image-container { width: 85px; height: 85px; }
         .service-title { font-size: 1rem; }
         .price-value { font-size: 0.95rem; }
         .btn-order { padding: 6px 12px; font-size: 0.75rem; }
-        .modal-img { height: 170px; }
+        .modal-img-container { height: 180px; }
         .modal-title { font-size: 1.2rem; }
     }
 </style>
@@ -374,8 +396,11 @@
         <button class="modal-close" onclick="closeModal('detailModal')">&times;</button>
 
         {{-- Gambar header --}}
-        <img id="detail_img" src="" class="modal-img"
-             onerror="this.style.display='none'">
+        <div class="modal-img-container">
+            <div id="detail_img_blur" class="modal-img-blur"></div>
+            <img id="detail_img" src="" class="modal-img"
+                 onerror="this.style.display='none'">
+        </div>
 
         <div class="modal-body">
             <div class="modal-badge">
@@ -432,14 +457,14 @@
                 <label style="display:block;font-size:0.8rem;font-weight:700;color:#94a3b8;margin-bottom:5px;">
                     Nama Sepatu <span style="color:#ef4444;">*</span>
                 </label>
-                <input type="text" name="shoe_name" required placeholder="Cth: Nike Air Force 1"
+                <input type="text" name="shoe_name" required placeholder="Cth: Nike Air Force 1" value="{{ $lastCartItem['shoe_name'] ?? '' }}"
                        style="width:100%;padding:12px;border-radius:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.1);color:#fff;">
             </div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
                 <div>
                     <label style="display:block;font-size:0.8rem;font-weight:700;color:#94a3b8;margin-bottom:5px;">Ukuran (Opsional)</label>
-                    <input type="text" name="shoe_size" placeholder="Cth: 42"
+                    <input type="text" name="shoe_size" placeholder="Cth: 42" value="{{ $lastCartItem['shoe_size'] ?? '' }}"
                            style="width:100%;padding:12px;border-radius:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.1);color:#fff;">
                 </div>
                 <div>
@@ -479,14 +504,28 @@
 
         // Gambar
         const img = document.getElementById('detail_img');
+        const imgBlur = document.getElementById('detail_img_blur');
+        
         if (service.image) {
-            img.src = '/storage/' + service.image;
+            const imgSrc = '/storage/' + service.image;
+            img.src = imgSrc;
             img.style.display = 'block';
+            img.style.opacity = '1';
+            img.style.filter = 'none';
+            if (imgBlur) {
+                imgBlur.style.backgroundImage = "url('" + imgSrc + "')";
+                imgBlur.style.display = 'block';
+            }
         } else {
-            img.src = 'https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=2012&auto=format&fit=crop';
+            const fallbackSrc = 'https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=2012&auto=format&fit=crop';
+            img.src = fallbackSrc;
             img.style.display = 'block';
             img.style.opacity = '0.35';
             img.style.filter = 'grayscale(1)';
+            if (imgBlur) {
+                imgBlur.style.backgroundImage = 'none';
+                imgBlur.style.display = 'none';
+            }
         }
 
         // Info

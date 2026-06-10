@@ -10,17 +10,16 @@ return new class extends Migration
      * Run the migrations.
      * 
      * Catatan: Kolom payment_status (unpaid/paid) sudah ada sejak migrasi awal.
-     * Kolom status_pembayaran ini digunakan khusus untuk tracking status
-     * transaksi Midtrans (pending/success/failed).
+     * Kolom status_pembayaran digunakan untuk tracking status pembayaran order.
      */
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            // Tambahkan kolom status_pembayaran untuk tracking Midtrans
+            // Tambahkan kolom status_pembayaran untuk tracking status pembayaran
             // Berbeda dengan payment_status yang hanya 'unpaid'/'paid'
             if (!Schema::hasColumn('orders', 'status_pembayaran')) {
                 $table->string('status_pembayaran')->default('pending')->after('snap_token')
-                      ->comment('Status transaksi Midtrans: pending, success, failed');
+                      ->comment('Status pembayaran: pending, success, failed');
             }
         });
     }

@@ -123,7 +123,7 @@
             border-radius: 20px !important;
         }
     }
-    @media (max-width: 480px) {
+    @media (max-width: 576px) {
         .kpi-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;

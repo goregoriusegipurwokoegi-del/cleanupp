@@ -528,6 +528,7 @@
                         <option value="express">Express</option>
                     </select>
                 </div>
+            </div>
             <div class="modal-grid-2">
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Nama Sepatu</label>

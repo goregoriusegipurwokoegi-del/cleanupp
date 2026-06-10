@@ -31,7 +31,7 @@
             order: 2;
         }
     }
-    @media (max-width: 480px) {
+    @media (max-width: 576px) {
         .glass-card {
             padding: 1.2rem !important;
         }
@@ -517,8 +517,16 @@
         const isProfileComplete = {{ $isProfileComplete ? 'true' : 'false' }};
         
         if (isDelivery && !isProfileComplete) {
-            alert('Alamat pengiriman Anda belum lengkap. Anda akan diarahkan ke pengaturan alamat.');
-            window.location.href = "{{ route('address.edit') }}";
+            Swal.fire({
+                icon: 'warning',
+                title: 'Alamat Belum Lengkap',
+                text: 'Alamat pengiriman Anda belum lengkap. Anda akan diarahkan ke pengaturan alamat.',
+                confirmButtonColor: '#f97316',
+                background: '#121214',
+                color: '#fff'
+            }).then(() => {
+                window.location.href = "{{ route('address.edit') }}";
+            });
             return;
         }
 
@@ -729,7 +737,14 @@
         const shoeSize = document.querySelector('input[name="shoe_size"]')?.value;
 
         if (!isDelivery && (!shoeName || !shoeSize)) {
-            alert('Silakan isi nama sepatu dan ukuran terlebih dahulu.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Data Belum Lengkap',
+                text: 'Silakan isi nama sepatu dan ukuran terlebih dahulu.',
+                confirmButtonColor: '#f97316',
+                background: '#121214',
+                color: '#fff'
+            });
             return;
         }
 

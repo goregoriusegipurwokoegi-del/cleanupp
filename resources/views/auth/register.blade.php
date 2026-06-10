@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -243,7 +244,14 @@
                 document.getElementById('step1').style.display = 'none';
                 document.getElementById('step2').style.display = 'block';
             } else {
-                alert('Harap isi Nama dan No. HP terlebih dahulu!');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Lengkapi Data',
+                    text: 'Harap isi Nama dan No. HP terlebih dahulu!',
+                    confirmButtonColor: '#3b82f6',
+                    background: '#111827',
+                    color: '#fff'
+                });
             }
         }
 

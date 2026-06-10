@@ -238,7 +238,7 @@
             }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 576px) {
             .main-content {
                 padding: 0.7rem;
                 padding-bottom: 120px !important;
@@ -252,6 +252,31 @@
             }
             h3 {
                 font-size: clamp(0.9rem, 3.5vw, 1.1rem) !important;
+            }
+            /* Global SweetAlert2 Mobile Scaling */
+            .swal2-popup {
+                font-size: 0.8rem !important;
+                padding: 1rem !important;
+                width: 90% !important;
+                border-radius: 16px !important;
+            }
+            .swal2-title {
+                font-size: 1.15rem !important;
+                margin-top: 5px !important;
+            }
+            .swal2-html-container {
+                font-size: 0.85rem !important;
+                margin: 8px 0 0 0 !important;
+            }
+            .swal2-styled {
+                padding: 8px 16px !important;
+                font-size: 0.8rem !important;
+                border-radius: 8px !important;
+                margin: 5px !important;
+            }
+            .swal2-icon {
+                transform: scale(0.85);
+                margin: 10px auto 5px auto !important;
             }
         }
 
@@ -898,6 +923,106 @@
                 icon.style.transform = 'rotate(0deg)';
             }
         }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Automatic SweetAlert2 confirm wrapper for all views (Customer, Employee, Admin)
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. Intercept forms with inline confirm onsubmit
+            document.querySelectorAll('form').forEach(form => {
+                const onsubmitAttr = form.getAttribute('onsubmit');
+                if (onsubmitAttr && onsubmitAttr.includes('confirm(')) {
+                    // Extract the confirm message
+                    let match = onsubmitAttr.match(/confirm\(['"](.*?)['"]\)/);
+                    let message = match ? match[1] : 'Apakah Anda yakin?';
+                    
+                    // Remove the native onsubmit
+                    form.removeAttribute('onsubmit');
+                    
+                    // Add submit event listener
+                    form.addEventListener('submit', function(e) {
+                        if (form.dataset.swalConfirmed === 'true') {
+                            return true;
+                        }
+                        e.preventDefault();
+                        
+                        Swal.fire({
+                            title: 'Konfirmasi Tindakan',
+                            text: message,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#f97316',
+                            cancelButtonColor: '#4b5563',
+                            confirmButtonText: 'Ya, Lanjutkan',
+                            cancelButtonText: 'Batal',
+                            background: '#121214',
+                            color: '#fff'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.dataset.swalConfirmed = 'true';
+                                form.submit();
+                            }
+                        });
+                    });
+                }
+            });
+
+            // 2. Intercept buttons with inline confirm onclick
+            document.querySelectorAll('button[onclick*="confirm("], input[type="submit"][onclick*="confirm("]').forEach(btn => {
+                const onclickAttr = btn.getAttribute('onclick');
+                if (onclickAttr && onclickAttr.includes('confirm(')) {
+                    // Extract the message
+                    let match = onclickAttr.match(/confirm\(['"](.*?)['"]\)/);
+                    let message = match ? match[1] : 'Apakah Anda yakin?';
+                    
+                    // Remove the native onclick
+                    btn.removeAttribute('onclick');
+                    
+                    // Add click event listener
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const form = btn.closest('form');
+                        
+                        Swal.fire({
+                            title: 'Konfirmasi Tindakan',
+                            text: message,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#f97316',
+                            cancelButtonColor: '#4b5563',
+                            confirmButtonText: 'Ya, Lanjutkan',
+                            cancelButtonText: 'Batal',
+                            background: '#121214',
+                            color: '#fff'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                if (form) {
+                                    form.dataset.swalConfirmed = 'true';
+                                    if (btn.name) {
+                                        const hiddenInput = document.createElement('input');
+                                        hiddenInput.type = 'hidden';
+                                        hiddenInput.name = btn.name;
+                                        hiddenInput.value = btn.value;
+                                        form.appendChild(hiddenInput);
+                                    }
+                                    form.submit();
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+
+            // 3. Automatically wrap tables with .table-container for mobile responsiveness
+            document.querySelectorAll('table').forEach(table => {
+                if (!table.closest('.table-container') && !table.closest('.email-container') && !table.closest('.receipt-box') && !table.closest('table')) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'table-container';
+                    table.parentNode.insertBefore(wrapper, table);
+                    wrapper.appendChild(table);
+                }
+            });
+        });
     </script>
     @stack('scripts')
 </body>

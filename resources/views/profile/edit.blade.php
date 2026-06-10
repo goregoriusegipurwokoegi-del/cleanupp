@@ -172,7 +172,7 @@
     .btn-logout-profile:hover {
         background: rgba(239, 68, 68, 0.22);
     }
-    @media (max-width: 480px) {
+    @media (max-width: 576px) {
         .profile-avatar-banner {
             padding: 1.2rem;
             gap: 1rem;

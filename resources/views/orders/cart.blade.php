@@ -17,8 +17,12 @@
 @endsection
 
 @section('content')
-<div style="margin-bottom: 30px;">
-    <h2 style="font-size: 1.8rem; font-weight: 900; margin-bottom: 5px;">Keranjang <span style="color: var(--primary);">Anda</span></h2>
+<style>
+    .header {
+        margin-bottom: 0 !important;
+    }
+</style>
+<div style="margin-bottom: 20px;">
     <p style="opacity: 0.5;">Cek kembali pesanan Anda sebelum melanjutkan ke pembayaran.</p>
 </div>
 
@@ -61,7 +65,7 @@
                 grid-template-columns: 1fr;
             }
         }
-        @media (max-width: 480px) {
+        @media (max-width: 576px) {
             .cart-item-card {
                 padding: 12px;
                 gap: 12px;
@@ -81,6 +85,12 @@
     <div class="cart-layout">
         <!-- Cart Items -->
         <div style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- Select All Checkbox -->
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 12px; display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="select_all" checked style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);">
+                <label for="select_all" style="font-size: 0.9rem; font-weight: 700; color: #fff; cursor: pointer; user-select: none;">Pilih Semua</label>
+            </div>
+
             @php $totalAmount = 0; @endphp
             @foreach($cart as $id => $item)
                 @php 
@@ -90,7 +100,10 @@
                     }
                     $totalAmount += $itemPrice;
                 @endphp
-                <div class="cart-item-card">
+                <div class="cart-item-card" style="display: flex; gap: 16px; align-items: center;">
+                    <!-- Item Checkbox -->
+                    <input type="checkbox" class="cart-item-checkbox" checked data-id="{{ $id }}" data-price="{{ $itemPrice }}" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); flex-shrink: 0;">
+
                     <div style="width: 80px; height: 80px; border-radius: 14px; overflow: hidden; background: #0f172a; flex-shrink: 0; position: relative;">
                         @if($item['service_image'])
                             <img src="{{ asset('storage/' . $item['service_image']) }}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -136,19 +149,19 @@
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <span style="font-size: 0.85rem; color: #94a3b8;">Total Item</span>
-                <span style="font-weight: 800; font-size: 0.9rem;">{{ count($cart) }} Layanan</span>
+                <span id="total_items_val" style="font-weight: 800; font-size: 0.9rem;">{{ count($cart) }} Layanan</span>
             </div>
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <span style="font-size: 0.85rem; color: #94a3b8;">Subtotal Layanan</span>
-                <span style="font-weight: 900; font-size: 1.1rem; color: var(--primary);">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
+                <span id="subtotal_val" style="font-weight: 900; font-size: 1.1rem; color: var(--primary);">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
             </div>
 
             <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 16px; margin-bottom: 20px;">
                 <p style="font-size: 0.7rem; color: #64748b; margin-bottom: 0; line-height: 1.4;">Biaya pengiriman/jemput dihitung otomatis pada saat Checkout.</p>
             </div>
 
-            <a href="{{ route('orders.checkout') }}" style="display: block; width: 100%; text-align: center; background: var(--primary); color: #000; padding: 12px; border-radius: 12px; font-weight: 900; font-size: 0.9rem; text-decoration: none; transition: 0.3s; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <a href="{{ route('orders.checkout') }}" id="checkout_btn" style="display: block; width: 100%; text-align: center; background: var(--primary); color: #000; padding: 12px; border-radius: 12px; font-weight: 900; font-size: 0.9rem; text-decoration: none; transition: 0.3s; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                 LANJUT CHECKOUT
             </a>
             
@@ -158,4 +171,76 @@
         </div>
     </div>
 @endif
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectAllCheckbox = document.getElementById('select_all');
+        const itemCheckboxes = document.querySelectorAll('.cart-item-checkbox');
+        const totalItemsVal = document.getElementById('total_items_val');
+        const subtotalVal = document.getElementById('subtotal_val');
+        const checkoutBtn = document.getElementById('checkout_btn');
+
+        function formatRupiah(amount) {
+            return 'Rp ' + Math.round(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        function updateSummary() {
+            let totalCount = 0;
+            let totalSubtotal = 0;
+            const selectedIds = [];
+
+            itemCheckboxes.forEach(cb => {
+                if (cb.checked) {
+                    totalCount++;
+                    totalSubtotal += parseFloat(cb.dataset.price);
+                    selectedIds.push(cb.dataset.id);
+                }
+            });
+
+            // Update UI values
+            if (totalItemsVal) {
+                totalItemsVal.textContent = totalCount + ' Layanan';
+            }
+            if (subtotalVal) {
+                subtotalVal.textContent = formatRupiah(totalSubtotal);
+            }
+
+            // Update checkout button URL and state
+            if (checkoutBtn) {
+                if (selectedIds.length > 0) {
+                    checkoutBtn.href = "{{ route('orders.checkout') }}?items=" + selectedIds.join(',');
+                    checkoutBtn.style.pointerEvents = 'auto';
+                    checkoutBtn.style.opacity = '1';
+                } else {
+                    checkoutBtn.href = "javascript:void(0)";
+                    checkoutBtn.style.pointerEvents = 'none';
+                    checkoutBtn.style.opacity = '0.5';
+                }
+            }
+
+            // Sync Select All checkbox
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = (totalCount === itemCheckboxes.length && itemCheckboxes.length > 0);
+            }
+        }
+
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                itemCheckboxes.forEach(cb => {
+                    cb.checked = selectAllCheckbox.checked;
+                });
+                updateSummary();
+            });
+        }
+
+        itemCheckboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                updateSummary();
+            });
+        });
+
+        // Run initially to set values and checkout URL
+        updateSummary();
+    });
+</script>
 @endsection

@@ -58,16 +58,50 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('success', 'Layanan dihapus dari keranjang.');
     }
 
-    public function checkoutForm()
+    public function checkoutForm(Request $request)
     {
         $cart = Session::get('cart', []);
         if (empty($cart)) {
             return redirect()->route('services.index')->with('error', 'Keranjang Anda kosong.');
         }
 
-        // Get user's addresses
+        // Filter cart based on selected items query string (Shopee-like checkbox checkout)
+        $selectedItemsStr = $request->query('items');
+        if ($selectedItemsStr) {
+            $selectedArray = explode(',', $selectedItemsStr);
+            $cartFiltered = [];
+            foreach ($cart as $key => $item) {
+                $itemId = $item['id'] ?? $key;
+                if (in_array($itemId, $selectedArray)) {
+                    $cartFiltered[$key] = $item;
+                }
+            }
+            $cart = $cartFiltered;
+        }
+
+        if (empty($cart)) {
+            return redirect()->route('cart.index')->with('error', 'Silakan pilih minimal satu layanan untuk checkout.');
+        }
+
+        // Get user's addresses (load latitude & longitude for real-time fee calculation)
         $addresses = \App\Models\UserAddress::where('user_id', auth()->id())->get();
 
-        return view('orders.checkout', compact('cart', 'addresses'));
+        // Store location & delivery fee settings (for front-end distance calculation)
+        $storeLat              = \App\Models\Setting::where('key', 'store_latitude')->first()?->value ?? '-0.0513462';
+        $storeLng              = \App\Models\Setting::where('key', 'store_longitude')->first()?->value ?? '109.3210380';
+        $deliveryThresholdKm   = (float) (\App\Models\Setting::where('key', 'delivery_threshold_km')->first()?->value ?? 5);
+        $deliveryFeeAmount     = (float) (\App\Models\Setting::where('key', 'delivery_fee_above_threshold')->first()?->value ?? 25000);
+
+        // Get bank accounts and QRIS image
+        $bankAccounts = json_decode(\App\Models\Setting::where('key', 'bank_accounts')->first()?->value ?? '[]', true);
+        if (empty($bankAccounts)) {
+            $bankAccounts = [
+                ['bank_name' => 'BCA', 'account_number' => '0292.771.400', 'account_holder' => 'Melitha Anggraeni'],
+                ['bank_name' => 'Mandiri', 'account_number' => '146.001.124.9393', 'account_holder' => 'Melitha Anggraeni']
+            ];
+        }
+        $qrisImage = \App\Models\Setting::where('key', 'qris_image')->first()?->value;
+
+        return view('orders.checkout', compact('cart', 'addresses', 'storeLat', 'storeLng', 'deliveryThresholdKm', 'deliveryFeeAmount', 'bankAccounts', 'qrisImage'));
     }
 }

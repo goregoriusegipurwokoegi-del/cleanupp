@@ -10,7 +10,6 @@
         "laravel/framework": "^12.0",
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^2.10.1",
-        "midtrans/midtrans-php": "*",
         "novuhq/novu": "^3.16"
     },
     "require-dev": {

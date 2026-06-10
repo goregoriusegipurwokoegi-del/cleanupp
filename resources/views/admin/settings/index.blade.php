@@ -306,7 +306,7 @@
         <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">Backup Database (Simulasi)</h3>
         <p style="opacity: 0.6; margin-bottom: 2rem; max-width: 400px; margin-left: auto; margin-right: auto;">Unduh salinan data seluruh pengguna, pesanan, layanan, dan keuangan sistem Anda.</p>
         
-        <button type="button" onclick="alert('Fitur backup database sedang diproses. Mohon tunggu update sistem berikutnya!');" style="background: rgba(226, 232, 240, 1); color: #0f172a; border: none; padding: 1rem 2rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+        <button type="button" onclick="Swal.fire({ icon: 'info', title: 'Fitur Segera Hadir', text: 'Fitur backup database sedang diproses. Mohon tunggu update sistem berikutnya!', confirmButtonColor: '#f97316', background: '#121214', color: '#fff' });" style="background: rgba(226, 232, 240, 1); color: #0f172a; border: none; padding: 1rem 2rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
             Download SQL Dump (.sql)
         </button>
     </div>

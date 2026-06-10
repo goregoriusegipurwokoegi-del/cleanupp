@@ -321,10 +321,31 @@ class OrderController extends Controller
             'payment_method' => 'required|in:cash,qris,transfer',
             'shoe_photo' => 'required|image|max:2048',
             'shoe_photo_2' => 'required|image|max:2048',
+            'payment_proof' => 'required_if:payment_method,transfer,qris|nullable|image|max:4096',
+            'checkout_items' => 'required|array|min:1',
         ]);
+
+        $checkoutItems = $request->input('checkout_items', []);
+        $cartToCheckout = [];
+        foreach ($cart as $key => $item) {
+            $itemId = $item['id'] ?? $key;
+            if (in_array($itemId, $checkoutItems)) {
+                $item['id'] = $itemId; // Ensure 'id' key is populated for fallback unsetting
+                $cartToCheckout[$key] = $item;
+            }
+        }
+
+        if (empty($cartToCheckout)) {
+            return redirect()->route('cart.index')->with('error', 'Silakan pilih minimal satu layanan untuk checkout.');
+        }
 
         $photoPath = $request->file('shoe_photo')->store('orders/photos', 'public');
         $photoPath2 = $request->file('shoe_photo_2')->store('orders/photos', 'public');
+
+        $paymentProofPath = null;
+        if ($request->hasFile('payment_proof')) {
+            $paymentProofPath = $request->file('payment_proof')->store('orders/payments', 'public');
+        }
 
         $groupId = 'INV-' . strtoupper(\Illuminate\Support\Str::random(8));
 
@@ -367,7 +388,7 @@ class OrderController extends Controller
         $orders = [];
         $firstOrder = true;
 
-        foreach ($cart as $item) {
+        foreach ($cartToCheckout as $item) {
             $itemPrice = $item['price'] * $item['shoe_quantity'];
             if ($item['processing_speed'] == 'express') {
                 $itemPrice += (25000 * $item['shoe_quantity']);
@@ -404,13 +425,18 @@ class OrderController extends Controller
                 'latitude' => $orderLat,
                 'longitude' => $orderLng,
                 'delivery_fee' => $itemDeliveryFee,
+                'payment_proof' => $paymentProofPath,
+                'status_pembayaran' => $paymentProofPath ? 'Menunggu Validasi' : 'pending',
             ]);
 
             $orders[] = $order;
         }
 
-        // Clear Cart
-        \Illuminate\Support\Facades\Session::forget('cart');
+        // Clear checked out items from cart
+        foreach ($cartToCheckout as $item) {
+            unset($cart[$item['id']]);
+        }
+        \Illuminate\Support\Facades\Session::put('cart', $cart);
 
         // Send WhatsApp Notification for the first order as representative
         $repOrder = $orders[0];

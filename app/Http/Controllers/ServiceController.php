@@ -20,7 +20,15 @@ class ServiceController extends Controller
         }
         
         $services = $query->get();
-        return view('services.index', compact('services'));
+
+        // Get the last added item in cart to pre-fill shoe name and size
+        $cart = session()->get('cart', []);
+        $lastCartItem = null;
+        if (!empty($cart)) {
+            $lastCartItem = end($cart);
+        }
+
+        return view('services.index', compact('services', 'lastCartItem'));
     }
 
     /**
