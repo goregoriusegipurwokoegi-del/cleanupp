@@ -198,9 +198,9 @@
 
                         <!-- Upload Proof Input -->
                         <div id="proof_upload_container">
-                            <label style="display: block; font-size: 0.8rem; font-weight: 800; color: #fff; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 1px;">Unggah Bukti Pembayaran <span style="color: #ef4444;">*</span></label>
+                            <label style="display: block; font-size: 0.8rem; font-weight: 800; color: #fff; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 1px;">Unggah Bukti Pembayaran <span style="opacity: 0.5; font-size: 0.75rem; text-transform: none;">(Opsional)</span></label>
                             <input type="file" name="payment_proof" id="payment_proof" accept="image/*" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 0.8rem; cursor: pointer;">
-                            <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 6px; line-height: 1.3;">Mohon unggah bukti transfer/screenshot pembayaran yang sah.</p>
+                            <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 6px; line-height: 1.3;">Anda dapat mengunggah bukti transfer sekarang atau nanti melalui detail pesanan.</p>
                         </div>
                     </div>
 
@@ -395,17 +395,14 @@
             infoSection.style.display = 'block';
             bankInfo.style.display = 'block';
             qrisInfo.style.display = 'none';
-            proofInput.setAttribute('required', 'required');
         } else if (method === 'qris') {
             infoSection.style.display = 'block';
             bankInfo.style.display = 'none';
             qrisInfo.style.display = 'block';
-            proofInput.setAttribute('required', 'required');
         } else {
             infoSection.style.display = 'none';
             bankInfo.style.display = 'none';
             qrisInfo.style.display = 'none';
-            proofInput.removeAttribute('required');
             proofInput.value = ''; // Clear file input
         }
     }
@@ -503,27 +500,7 @@
             });
         }
 
-        const form = document.getElementById('checkout_form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                const method = document.getElementById('payment_method').value;
-                if (method === 'transfer' || method === 'qris') {
-                    const proof = document.getElementById('payment_proof');
-                    if (!proof || !proof.files || proof.files.length === 0) {
-                        e.preventDefault();
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Bukti Pembayaran Wajib',
-                            text: 'Silakan lakukan pembayaran dan unggah bukti transfer/screenshot terlebih dahulu.',
-                            confirmButtonColor: '#f97316',
-                            background: '#121214',
-                            color: '#fff'
-                        });
-                        return false;
-                    }
-                }
-            });
-        }
+        // Payment proof is optional, no form validation blocker needed here.
     });
 </script>
 @endsection

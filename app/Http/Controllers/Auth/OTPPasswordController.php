@@ -23,6 +23,7 @@ class OTPPasswordController extends Controller
         $request->validate(['email' => 'required|email|exists:users,email']);
 
         $otp = rand(100000, 999999);
+        $user = User::where('email', $request->email)->first();
         
         DB::table('password_reset_otps')->updateOrInsert(
             ['email' => $request->email],
@@ -34,7 +35,7 @@ class OTPPasswordController extends Controller
             ]
         );
 
-        Mail::to($request->email)->send(new PasswordResetOTPMail($otp));
+        Mail::to($request->email)->send(new PasswordResetOTPMail($otp, $user?->name));
 
         return redirect()->route('password.otp.verify', ['email' => $request->email])
             ->with('status', 'Kode OTP telah dikirim ke email Anda.');

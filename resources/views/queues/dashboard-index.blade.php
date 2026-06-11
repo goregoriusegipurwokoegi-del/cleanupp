@@ -88,11 +88,12 @@
         .queue-grid { grid-template-columns: 1fr; }
         .q-col { height: auto; min-height: 250px; }
     }
+
 </style>
 
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
     <div>
-        <h2 style="font-size: 1.8rem; font-weight: 900; margin-bottom: 5px;">Monitor <span style="color: var(--primary);">Antrian</span></h2>
+        <h2 class="desktop-hidden-title" style="font-size: 1.8rem; font-weight: 900; margin-bottom: 5px;">Monitor <span style="color: var(--primary);">Antrian</span></h2>
         <p style="opacity: 0.5;">Daftar pesanan aktif. Pesanan yang sudah selesai atau dibatalkan otomatis disembunyikan.</p>
     </div>
     <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 8px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">

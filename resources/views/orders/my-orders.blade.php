@@ -83,11 +83,14 @@
         </form>
     </div>
 
-    @forelse($orders as $order)
+    @forelse($orders as $group)
+        @php
+            $order = $group->first();
+        @endphp
         <div class="order-card">
             <div class="card-header">
                 <div>
-                    <span class="order-id">#{{ $order->order_number }}</span>
+                    <span class="order-id">#{{ $order->group_id ?: $order->order_number }}</span>
                     <span style="margin: 0 5px; color: #334155;">•</span>
                     <span class="order-date">{{ $order->created_at->format('d M Y, H:i') }}</span>
                 </div>
@@ -130,17 +133,19 @@
                 
                 <div>
                     <h3 class="shoe-name">{{ $order->shoe_name }}</h3>
-                    <div style="display: flex; gap: 5px; align-items: center; margin-bottom: 5px;">
-                        <span class="service-badge">{{ $order->service->name }}</span>
-                        <span style="font-size: 10px; color: #475569;">Size: {{ $order->shoe_size }}</span>
+                    <div style="display: flex; gap: 5px; align-items: center; margin-bottom: 5px; flex-wrap: wrap;">
+                        @foreach($group as $grpItem)
+                            <span class="service-badge">{{ $grpItem->service->name }}</span>
+                        @endforeach
+                        <span style="font-size: 10px; color: #475569; margin-left: 5px;">Size: {{ $order->shoe_size }}</span>
                     </div>
                     <p style="font-size: 10px; color: #94a3b8;">Est. Selesai: <span style="color: #cbd5e1;">{{ $order->reception_date ? \Carbon\Carbon::parse($order->reception_date)->addDays(3)->format('d M Y') : '-' }}</span></p>
                 </div>
 
                 <div class="price-tag">
-                    <span class="price-amount">Rp{{ number_format($order->total_price, 0, ',', '.') }}</span>
+                    <span class="price-amount">Rp{{ number_format($group->sum('total_price'), 0, ',', '.') }}</span>
                     <span class="payment-status" style="color: {{ $order->payment_status == 'paid' ? '#10b981' : '#f59e0b' }}; background: {{ ($order->payment_status == 'paid' ? '#10b981' : '#f59e0b') . '10' }};">
-                        {{ strtoupper($order->payment_status == 'paid' ? 'Lunas' : 'Pending') }}
+                        {{ strtoupper($order->payment_status == 'paid' ? 'Lunas' : 'Belum Bayar') }}
                     </span>
                     <div style="font-size: 9px; color: #475569; margin-top: 2px;">{{ strtoupper($order->payment_method) }}</div>
                 </div>

@@ -1,10 +1,10 @@
 @extends('layouts.premium-dashboard')
 
-@section('page_title', 'Antrian Pesanan')
+@section('page_title', request('queue') ? 'Monitor Antrian' : (request('delivery') ? 'Antar Jemput' : 'Tugas Saya'))
 
 @section('nav_items')
     <li class="nav-item"><a href="{{ route('employee.dashboard') }}" class="nav-link">Dashboard</a></li>
-    <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link active">Antrian Pesanan</a></li>
+    <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link active">Tugas Saya</a></li>
     <li class="nav-item"><a href="{{ route('employee.inventories.index') }}" class="nav-link">Stok Barang</a></li>
 @endsection
 
@@ -14,11 +14,11 @@
 </style>
 <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
     <div>
-        <h2 style="font-size: 1.8rem; font-weight: 900; margin-bottom: 5px;">
+        <h2 class="desktop-hidden-title" style="font-size: 1.8rem; font-weight: 900; margin-bottom: 5px;">
             @if(request('queue')) Monitor <span style="color: var(--primary);">Antrian</span> @elseif(request('delivery')) Antar <span style="color: var(--primary);">Jemput</span> @else Tugas <span style="color: var(--primary);">Saya</span> @endif
         </h2>
         <p style="opacity: 0.6;">
-            @if(request('queue')) Pantau pesanan aktif. Pesanan selesai otomatis disembunyikan. @else Kelola dan perbarui status pengerjaan sepatu pelanggan. @endif
+            @if(request('queue')) Pantau pesanan aktif. Pesanan selesai otomatis disembunyikan. @elseif(request('delivery')) Kelola dan perbarui status antar jemput sepatu pelanggan. @else Kelola dan perbarui status pengerjaan sepatu pelanggan. @endif
         </p>
     </div>
     @if(!request('queue'))
@@ -145,23 +145,30 @@
         <table style="width: 100%; border-collapse: collapse; text-align: left;">
             <thead>
                 <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">Antrian</th>
-                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">Pelanggan</th>
-                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">Sepatu</th>
-                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">Layanan</th>
-                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">Status Pengerjaan</th>
-                <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">Tanggal Masuk</th>
-                    <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6;">Aksi</th>
+                    <th style="padding: 12px 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; width: 80px;">Antrian</th>
+                    <th style="padding: 12px 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; width: 150px;">Pelanggan</th>
+                    <th style="padding: 12px 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; width: 180px;">Sepatu</th>
+                    <th style="padding: 12px 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; width: 150px;">Layanan</th>
+                    <th style="padding: 12px 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; width: 150px;">Status Pengerjaan</th>
+                    <th style="padding: 12px 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; width: 120px;">Tanggal Masuk</th>
+                    <th style="padding: 12px 15px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; width: 160px;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($orders as $order)
+                @foreach($orders as $group)
+                    @php
+                        $order = $group->first();
+                    @endphp
                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.02); transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.01)'" onmouseout="this.style.background='transparent'">
-                    <td style="padding: 1.5rem;">
-                        <div style="background: var(--primary); color: #0f172a; padding: 0.3rem 0.8rem; border-radius: 8px; font-weight: 800; width: fit-content; font-size: 1rem;">{{ $order->queue_number ?? '-' }}</div>
+                    <td style="padding: 12px 15px;">
+                        <div style="background: var(--primary); color: #0f172a; padding: 2px 8px; border-radius: 6px; font-weight: 800; width: fit-content; font-size: 0.85rem; white-space: nowrap;">
+                            @foreach($group->pluck('queue_number')->unique() as $qNum)
+                                {{ $qNum }}{{ !$loop->last ? ',' : '' }}
+                            @endforeach
+                        </div>
                     </td>
-                    <td style="padding: 1.5rem;">
-                        <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                    <td style="padding: 12px 15px;">
+                        <div style="font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                             {{ $order->user->name }}
                             @if($order->is_delivery)
                                 <span style="background: rgba(249, 115, 22, 0.15); color: var(--primary); padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(249, 115, 22, 0.3);" title="Layanan Antar Jemput">🚚 Antar</span>
@@ -171,126 +178,154 @@
                             Klik Detail Pesanan <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                         </a>
                     </td>
-                    <td style="padding: 1.5rem;">
-                        <div style="display: flex; align-items: center; gap: 1rem;">
+                    <td style="padding: 12px 15px;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
                             <a href="{{ route('orders.show', $order->id) }}" style="display: block; position: relative;">
-                                <div style="width: 50px; height: 50px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background: #0c0c0e;">
+                                <div style="width: 40px; height: 40px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background: #0c0c0e;">
                                     <img src="{{ asset('storage/' . $order->photo_before) }}" style="width: 100%; height: 100%; object-fit: cover;">
                                 </div>
                                 @if($order->service->image)
-                                    <div style="position: absolute; bottom: -4px; right: -4px; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid #0c0c0e; overflow: hidden; background: #1e293b; z-index: 2;">
+                                    <div style="position: absolute; bottom: -4px; right: -4px; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #0c0c0e; overflow: hidden; background: #1e293b; z-index: 2;">
                                         <img src="{{ asset('storage/' . $order->service->image) }}" style="width: 100%; height: 100%; object-fit: cover;">
                                     </div>
                                 @endif
                             </a>
                             <div>
-                                <div style="font-weight: 700; font-size: 0.9rem; text-transform: capitalize;">{{ $order->shoe_name }}</div>
+                                <div style="font-weight: 700; font-size: 0.85rem; text-transform: capitalize;">{{ $order->shoe_name }}</div>
                                 <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">Size: {{ $order->shoe_size }}</div>
                             </div>
                         </div>
                     </td>
-                    <td style="padding: 1.5rem;">
-                        <div style="font-weight: 600;">{{ $order->service->name }}</div>
-                        <span class="badge {{ $order->service->category == 'cleaning' ? 'badge-success' : 'badge-warning' }}" style="font-size: 0.7rem;">
-                            {{ $order->service->category == 'cleaning' ? 'Cuci' : 'Reparasi' }}
-                        </span>
+                    <td style="padding: 12px 15px;">
+                        @foreach($group as $grpItem)
+                            <div style="margin-bottom: 4px;">
+                                <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">{{ $grpItem->service->name }}</div>
+                                <span class="badge {{ $grpItem->service->category == 'cleaning' ? 'badge-success' : 'badge-warning' }}" style="font-size: 0.6rem; padding: 1px 4px; border-radius: 4px; display: inline-block;">
+                                    {{ $grpItem->service->category == 'cleaning' ? 'Cuci' : 'Reparasi' }}
+                                </span>
+                            </div>
+                        @endforeach
                     </td>
-                    <td style="padding: 1.5rem;">
+                    <td style="padding: 12px 15px;">
                         @php
-                            $statusLabel = 'Diterima';
-                            if($order->status == 'processing') $statusLabel = ($order->service->category == 'cleaning' ? 'Sedang di cuci' : 'Sedang dikerjakan');
-                            if($order->status == 'finishing') $statusLabel = ($order->service->category == 'cleaning' ? 'Di jemur' : 'Proses finishing');
-                            if($order->status == 'ready') $statusLabel = 'Siap Diambil/Dikirim';
-                            if($order->status == 'dikirim') $statusLabel = 'Sedang Dikirim';
-                            if($order->status == 'uncollected') $statusLabel = 'Belum diambil';
-                            if($order->status == 'completed') $statusLabel = 'Selesai';
+                            $statusLabels = [
+                                'pending' => 'DITERIMA',
+                                'processing' => ($order->service->category == 'cleaning' ? 'SEDANG DICUCI' : 'SEDANG DIKERJAKAN'),
+                                'finishing' => ($order->service->category == 'cleaning' ? 'DIJEMUR' : 'PROSES FINISHING'),
+                                'ready' => 'SIAP DIAMBIL/KIRIM',
+                                'dikirim' => 'SEDANG DIKIRIM',
+                                'uncollected' => 'BELUM DIAMBIL',
+                                'completed' => 'SELESAI',
+                                'cancelled' => 'DIBATALKAN'
+                            ];
+                            $colors = [
+                                'pending' => '#f59e0b',
+                                'processing' => '#3b82f6',
+                                'finishing' => '#a855f7',
+                                'ready' => '#10b981',
+                                'dikirim' => '#eab308',
+                                'uncollected' => '#64748b',
+                                'completed' => '#2563eb',
+                                'cancelled' => '#ef4444'
+                            ];
+                            $currentColor = $colors[$order->status] ?? '#64748b';
+                            $currentLabel = $statusLabels[$order->status] ?? strtoupper($order->status);
                         @endphp
-                        <span style="padding: 0.5rem 1rem; border-radius: 20px; background: rgba(0,210,255,0.1); color: var(--primary); font-size: 0.85rem; font-weight: 600;">
-                            {{ $statusLabel }}
+                        <span style="background: {{ $currentColor }}20; color: {{ $currentColor }}; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1px solid {{ $currentColor }}30; white-space: nowrap; display: inline-block;">
+                            {{ $currentLabel }}
                         </span>
+                        <div style="margin-top: 5px;">
+                            @if($order->payment_status == 'paid')
+                                <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.3); white-space: nowrap;">LUNAS</span>
+                            @else
+                                <span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.3); white-space: nowrap;">BELUM BAYAR</span>
+                            @endif
+                        </div>
                     </td>
-                    <td style="padding: 1.5rem; font-size: 0.9rem; opacity: 0.8;">
-                        {{ $order->created_at->format('d M Y H:i') }}
+                    <td style="padding: 12px 15px; font-size: 0.8rem; opacity: 0.8; white-space: nowrap;">
+                        {{ $order->created_at->format('d/m/Y H:i') }}
                     </td>
-                    <td style="padding: 1.5rem;">
+                    <td style="padding: 12px 15px;">
                         @if($order->status == 'pending')
-                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <form action="{{ route('orders.status.update', $order) }}" method="POST">
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <div style="display: flex; gap: 6px;">
+                                    <form action="{{ route('orders.status.update', $order) }}" method="POST" style="flex: 1;">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="status" value="processing">
-                                        <button type="submit" style="background: #10b981; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Terima</button>
+                                        <button type="submit" style="width: 100%; background: #10b981; color: #fff; border: none; padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.3s; white-space: nowrap;">Terima</button>
                                     </form>
-                                    <form action="{{ route('orders.status.update', $order) }}" method="POST">
+                                    <form action="{{ route('orders.status.update', $order) }}" method="POST" style="flex: 1;">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="status" value="cancelled">
-                                        <button type="submit" onclick="return confirm('Apakah Anda yakin ingin menolak pesanan ini?')" style="background: #f43f5e; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Tolak</button>
+                                        <button type="submit" onclick="return confirm('Apakah Anda yakin ingin menolak pesanan ini?')" style="width: 100%; background: #f43f5e; color: #fff; border: none; padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.3s; white-space: nowrap;">Tolak</button>
                                     </form>
                                 </div>
                                 @if($order->payment_status == 'unpaid')
-                                    <form action="{{ route('orders.payment.remind', $order) }}" method="POST">
+                                    <form action="{{ route('orders.payment.remind', $order) }}" method="POST" style="margin: 0;">
                                         @csrf
-                                        <button type="submit" title="Kirim Pengingat WA" style="width: 100%; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.5rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                        <button type="submit" title="Kirim Pengingat WA" style="width: 100%; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 5px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-13.3 8.38 8.38 0 0 1 3.9.9L22 4l-1.5 6.5z"></path></svg>
                                             REKAYASA WA
                                         </button>
                                     </form>
                                 @endif
-                                <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 0.5rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 0.5rem;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">EDIT PESANAN</button>
+                                <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Edit Pesanan</button>
+                                <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; text-decoration: none; text-align: center; display: inline-block;">Cetak Struk</a>
                             </div>
                         @else
-                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
                                 @php
                                     $nextStatus = null;
                                     $nextLabel = '';
                                     $btnColor = '#3b82f6';
 
                                     if ($order->service->category == 'cleaning') {
-                                        if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Cuci → Jemur'; }
-                                        elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Selesai Jemur → Siap'; }
+                                        if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Ke Jemur'; }
+                                        elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Ke Siap'; }
                                         elseif ($order->status == 'ready') { 
-                                            if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
-                                            else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                                            if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Ke Kirim'; $btnColor = '#f59e0b'; }
+                                            else { $nextStatus = 'completed'; $nextLabel = 'Ke Selesai'; $btnColor = '#10b981'; }
                                         }
-                                        elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
+                                        elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Ke Selesai'; $btnColor = '#10b981'; }
                                     } else {
-                                        if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Kerja → Finishing'; }
-                                        elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Finishing → Siap'; }
+                                        if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Ke Finishing'; }
+                                        elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Ke Siap'; }
                                         elseif ($order->status == 'ready') { 
-                                            if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
-                                            else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                                            if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Ke Kirim'; $btnColor = '#f59e0b'; }
+                                            else { $nextStatus = 'completed'; $nextLabel = 'Ke Selesai'; $btnColor = '#10b981'; }
                                         }
-                                        elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
+                                        elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Ke Selesai'; $btnColor = '#10b981'; }
                                     }
                                 @endphp
 
                                 @if($nextStatus)
-                                    <form action="{{ route('orders.status.update', $order) }}" method="POST">
+                                    <form action="{{ route('orders.status.update', $order) }}" method="POST" style="margin: 0;">
                                         @csrf
                                         @method('PATCH')
                                         <input type="hidden" name="status" value="{{ $nextStatus }}">
                                         @if($nextStatus == 'ready')
-                                            <input type="text" name="storage_location" placeholder="Lokasi Rak (Cth: A1)" required style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.8rem;">
+                                            <input type="text" name="storage_location" placeholder="Rak (Cth: A1)" required style="width: 100%; padding: 5px; margin-bottom: 5px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.75rem;">
                                         @endif
-                                        <button type="submit" style="width: 100%; background: {{ $btnColor }}; color: #fff; border: none; padding: 0.8rem; border-radius: 12px; font-size: 0.85rem; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-2px)'; this.style.opacity='0.9'" onmouseout="this.style.transform='translateY(0)'; this.style.opacity='1'">
+                                        <button type="submit" style="width: 100%; background: {{ $btnColor }}; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 4px;">
                                             <span>{{ $nextLabel }}</span>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                                         </button>
                                     </form>
                                 @endif
                                 
                                 @if($order->payment_status == 'unpaid')
-                                    <form action="{{ route('orders.payment.remind', $order) }}" method="POST">
+                                    <form action="{{ route('orders.payment.remind', $order) }}" method="POST" style="margin: 0;">
                                         @csrf
-                                        <button type="submit" title="Kirim Pengingat WA" style="width: 100%; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.5rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                        <button type="submit" title="Kirim Pengingat WA" style="width: 100%; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 5px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-13.3 8.38 8.38 0 0 1 3.9.9L22 4l-1.5 6.5z"></path></svg>
                                             REKAYASA WA
                                         </button>
                                     </form>
                                 @endif
-                                <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 0.5rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 0.5rem;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">EDIT PESANAN</button>
+                                <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Edit Pesanan</button>
+                                <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; text-decoration: none; text-align: center; display: inline-block;">Cetak Struk</a>
                             </div>
                         @endif
                     </td>
@@ -302,11 +337,16 @@
 
     <!-- Mobile Cards -->
     <div class="mobile-cards">
-        @foreach($orders as $order)
+        @foreach($orders as $group)
+            @php
+                $order = $group->first();
+            @endphp
         <div class="order-card">
             <div class="order-card-header">
                 <a href="{{ route('orders.show', $order->id) }}" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 0.5rem;">
-                    <div style="background: var(--primary); color: #0f172a; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 800; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">#{{ $order->queue_number ?? '-' }} 🔍</div>
+                    <div style="background: var(--primary); color: #0f172a; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 800; cursor: pointer; transition: 0.2s; white-space: nowrap;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                        #@foreach($group->pluck('queue_number')->unique() as $qNum){{ $qNum }}{{ !$loop->last ? ',' : '' }}@endforeach 🔍
+                    </div>
                 </a>
                 <span style="font-size: 0.85rem; opacity: 0.6;">{{ $order->created_at->format('d M Y H:i') }}</span>
             </div>
@@ -319,13 +359,22 @@
                 </div>
             @endif
             <div class="order-card-body">
-                <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.2rem;">{{ $order->service->name }}</div>
+                <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.2rem;">
+                    @foreach($group as $grpItem)
+                        {{ $grpItem->service->name }}{{ !$loop->last ? ', ' : '' }}
+                    @endforeach
+                </div>
                 <div style="font-size: 0.8rem; opacity: 0.6; margin-bottom: 0.4rem;">Pelanggan: {{ $order->user->name }}</div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="badge {{ $order->service->category == 'cleaning' ? 'badge-success' : 'badge-warning' }}" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">
                         {{ $order->service->category == 'cleaning' ? 'Cuci' : 'Reparasi' }}
                     </span>
-                    <span style="color: var(--primary); font-size: 0.8rem; font-weight: 600;">{{ strtoupper($order->status) }}</span>
+                    <div style="text-align: right;">
+                        <div style="color: var(--primary); font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">{{ $order->status }}</div>
+                        <div style="font-size: 0.7rem; font-weight: 800; {{ $order->payment_status == 'paid' ? 'color: #10b981;' : 'color: #ef4444;' }} margin-top: 2px;">
+                            {{ $order->payment_status == 'paid' ? 'LUNAS' : 'BELUM BAYAR' }}
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="order-card-footer">
@@ -391,9 +440,7 @@
                     </form>
                 @endif
                 <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-top: 0.4rem;">EDIT PESANAN</button>
-                @if($order->payment_status == 'paid')
                 <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-top: 0.4rem; text-decoration: none; text-align: center; display: block;">CETAK NOTA</a>
-                @endif
             </div>
         </div>
         @endforeach

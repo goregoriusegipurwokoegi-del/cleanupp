@@ -52,7 +52,7 @@ class LoanController extends Controller
                 'message' => Auth::user()->name . ' mengajukan kasbon sebesar Rp' . number_format($request->amount),
                 'icon' => 'activity',
                 'color' => 'yellow',
-                'url' => route('admin.loans.index'),
+                'url' => route('admin.loans.index', [], false),
                 'type' => 'loan_request',
             ]));
         }
@@ -80,7 +80,7 @@ class LoanController extends Controller
             'message' => 'Permintaan kasbon Anda senilai Rp' . number_format($loan->amount) . ' telah ' . ($request->status == 'approved' ? 'DISETUJUI' : 'DITOLAK'),
             'icon' => 'activity',
             'color' => $request->status == 'approved' ? 'green' : 'red',
-            'url' => route('employee.loans.index'),
+            'url' => route('employee.loans.index', [], false),
             'type' => 'loan_update',
         ]));
 

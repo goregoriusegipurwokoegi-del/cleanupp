@@ -8,7 +8,7 @@
     <!-- Greeting -->
     <tr>
         <td style="padding-bottom: 20px; font-size: 18px; font-weight: 700; color: #ffffff;">
-            Halo,
+            Halo{{ $userName ? ', ' . $userName : '' }}!
         </td>
     </tr>
     

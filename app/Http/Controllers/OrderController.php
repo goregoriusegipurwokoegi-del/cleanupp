@@ -34,7 +34,9 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->orderBy('created_at', $sort)->get();
+        $orders = $query->orderBy('created_at', $sort)->get()->groupBy(function ($order) {
+            return $order->group_id ?: 'single_' . $order->id;
+        });
             
         return view('orders.my-orders', compact('orders', 'sort', 'search'));
     }
@@ -50,7 +52,9 @@ class OrderController extends Controller
         
         $query = Auth::user()->orders()->with('service');
 
-        if ($status_filter === 'pending') {
+        if ($status_filter === 'unpaid') {
+            $query->where('payment_status', 'unpaid');
+        } elseif ($status_filter === 'pending') {
             $query->where('status', 'pending');
         } elseif ($status_filter === 'processing') {
             $query->whereIn('status', ['processing', 'finishing', 'ready', 'uncollected']);
@@ -69,7 +73,9 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->orderBy('created_at', $sort)->get();
+        $orders = $query->orderBy('created_at', $sort)->get()->groupBy(function ($order) {
+            return $order->group_id ?: 'single_' . $order->id;
+        });
             
         return view('orders.history', compact('orders', 'sort', 'search', 'status_filter'));
     }
@@ -295,12 +301,14 @@ class OrderController extends Controller
             'message' => 'Pesanan baru #' . $orderNumber . ' telah masuk untuk ' . $request->shoe_name,
             'icon' => 'shopping-bag',
             'color' => 'blue',
-            'url' => Auth::user()->role == 'admin' ? route('admin.orders.index') : route('employee.orders.index'),
             'type' => 'new_order',
         ];
         
         foreach ($staff as $user) {
             /** @var \App\Models\User $user */
+            $notificationData['url'] = $user->role == 'admin' 
+                ? route('admin.orders.index', [], false) 
+                : route('employee.orders.index', [], false);
             $user->notify(new \App\Notifications\AppNotification($notificationData));
         }
 
@@ -321,7 +329,7 @@ class OrderController extends Controller
             'payment_method' => 'required|in:cash,qris,transfer',
             'shoe_photo' => 'required|image|max:2048',
             'shoe_photo_2' => 'required|image|max:2048',
-            'payment_proof' => 'required_if:payment_method,transfer,qris|nullable|image|max:4096',
+            'payment_proof' => 'nullable|image|max:4096',
             'checkout_items' => 'required|array|min:1',
         ]);
 
@@ -388,6 +396,10 @@ class OrderController extends Controller
         $orders = [];
         $firstOrder = true;
 
+        $lastOrder = Order::orderBy('id', 'desc')->first();
+        $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
+        $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
         foreach ($cartToCheckout as $item) {
             $itemPrice = $item['price'] * $item['shoe_quantity'];
             if ($item['processing_speed'] == 'express') {
@@ -399,9 +411,6 @@ class OrderController extends Controller
             $firstOrder = false;
 
             $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(8));
-            $lastOrder = Order::orderBy('id', 'desc')->first();
-            $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
-            $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
             $order = Order::create([
                 'group_id' => $groupId,
@@ -413,7 +422,7 @@ class OrderController extends Controller
                 'status' => 'pending',
                 'total_price' => $itemPrice + $itemDeliveryFee,
                 'payment_method' => $request->payment_method,
-                'payment_status' => 'unpaid',
+                'payment_status' => $paymentProofPath ? 'paid' : 'unpaid',
                 'reception_date' => now(),
                 'shoe_name' => $item['shoe_name'],
                 'shoe_size' => $item['shoe_size'],
@@ -476,12 +485,14 @@ class OrderController extends Controller
             'message' => count($orders) . ' pesanan baru (Grup ' . $groupId . ') telah masuk.',
             'icon' => 'shopping-bag',
             'color' => 'blue',
-            'url' => Auth::user()->role == 'admin' ? route('admin.orders.index') : route('employee.orders.index'),
             'type' => 'new_order',
         ];
         
         foreach ($staff as $user) {
             /** @var \App\Models\User $user */
+            $notificationData['url'] = $user->role == 'admin' 
+                ? route('admin.orders.index', [], false) 
+                : route('employee.orders.index', [], false);
             $user->notify(new \App\Notifications\AppNotification($notificationData));
         }
 
@@ -538,11 +549,10 @@ class OrderController extends Controller
             abort(403);
         }
 
-        if ($order->payment_status !== 'paid') {
-            return redirect()->route('orders.show', $order->id)->with('error', 'Struk hanya tersedia untuk pesanan yang sudah lunas.');
-        }
+        $groupOrders = $order->group_id ? Order::with('service')->where('group_id', $order->group_id)->get() : collect([$order]);
+        $groupTotal = $order->group_id ? Order::where('group_id', $order->group_id)->sum('total_price') : $order->total_price;
 
-        return view('orders.receipt', compact('order'));
+        return view('orders.receipt', compact('order', 'groupOrders', 'groupTotal'));
     }
 
     /**
@@ -583,7 +593,9 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->get();
+        $orders = $query->get()->groupBy(function ($order) {
+            return $order->group_id ?: 'single_' . $order->id;
+        });
         $customers = User::where('role', 'customer')->get();
         $services = \App\Models\Service::all();
             
@@ -728,7 +740,43 @@ class OrderController extends Controller
             $data['photo_after'] = $request->file('photo_after')->store('orders/photos', 'public');
         }
 
-        $order->update($data);
+        if ($order->group_id) {
+            $groupOrders = Order::where('group_id', $order->group_id)->get();
+            /** @var \App\Models\Order $gOrder */
+            foreach ($groupOrders as $gOrder) {
+                $gService = $gOrder->service;
+                $gTotalPrice = $gService->price * $shoeQuantity;
+                if ($request->processing_speed === 'express') {
+                    $gTotalPrice += (25000 * $shoeQuantity);
+                }
+                if ($gOrder->delivery_fee > 0) {
+                    $gTotalPrice += $gOrder->delivery_fee;
+                }
+                
+                $gData = [
+                    'queue_number' => $request->queue_number,
+                    'processing_speed' => $request->processing_speed,
+                    'shoe_name' => $request->shoe_name,
+                    'shoe_size' => $request->shoe_size,
+                    'shoe_quantity' => $shoeQuantity,
+                    'payment_method' => $request->payment_method,
+                    'payment_status' => $request->payment_status,
+                    'status' => $request->status,
+                    'total_price' => $gTotalPrice,
+                ];
+                
+                if (isset($data['photo_before'])) {
+                    $gData['photo_before'] = $data['photo_before'];
+                }
+                if (isset($data['photo_after'])) {
+                    $gData['photo_after'] = $data['photo_after'];
+                }
+                
+                $gOrder->update($gData);
+            }
+        } else {
+            $order->update($data);
+        }
 
         return back()->with('success', 'Pesanan berhasil diperbarui!');
     }
@@ -785,7 +833,9 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->latest()->get();
+        $orders = $query->latest()->get()->groupBy(function ($order) {
+            return $order->group_id ?: 'single_' . $order->id;
+        });
         $customers = User::where('role', 'customer')->get();
         $services = \App\Models\Service::all();
             
@@ -957,41 +1007,61 @@ class OrderController extends Controller
                 $this->whatsAppService->sendMessage($customer->phone, $waMessage);
             }
 
-            // 3. Forcefully delete from database
-            $order->delete();
+            // 3. Forcefully delete from database for entire group if grouped
+            if ($order->group_id) {
+                Order::where('group_id', $order->group_id)->delete();
+            } else {
+                $order->delete();
+            }
             
             return back()->with('success', 'Pesanan telah ditolak dan data telah dihapus.');
         }
 
-        if ($request->status == 'processing' && $order->status == 'pending') {
-            if ($order->payment_method == 'cash') {
-                $order->payment_status = 'paid';
+        if ($order->group_id) {
+            $updateData = [
+                'status' => $request->status,
+            ];
+            if ($request->status == 'processing' && $order->status == 'pending') {
+                if ($order->payment_method == 'cash') {
+                    $updateData['payment_status'] = 'paid';
+                }
             }
-        }
+            if ($request->has('storage_location') && $request->storage_location) {
+                $updateData['storage_location'] = $request->storage_location;
+            }
+            if (!$order->employee_id && in_array(Auth::user()->role, ['admin', 'employee'])) {
+                $updateData['employee_id'] = Auth::id();
+            }
+            if ($request->status == 'completed' && !$order->completion_date) {
+                $updateData['completion_date'] = now();
+            }
+            Order::where('group_id', $order->group_id)->update($updateData);
+            $order->refresh();
+        } else {
+            if ($request->status == 'processing' && $order->status == 'pending') {
+                if ($order->payment_method == 'cash') {
+                    $order->payment_status = 'paid';
+                }
+            }
+            $order->status = $request->status;
+            $order->save();
 
-        $order->status = $request->status;
-        $order->save();
-
-        if ($request->has('storage_location') && $request->storage_location) {
-            $order->update(['storage_location' => $request->storage_location]);
-        }
-
-        // Assign employee if not already assigned and user is staff
-        if (!$order->employee_id && in_array(Auth::user()->role, ['admin', 'employee'])) {
-            $order->update(['employee_id' => Auth::id()]);
-        }
-
-        // Automatically set dates
-        if ($request->status == 'completed' && !$order->completion_date) {
-            $order->update(['completion_date' => now()]);
+            if ($request->has('storage_location') && $request->storage_location) {
+                $order->update(['storage_location' => $request->storage_location]);
+            }
+            if (!$order->employee_id && in_array(Auth::user()->role, ['admin', 'employee'])) {
+                $order->update(['employee_id' => Auth::id()]);
+            }
+            if ($request->status == 'completed' && !$order->completion_date) {
+                $order->update(['completion_date' => now()]);
+            }
         }
 
         // Send Notification to Customer and Admin
         try {
             $statusLabels = [
                 'pending' => 'Menunggu',
-                'in_progress' => 'Sedang Dicuci',
-                'repairing' => 'Sedang Direparasi',
+                'processing' => 'Sedang Dikerjakan',
                 'finishing' => 'Finishing',
                 'ready' => 'Siap Diambil',
                 'dikirim' => 'Dikirim',
@@ -1001,17 +1071,24 @@ class OrderController extends Controller
 
             $label = $statusLabels[$request->status] ?? $request->status;
 
-            // Notify Customer via App
+            // Notify Customer via App + Email (menggunakan OrderStatusNotification untuk email yang lebih informatif)
             /** @var User $customer */
             $customer = $order->user;
+            
+            // In-app notification
             $customer->notify(new \App\Notifications\AppNotification([
                 'title' => 'Update Pesanan: ' . strtoupper($label),
                 'message' => 'Pesanan #' . $order->order_number . ' (' . $order->shoe_name . ') sekarang berstatus: ' . $label,
                 'icon' => 'refresh-cw',
                 'color' => 'indigo',
-                'url' => route('orders.show', $order->id),
+                'url' => route('orders.show', $order->id, false),
                 'type' => 'status_update',
             ]));
+
+            // Email notification with beautiful order status template
+            if (!empty($customer->email) && !preg_match('/@(cleanup\.com|example\.com)$/i', $customer->email)) {
+                $customer->notify(new \App\Notifications\OrderStatusNotification($order, $request->status));
+            }
 
             // Send WhatsApp Notification to Customer
             if ($customer->phone) {
@@ -1030,7 +1107,7 @@ class OrderController extends Controller
                     'message' => Auth::user()->name . ' mengubah status #' . $order->order_number . ' ke ' . $label,
                     'icon' => 'activity',
                     'color' => 'gray',
-                    'url' => route('admin.orders.index'),
+                    'url' => route('admin.orders.index', [], false),
                     'type' => 'status_update',
                 ]));
             }
@@ -1108,7 +1185,7 @@ class OrderController extends Controller
                 'message' => 'Pembayaran pesanan #' . $order->order_number . ' sebesar Rp ' . number_format($order->total_price, 0, ',', '.') . ' telah dikonfirmasi. Nominal otomatis masuk pendapatan dan status pesanan langsung diproses.',
                 'icon' => 'check-circle',
                 'color' => 'green',
-                'url' => route('admin.orders.index'),
+                'url' => $user->role == 'admin' ? route('admin.orders.index', [], false) : route('employee.orders.index', [], false),
                 'type' => 'payment_success',
             ]));
         }
@@ -1151,10 +1228,16 @@ class OrderController extends Controller
             return back()->with('error', 'Pesanan yang sedang diproses tidak dapat dibatalkan.');
         }
 
-        // Update status to cancelled
-        $order->update([
-            'status' => 'cancelled'
-        ]);
+        // Update status to cancelled for the entire group if grouped
+        if ($order->group_id) {
+            Order::where('group_id', $order->group_id)->update([
+                'status' => 'cancelled'
+            ]);
+        } else {
+            $order->update([
+                'status' => 'cancelled'
+            ]);
+        }
 
         // Notify Admins and Customer
         try {
@@ -1166,7 +1249,7 @@ class OrderController extends Controller
                     'message' => 'Pesanan #' . $order->order_number . ' telah dibatalkan oleh pelanggan (' . Auth::user()->name . ')',
                     'icon' => 'x-circle',
                     'color' => 'red',
-                    'url' => route('admin.orders.index'),
+                    'url' => route('admin.orders.index', [], false),
                     'type' => 'status_update',
                 ]));
             }
@@ -1200,12 +1283,14 @@ class OrderController extends Controller
             if ($order->group_id) {
                 Order::where('group_id', $order->group_id)->update([
                     'payment_proof' => $proofPath,
-                    'status_pembayaran' => 'Menunggu Validasi'
+                    'status_pembayaran' => 'Menunggu Validasi',
+                    'payment_status' => 'paid'
                 ]);
             } else {
                 $order->update([
                     'payment_proof' => $proofPath,
-                    'status_pembayaran' => 'Menunggu Validasi'
+                    'status_pembayaran' => 'Menunggu Validasi',
+                    'payment_status' => 'paid'
                 ]);
             }
 
@@ -1218,7 +1303,7 @@ class OrderController extends Controller
                     'message' => 'Pelanggan ' . Auth::user()->name . ' telah mengunggah bukti pembayaran untuk pesanan #' . $order->order_number,
                     'icon' => 'file-text',
                     'color' => 'blue',
-                    'url' => route('admin.orders.index'),
+                    'url' => route('admin.orders.index', [], false),
                     'type' => 'payment_proof',
                 ]));
             }

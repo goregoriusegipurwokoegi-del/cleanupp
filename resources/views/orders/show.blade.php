@@ -335,6 +335,9 @@
             <!-- Instructions Area -->
             <div style="margin-top: 32px;">
                 @if($order->payment_status == 'unpaid')
+                    <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); padding: 1rem; border-radius: 20px; text-align: center; color: #f59e0b; font-weight: 800; font-size: 0.9rem; margin-bottom: 20px;">
+                        MENUNGGU PEMBAYARAN • BELUM BAYAR
+                    </div>
                     @if($order->payment_method == 'cash')
                         <div style="background: rgba(249, 115, 22, 0.05); border: 1px solid rgba(249, 115, 22, 0.2); padding: 1.2rem; border-radius: 20px; display: flex; gap: 12px; align-items: start; margin-bottom: 20px;">
                             <div style="width: 32px; height: 32px; background: rgba(249, 115, 22, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--primary);">
@@ -466,11 +469,9 @@
                             </button>
                         </form>
                     @endif
-                    @if($order->payment_status == 'paid')
                         <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="flex: 1; min-width: 150px; background: #fff; color: #000; text-decoration: none; text-align: center; height: 50px; border-radius: 16px; font-weight: 900; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
                             CETAK STRUK
                         </a>
-                    @endif
                     <a href="https://wa.me/6281234567890?text=Halo Admin CleanUP Shoes, saya mau tanya status pesanan aktif saya #{{ $order->order_number }}" target="_blank" style="flex: 1; min-width: 150px; background: transparent; color: #9ca3af; text-decoration: none; text-align: center; height: 50px; border-radius: 16px; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(255,255,255,0.05);">
                         TANYA ADMIN
                     </a>

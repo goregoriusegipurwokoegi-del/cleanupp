@@ -13,12 +13,15 @@
     $waText .= "--------------------------------\n";
     $waText .= "Pembeli: " . $order->user->name . "\n";
     $waText .= "Tanggal: " . $order->created_at->format('d/m/Y H:i') . "\n";
-    $waText .= "No Struk: " . $order->order_number . "\n";
+    $waText .= "No Struk: " . ($order->group_id ?: $order->order_number) . "\n";
     $waText .= "--------------------------------\n";
-    $waText .= "Layanan: " . $order->service->name . " (" . ($order->processing_speed == 'express' ? 'Express' : 'Reguler') . ")\n";
+    foreach($groupOrders as $grpItem) {
+        $waText .= "- " . $grpItem->service->name . " (" . ($grpItem->processing_speed == 'express' ? 'Express' : 'Reguler') . ")\n";
+    }
     $waText .= "Item: " . $order->shoe_name . "\n";
     $waText .= "--------------------------------\n";
-    $waText .= "*TOTAL BAYAR: Rp " . number_format($order->total_price, 0, ',', '.') . "*\n";
+    $waText .= "*TOTAL BAYAR: Rp " . number_format($groupTotal, 0, ',', '.') . "*\n";
+    $waText .= "Status: " . ($order->payment_status == 'paid' ? 'LUNAS' : 'BELUM BAYAR') . "\n";
     $waText .= "--------------------------------\n";
     $waText .= "Terima kasih telah mempercayakan sepatu Anda pada kami! ✨";
 @endphp
@@ -45,6 +48,9 @@
             <h2 style="margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -1px;">CleanUP Shoes</h2>
             <p style="margin: 0; font-size: 13px;">Premium Shoe Care</p>
             <p style="margin: 0; font-size: 12px;">Outlet Pusat</p>
+            <div style="margin-top: 5px; font-size: 10px; font-weight: bold; padding: 3px 8px; border-radius: 4px; display: inline-block; {{ $order->payment_status == 'paid' ? 'background: #10b981; color: #fff;' : 'background: #f59e0b; color: #000;' }}">
+                {{ $order->payment_status == 'paid' ? 'LUNAS' : 'BELUM BAYAR' }}
+            </div>
         </div>
         
         <div style="border-bottom: 1px dashed #000; margin-bottom: 10px;"></div>
@@ -54,7 +60,7 @@
             <tr><td style="width: 35%;">Pembeli</td><td>: {{ $order->user->name }} {{ $order->user->phone }}</td></tr>
             <tr><td>Pembayaran</td><td>: {{ strtoupper($order->payment_method) }}</td></tr>
             <tr><td>Tanggal</td><td>: {{ $order->created_at->format('d/m/Y H:i') }}</td></tr>
-            <tr><td>No Struk</td><td>: {{ $order->order_number }}</td></tr>
+            <tr><td>No Struk</td><td>: {{ $order->group_id ?: $order->order_number }}</td></tr>
             <tr><td>Kasir</td><td>: Sistem</td></tr>
         </table>
         
@@ -62,39 +68,45 @@
         
         <!-- Items -->
         <div style="font-size: 12px; margin-bottom: 10px;">
+            @php $itemIndex = 1; @endphp
+            @foreach($groupOrders as $grpOrder)
             <!-- Main Service -->
             <div style="margin-bottom: 5px;">
-                <p style="margin: 0;">1. {{ $order->service->name }} ({{ $order->processing_speed == 'express' ? 'Express' : 'Reguler' }})</p>
+                <p style="margin: 0;">{{ $itemIndex++ }}. {{ $grpOrder->service->name }} ({{ $grpOrder->processing_speed == 'express' ? 'Express' : 'Reguler' }})</p>
                 <div style="display: flex; justify-content: space-between;">
-                    @php $mainPrice = $order->service->price + ($order->processing_speed == 'express' ? 25000 : 0); @endphp
-                    <span>{{ number_format($mainPrice, 0, ',', '.') }} x {{ $order->shoe_quantity }}</span>
-                    <span>{{ number_format($mainPrice * $order->shoe_quantity, 0, ',', '.') }}</span>
+                    @php $mainPrice = $grpOrder->service->price + ($grpOrder->processing_speed == 'express' ? 25000 : 0); @endphp
+                    <span>{{ number_format($mainPrice, 0, ',', '.') }} x {{ $grpOrder->shoe_quantity }}</span>
+                    <span>{{ number_format($mainPrice * $grpOrder->shoe_quantity, 0, ',', '.') }}</span>
                 </div>
             </div>
             
             <!-- Additional Services -->
-            @if($order->additional_services)
+            @if($grpOrder->additional_services)
                 @php
-                    $extras = \App\Models\Service::whereIn('id', $order->additional_services)->get();
+                    $extras = \App\Models\Service::whereIn('id', $grpOrder->additional_services)->get();
                 @endphp
-                @foreach($extras as $index => $extra)
+                @foreach($extras as $extra)
                 <div style="margin-bottom: 5px;">
-                    <p style="margin: 0;">{{ $index + 2 }}. {{ $extra->name }}</p>
+                    <p style="margin: 0;">{{ $itemIndex++ }}. {{ $extra->name }}</p>
                     <div style="display: flex; justify-content: space-between;">
-                        <span>{{ number_format($extra->price, 0, ',', '.') }} x {{ $order->shoe_quantity }}</span>
-                        <span>{{ number_format($extra->price * $order->shoe_quantity, 0, ',', '.') }}</span>
+                        <span>{{ number_format($extra->price, 0, ',', '.') }} x {{ $grpOrder->shoe_quantity }}</span>
+                        <span>{{ number_format($extra->price * $grpOrder->shoe_quantity, 0, ',', '.') }}</span>
                     </div>
                 </div>
                 @endforeach
             @endif
+            @endforeach
             
             <!-- Delivery Fee -->
-            @if($order->delivery_fee > 0)
+            @php
+                $totalDeliveryFee = $groupOrders->sum('delivery_fee');
+            @endphp
+            @if($totalDeliveryFee > 0)
             <div style="margin-bottom: 5px;">
-                <p style="margin: 0;">Antar Jemput</p>
+                <p style="margin: 0;">{{ $itemIndex++ }}. Antar Jemput</p>
                 <div style="display: flex; justify-content: space-between;">
-                    <span>{{ number_format($order->delivery_fee, 0, ',', '.') }} x 1</span>
-                    <span>{{ number_format($order->delivery_fee, 0, ',', '.') }}</span>
+                    <span>{{ number_format($totalDeliveryFee, 0, ',', '.') }} x 1</span>
+                    <span>{{ number_format($totalDeliveryFee, 0, ',', '.') }}</span>
                 </div>
             </div>
             @endif
@@ -105,17 +117,24 @@
         <!-- Total -->
         <div style="font-size: 12px; margin-bottom: 10px;">
             <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                <span>TOTAL {{ $order->shoe_quantity }} QTY</span>
-                <span>{{ number_format($order->total_price, 0, ',', '.') }}</span>
+                <span>TOTAL {{ $groupOrders->sum('shoe_quantity') }} QTY</span>
+                <span>{{ number_format($groupTotal, 0, ',', '.') }}</span>
             </div>
             <div style="display: flex; justify-content: space-between;">
                 <span>Bayar</span>
-                <span>{{ number_format($order->total_price, 0, ',', '.') }}</span>
+                <span>{{ $order->payment_status == 'paid' ? number_format($groupTotal, 0, ',', '.') : '0' }}</span>
             </div>
+            @if($order->payment_status == 'paid')
             <div style="display: flex; justify-content: space-between;">
                 <span>Kembali</span>
                 <span>0</span>
             </div>
+            @else
+            <div style="display: flex; justify-content: space-between; font-weight: bold; color: #ef4444;">
+                <span>Sisa Tagihan</span>
+                <span>{{ number_format($groupTotal, 0, ',', '.') }}</span>
+            </div>
+            @endif
         </div>
         
         <div style="border-bottom: 1px dashed #000; margin-bottom: 10px;"></div>
@@ -123,10 +142,27 @@
         <!-- Keterangan -->
         <div style="font-size: 12px;">
             <p style="margin: 0; font-weight: bold;">Keterangan</p>
-            <p style="margin: 0;">- {{ $order->shoe_name }} (Size {{ $order->shoe_size ?? '-' }})</p>
+            @php $processedShoes = []; @endphp
+            @foreach($groupOrders as $grpOrder)
+                @php
+                    $shoeKey = ($grpOrder->shoe_name ?: 'Sepatu') . ' (Size ' . ($grpOrder->shoe_size ?? '-') . ')';
+                @endphp
+                @if(!in_array($shoeKey, $processedShoes))
+                    <p style="margin: 0;">- {{ $shoeKey }}</p>
+                    @php $processedShoes[] = $shoeKey; @endphp
+                @endif
+            @endforeach
             @if($order->notes)
             <p style="margin: 0;">- Catatan: {{ $order->notes }}</p>
             @endif
+        </div>
+        
+        <div style="border-bottom: 1px dashed #000; margin-top: 10px; margin-bottom: 10px;"></div>
+        
+        <!-- QR Code for scanning to view shoe photos -->
+        <div style="text-align: center; margin-bottom: 10px;">
+            <p style="margin: 0 0 5px 0; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Lihat Foto & Detail</p>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={{ urlencode(route('orders.show', $order->id)) }}" alt="QR Code Detail" style="width: 100px; height: 100px; display: inline-block; border: 1px solid #ccc; padding: 2px; background: #fff;">
         </div>
         
         <div style="border-bottom: 1px dashed #000; margin-top: 10px; margin-bottom: 10px;"></div>

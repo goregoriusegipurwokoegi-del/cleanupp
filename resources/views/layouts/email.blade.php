@@ -132,7 +132,15 @@
                             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 25px;">
                                 <tr>
                                     <td align="center" style="font-size: 13px; color: #94a3b8; line-height: 1.5; font-weight: 500;">
-                                        Butuh bantuan? Hubungi kami via WhatsApp di <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', \App\Models\Setting::where('key', 'whatsapp_number')->first()->value ?? '628123456789') }}" style="color: #f97316; text-decoration: none; font-weight: 600;">+{{ \App\Models\Setting::where('key', 'whatsapp_number')->first()->value ?? '628123456789' }}</a>
+                                        @php
+                                            try {
+                                                $waNumber = \App\Models\Setting::where('key', 'whatsapp_number')->value('value') ?? '628123456789';
+                                            } catch (\Exception $e) {
+                                                $waNumber = '628123456789';
+                                            }
+                                            $waNumberClean = preg_replace('/[^0-9]/', '', $waNumber);
+                                        @endphp
+                                        Butuh bantuan? Hubungi kami via WhatsApp di <a href="https://wa.me/{{ $waNumberClean }}" style="color: #f97316; text-decoration: none; font-weight: 600;">+{{ $waNumber }}</a>
                                     </td>
                                 </tr>
                                 <tr>

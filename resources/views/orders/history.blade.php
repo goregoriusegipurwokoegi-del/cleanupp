@@ -157,6 +157,7 @@
     <!-- Tabs -->
     <div class="history-tabs">
         <a href="{{ route('orders.history', ['status_filter' => 'all']) }}" class="history-tab {{ $status_filter == 'all' ? 'active' : '' }}">Semua</a>
+        <a href="{{ route('orders.history', ['status_filter' => 'unpaid']) }}" class="history-tab {{ $status_filter == 'unpaid' ? 'active' : '' }}">Belum Bayar</a>
         <a href="{{ route('orders.history', ['status_filter' => 'pending']) }}" class="history-tab {{ $status_filter == 'pending' ? 'active' : '' }}">Menunggu Penjemputan</a>
         <a href="{{ route('orders.history', ['status_filter' => 'processing']) }}" class="history-tab {{ $status_filter == 'processing' ? 'active' : '' }}">Diproses</a>
         <a href="{{ route('orders.history', ['status_filter' => 'dikirim']) }}" class="history-tab {{ $status_filter == 'dikirim' ? 'active' : '' }}">Dikirim</a>
@@ -166,14 +167,17 @@
 
 
 
-    @forelse($orders as $order)
+    @forelse($orders as $group)
+        @php
+            $order = $group->first();
+        @endphp
         <div class="order-card-compact">
             <a href="{{ route('orders.show', $order->id) }}" class="card-top">
                 <img src="{{ $order->photo_before ? asset('storage/' . $order->photo_before) : asset('logo.png') }}" class="shop-logo">
                 <div class="card-info">
                     <span class="shop-name">CleanUP Shoes - {{ $order->service->category == 'cleaning' ? 'Cleaning' : 'Repair' }}</span>
-                    <span class="price-summary">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
-                    <span class="order-num-small">#{{ $order->order_number }}</span>
+                    <span class="price-summary">Rp {{ number_format($group->sum('total_price'), 0, ',', '.') }}</span>
+                    <span class="order-num-small">#{{ $order->group_id ?: $order->order_number }}</span>
                 </div>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity: 0.3;"><path d="M9 18l6-6-6-6"/></svg>
             </a>
@@ -183,14 +187,27 @@
             <div class="card-bottom">
                 <div>
                     <span class="service-type-text">
-                        {{ $order->service->name }} 
+                        @foreach($group as $index => $grpItem)
+                            {{ $grpItem->service->name }}{{ !$loop->last ? ', ' : '' }}
+                        @endforeach
+                        @if($order->payment_status == 'unpaid')
+                        <span style="color: #f59e0b; font-size: 0.7rem; background: rgba(245, 158, 11, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 5px; font-weight: 800;">BELUM BAYAR</span>
+                        @endif
                         @if($order->status == 'cancelled')
                         <span style="color: #ef4444; font-size: 0.7rem; background: rgba(239, 68, 68, 0.1); padding: 2px 6px; border-radius: 4px; margin-left: 5px;">BATAL</span>
                         @endif
                     </span>
                     <span class="order-date-text">{{ $order->created_at->format('d M Y, H:i') }}</span>
                 </div>
-                <a href="{{ route('services.index') }}" class="btn-reorder-compact">Pesan Lagi</a>
+                @if($order->status == 'cancelled')
+                    <a href="{{ route('services.index') }}" class="btn-reorder-compact" style="background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6); box-shadow: none;">Pesan Lagi</a>
+                @elseif($order->payment_status == 'unpaid')
+                    <a href="{{ route('orders.show', $order->id) }}" class="btn-reorder-compact" style="background: #f59e0b; color: #000; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);">Bayar Sekarang</a>
+                @elseif($order->status == 'completed')
+                    <a href="{{ route('services.index') }}" class="btn-reorder-compact">Pesan Lagi</a>
+                @else
+                    <a href="{{ route('orders.show', $order->id) }}" class="btn-reorder-compact" style="background: #3b82f6; color: #fff; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);">Lacak Pesanan</a>
+                @endif
             </div>
         </div>
     @empty

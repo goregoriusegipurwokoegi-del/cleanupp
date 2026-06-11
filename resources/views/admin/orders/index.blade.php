@@ -175,17 +175,26 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($orders as $order)
+            @foreach($orders as $group)
+                @php
+                    $order = $group->first();
+                @endphp
             <tr class="clickable-row" 
                 data-order="{{ json_encode($order) }}" 
                 data-user="{{ json_encode($order->user) }}" 
                 data-service="{{ json_encode($order->service) }}"
+                data-services="{{ json_encode($group->map(fn($o) => ['name' => $o->service->name, 'price' => $o->total_price - $o->delivery_fee])) }}"
+                data-group-total="{{ $group->sum('total_price') }}"
                 style="border-bottom: 1px solid rgba(255,255,255,0.02); cursor: pointer; transition: background 0.2s;"
                 onmouseover="this.style.background='rgba(255,255,255,0.02)'"
                 onmouseout="this.style.background='transparent'">
                 <td style="padding: 15px;">
-                    <div style="background: var(--primary); color: #000; padding: 2px 8px; border-radius: 6px; font-weight: 800; width: fit-content; margin-bottom: 3px;">{{ $order->queue_number }}</div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary);">#{{ $order->order_number }}</div>
+                    <div style="background: var(--primary); color: #000; padding: 2px 8px; border-radius: 6px; font-weight: 800; width: fit-content; margin-bottom: 3px; white-space: nowrap;">
+                        @foreach($group->pluck('queue_number')->unique() as $qNum)
+                            {{ $qNum }}{{ !$loop->last ? ',' : '' }}
+                        @endforeach
+                    </div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary);">#{{ $order->group_id ?: $order->order_number }}</div>
                     <div style="font-size: 0.65rem; opacity: 0.4;">{{ $order->created_at->format('d/m H:i') }}</div>
                 </td>
                 <td style="padding: 15px;">
@@ -202,8 +211,10 @@
                     </div>
                 </td>
                 <td style="padding: 15px;">
-                    <div style="font-weight: 700; font-size: 0.85rem;">{{ $order->service->name }}</div>
-                    <div style="font-size: 0.75rem; opacity: 0.5;">Rp {{ number_format($order->total_price, 0, ',', '.') }}</div>
+                    @foreach($group as $grpItem)
+                        <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 2px;">{{ $grpItem->service->name }}</div>
+                    @endforeach
+                    <div style="font-size: 0.75rem; opacity: 0.5; font-weight: bold; margin-top: 5px; color: var(--primary);">Rp {{ number_format($group->sum('total_price'), 0, ',', '.') }}</div>
                 </td>
                 <td style="padding: 15px;">
                     @php
@@ -233,6 +244,13 @@
                     <span style="background: {{ $currentColor }}20; color: {{ $currentColor }}; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; border: 1px solid {{ $currentColor }}30; white-space: nowrap;">
                         {{ $currentLabel }}
                     </span>
+                    <div style="margin-top: 5px;">
+                        @if($order->payment_status == 'paid')
+                            <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.3); white-space: nowrap;">LUNAS</span>
+                        @else
+                            <span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.3); white-space: nowrap;">BELUM BAYAR</span>
+                        @endif
+                    </div>
                 </td>
                 <td style="padding: 15px;">
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
@@ -293,22 +311,35 @@
 
 <!-- Mobile View -->
 <div class="order-card-mobile">
-    @foreach($orders as $order)
+    @foreach($orders as $group)
+        @php
+            $order = $group->first();
+        @endphp
     <div class="order-card-mobile clickable-row" 
          data-order="{{ json_encode($order) }}" 
          data-user="{{ json_encode($order->user) }}" 
          data-service="{{ json_encode($order->service) }}"
+         data-services="{{ json_encode($group->map(fn($o) => ['name' => $o->service->name, 'price' => $o->total_price - $o->delivery_fee])) }}"
+         data-group-total="{{ $group->sum('total_price') }}"
          style="margin-bottom: 20px; cursor: pointer;">
         <div class="card-header-mobile">
             <div style="display: flex; gap: 10px; align-items: center;">
-                <div style="background: var(--primary); color: #000; padding: 2px 8px; border-radius: 6px; font-weight: 900;">{{ $order->queue_number }}</div>
-                <div style="font-weight: 800; color: var(--primary);">#{{ $order->order_number }}</div>
+                <div style="background: var(--primary); color: #000; padding: 2px 8px; border-radius: 6px; font-weight: 900; white-space: nowrap;">
+                    @foreach($group->pluck('queue_number')->unique() as $qNum)
+                        {{ $qNum }}{{ !$loop->last ? ',' : '' }}
+                    @endforeach
+                </div>
+                <div style="font-weight: 800; color: var(--primary);">#{{ $order->group_id ?: $order->order_number }}</div>
             </div>
             <div style="font-size: 0.7rem; opacity: 0.5;">{{ $order->created_at->format('d/m H:i') }}</div>
         </div>
         <div class="card-body-mobile">
             <div style="font-weight: 700; margin-bottom: 5px;">{{ $order->user->name }} ({{ $order->shoe_name }})</div>
-            <div style="font-size: 0.85rem; opacity: 0.6;">{{ $order->service->name }} - Rp {{ number_format($order->total_price, 0, ',', '.') }}</div>
+            <div style="font-size: 0.85rem; opacity: 0.6;">
+                @foreach($group as $grpItem)
+                    {{ $grpItem->service->name }}{{ !$loop->last ? ', ' : '' }}
+                @endforeach
+                 - Rp {{ number_format($group->sum('total_price'), 0, ',', '.') }}</div>
             <div style="margin-top: 8px;">
                 @php
                     $labelIndo = [
@@ -323,6 +354,9 @@
                     ][$order->status] ?? strtoupper($order->status);
                 @endphp
                 <span style="font-size: 0.7rem; background: rgba(249,115,22,0.1); color: var(--primary); padding: 3px 8px; border-radius: 6px; font-weight: 800;">{{ $labelIndo }}</span>
+                <span style="font-size: 0.7rem; margin-left: 5px; {{ $order->payment_status == 'paid' ? 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);' : 'background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);' }} padding: 3px 8px; border-radius: 6px; font-weight: 800;">
+                    {{ $order->payment_status == 'paid' ? 'LUNAS' : 'BELUM BAYAR' }}
+                </span>
             </div>
         </div>
         @if($order->status == 'pending')
@@ -427,8 +461,8 @@
 
                 <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">💼 Layanan & Biaya</h4>
                 <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 3px;">Layanan Utama</p>
-                    <p id="detail_service_name" style="font-weight: 700; font-size: 0.95rem; margin-bottom: 10px;">-</p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 5px;">Daftar Layanan</p>
+                    <div id="detail_services_container" style="margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
                     
                     <div style="display: flex; gap: 15px; margin-bottom: 10px;">
                         <div>
@@ -733,9 +767,9 @@
         document.getElementById(modalId).classList.remove('active');
     }
 
-    function openDetailModal(order, user, service) {
+    function openDetailModal(order, user, service, services, groupTotal) {
         document.getElementById('detail_queue_number').innerText = order.queue_number;
-        document.getElementById('detail_order_number').innerText = '#' + order.order_number;
+        document.getElementById('detail_order_number').innerText = '#' + (order.group_id || order.order_number);
         
         const date = new Date(order.created_at);
         document.getElementById('detail_reception_date').innerText = date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
@@ -745,13 +779,39 @@
         document.getElementById('detail_shoe_quantity').innerText = order.shoe_quantity || '1';
         document.getElementById('detail_storage_location').innerText = order.storage_location || 'Belum diatur';
         
-        document.getElementById('detail_service_name').innerText = service.name;
+        const servicesContainer = document.getElementById('detail_services_container');
+        servicesContainer.innerHTML = '';
+        if (services && services.length > 0) {
+            services.forEach(s => {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.display = 'flex';
+                itemDiv.style.justifyContent = 'space-between';
+                itemDiv.style.alignItems = 'center';
+                itemDiv.style.marginBottom = '4px';
+                itemDiv.innerHTML = `
+                    <span style="font-weight: 700; font-size: 0.85rem;">${s.name}</span>
+                    <span style="font-weight: 700; font-size: 0.85rem; opacity: 0.8;">Rp ${(parseInt(s.price) || 0).toLocaleString('id-ID')}</span>
+                `;
+                servicesContainer.appendChild(itemDiv);
+            });
+        } else {
+            const itemDiv = document.createElement('div');
+            itemDiv.style.display = 'flex';
+            itemDiv.style.justifyContent = 'space-between';
+            itemDiv.style.alignItems = 'center';
+            itemDiv.innerHTML = `
+                <span style="font-weight: 700; font-size: 0.85rem;">${service.name}</span>
+                <span style="font-weight: 700; font-size: 0.85rem; opacity: 0.8;">Rp ${(parseInt(order.total_price) - (parseInt(order.delivery_fee) || 0)).toLocaleString('id-ID')}</span>
+            `;
+            servicesContainer.appendChild(itemDiv);
+        }
+        
         document.getElementById('detail_processing_speed').innerText = order.processing_speed;
         
         const deliveryFee = parseInt(order.delivery_fee) || 0;
         document.getElementById('detail_delivery_fee').innerText = deliveryFee > 0 ? 'Rp ' + deliveryFee.toLocaleString('id-ID') : 'Rp 0';
         
-        const totalPrice = parseInt(order.total_price) || 0;
+        const totalPrice = groupTotal ? parseInt(groupTotal) : (parseInt(order.total_price) || 0);
         document.getElementById('detail_total_price').innerText = 'Rp ' + totalPrice.toLocaleString('id-ID');
         
         document.getElementById('detail_customer_name').innerText = user.name;
@@ -805,15 +865,9 @@
         document.getElementById('detail_status_select').value = order.status;
         
         const printBtn = document.getElementById('detail_print_receipt_btn');
-        if (order.payment_status === 'paid') {
-            printBtn.href = `/customer/orders/${order.id}/receipt`;
-            printBtn.style.opacity = '1';
-            printBtn.style.pointerEvents = 'auto';
-        } else {
-            printBtn.href = '#';
-            printBtn.style.opacity = '0.5';
-            printBtn.style.pointerEvents = 'none';
-        }
+        printBtn.href = `/customer/orders/${order.id}/receipt`;
+        printBtn.style.opacity = '1';
+        printBtn.style.pointerEvents = 'auto';
         
         document.getElementById('detail_view_detail_btn').href = `/customer/orders/${order.id}`;
         
@@ -836,7 +890,9 @@
             const order = JSON.parse(this.dataset.order);
             const user = JSON.parse(this.dataset.user);
             const service = JSON.parse(this.dataset.service);
-            openDetailModal(order, user, service);
+            const services = this.dataset.services ? JSON.parse(this.dataset.services) : null;
+            const groupTotal = this.dataset.groupTotal ? parseFloat(this.dataset.groupTotal) : null;
+            openDetailModal(order, user, service, services, groupTotal);
         });
     });
 

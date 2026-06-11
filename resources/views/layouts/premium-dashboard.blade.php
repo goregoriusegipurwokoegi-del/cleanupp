@@ -406,6 +406,16 @@
                 display: none !important; /* Hide large page title on mobile to match mockup logo */
             }
         }
+
+        /* Responsive title helper to prevent double titles on desktop */
+        .desktop-hidden-title {
+            display: none !important;
+        }
+        @media (max-width: 768px) {
+            .desktop-hidden-title {
+                display: block !important;
+            }
+        }
     </style>
     @if(false)
     <style>

@@ -26,12 +26,13 @@ class OrderStatusNotification extends Notification
 
     /**
      * Get the notification's delivery channels.
+     * Note: database channel is handled separately by AppNotification to avoid duplication.
      *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['mail'];
     }
 
     /**

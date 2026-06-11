@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -45,7 +44,16 @@ class AppNotification extends Notification
             }
         }
 
-        return ['database', 'mail'];
+        $channels = ['database'];
+
+        // Send email for non-status_update notifications only.
+        // Order status updates use OrderStatusNotification for a richer email template.
+        $type = $this->details['type'] ?? 'general';
+        if ($type !== 'status_update' && !empty($notifiable->email) && !preg_match('/@(cleanup\.com|example\.com)$/i', $notifiable->email)) {
+            $channels[] = 'mail';
+        }
+
+        return $channels;
     }
 
     /**
@@ -101,12 +109,23 @@ class AppNotification extends Notification
      */
     public function toArray(object $notifiable): array
     {
+        $url = $this->details['url'] ?? '/dashboard';
+        
+        // Convert absolute URLs to relative paths to prevent session loss across local domains (e.g. localhost vs 127.0.0.1)
+        if (filter_var($url, FILTER_VALIDATE_URL)) {
+            $parsed = parse_url($url);
+            $path = $parsed['path'] ?? '/dashboard';
+            $query = isset($parsed['query']) ? '?' . $parsed['query'] : '';
+            $fragment = isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '';
+            $url = $path . $query . $fragment;
+        }
+
         return [
             'title' => $this->details['title'] ?? 'Pemberitahuan',
             'message' => $this->details['message'],
             'icon' => $this->details['icon'] ?? 'bell',
             'color' => $this->details['color'] ?? 'blue',
-            'url' => $this->details['url'] ?? '/dashboard',
+            'url' => $url,
             'type' => $this->details['type'] ?? 'general',
         ];
     }
