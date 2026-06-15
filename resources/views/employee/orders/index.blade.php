@@ -1,10 +1,10 @@
 @extends('layouts.premium-dashboard')
 
-@section('page_title', request('queue') ? 'Monitor Antrian' : (request('delivery') ? 'Antar Jemput' : 'Tugas Saya'))
+@section('page_title', request('queue') ? 'Monitor Antrian' : (request('delivery') ? 'Antar Jemput' : 'Orderan Masuk'))
 
 @section('nav_items')
     <li class="nav-item"><a href="{{ route('employee.dashboard') }}" class="nav-link">Dashboard</a></li>
-    <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link active">Tugas Saya</a></li>
+    <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link active">Orderan Masuk</a></li>
     <li class="nav-item"><a href="{{ route('employee.inventories.index') }}" class="nav-link">Stok Barang</a></li>
 @endsection
 
@@ -15,10 +15,10 @@
 <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
     <div>
         <h2 class="desktop-hidden-title" style="font-size: 1.8rem; font-weight: 900; margin-bottom: 5px;">
-            @if(request('queue')) Monitor <span style="color: var(--primary);">Antrian</span> @elseif(request('delivery')) Antar <span style="color: var(--primary);">Jemput</span> @else Tugas <span style="color: var(--primary);">Saya</span> @endif
+            @if(request('queue')) Monitor <span style="color: var(--primary);">Antrian</span> @elseif(request('delivery')) Antar <span style="color: var(--primary);">Jemput</span> @else Orderan <span style="color: var(--primary);">Masuk</span> @endif
         </h2>
         <p style="opacity: 0.6;">
-            @if(request('queue')) Pantau pesanan aktif. Pesanan selesai otomatis disembunyikan. @elseif(request('delivery')) Kelola dan perbarui status antar jemput sepatu pelanggan. @else Kelola dan perbarui status pengerjaan sepatu pelanggan. @endif
+            @if(request('queue')) Pantau pesanan aktif. Pesanan selesai otomatis disembunyikan. @elseif(request('delivery')) Kelola dan perbarui status antar jemput sepatu pelanggan. @else Kelola dan validasi orderan masuk dari pelanggan. @endif
         </p>
     </div>
     @if(!request('queue'))
@@ -262,15 +262,7 @@
                                         <button type="submit" onclick="return confirm('Apakah Anda yakin ingin menolak pesanan ini?')" style="width: 100%; background: #f43f5e; color: #fff; border: none; padding: 6px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.3s; white-space: nowrap;">Tolak</button>
                                     </form>
                                 </div>
-                                @if($order->payment_status == 'unpaid')
-                                    <form action="{{ route('orders.payment.remind', $order) }}" method="POST" style="margin: 0;">
-                                        @csrf
-                                        <button type="submit" title="Kirim Pengingat WA" style="width: 100%; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 5px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-13.3 8.38 8.38 0 0 1 3.9.9L22 4l-1.5 6.5z"></path></svg>
-                                            REKAYASA WA
-                                        </button>
-                                    </form>
-                                @endif
+
                                 <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Edit Pesanan</button>
                                 <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; text-decoration: none; text-align: center; display: inline-block;">Cetak Struk</a>
                             </div>
@@ -315,17 +307,11 @@
                                     </form>
                                 @endif
                                 
-                                @if($order->payment_status == 'unpaid')
-                                    <form action="{{ route('orders.payment.remind', $order) }}" method="POST" style="margin: 0;">
-                                        @csrf
-                                        <button type="submit" title="Kirim Pengingat WA" style="width: 100%; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 5px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-13.3 8.38 8.38 0 0 1 3.9.9L22 4l-1.5 6.5z"></path></svg>
-                                            REKAYASA WA
-                                        </button>
-                                    </form>
+
+                                @if(!request('queue'))
+                                    <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Edit Pesanan</button>
+                                    <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; text-decoration: none; text-align: center; display: inline-block;">Cetak Struk</a>
                                 @endif
-                                <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.3s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Edit Pesanan</button>
-                                <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; text-decoration: none; text-align: center; display: inline-block;">Cetak Struk</a>
                             </div>
                         @endif
                     </td>
@@ -433,14 +419,11 @@
                         </form>
                     @endif
                 @endif
-                @if($order->payment_status == 'unpaid')
-                    <form action="{{ route('orders.payment.remind', $order) }}" method="POST" style="margin-top: 0.4rem;">
-                        @csrf
-                        <button type="submit" style="width: 100%; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.5rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">PENGINGAT WA PEMBAYARAN</button>
-                    </form>
+
+                @if(!request('queue'))
+                    <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-top: 0.4rem;">EDIT PESANAN</button>
+                    <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-top: 0.4rem; text-decoration: none; text-align: center; display: block;">CETAK NOTA</a>
                 @endif
-                <button onclick='openEditModal(@json($order))' style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-top: 0.4rem;">EDIT PESANAN</button>
-                <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 0.6rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-top: 0.4rem; text-decoration: none; text-align: center; display: block;">CETAK NOTA</a>
             </div>
         </div>
         @endforeach
@@ -535,6 +518,10 @@
                     </select>
                 </div>
             </div>
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Uang Diterima (Khusus Tunai)</label>
+                <input type="number" name="cash_amount" placeholder="Contoh: 100000" class="filter-input" style="width: 100%; background: #1e1e24;">
+            </div>
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Foto Sepatu (Sebelum)</label>
                 <input type="file" name="shoe_photo" class="filter-input" style="width: 100%; background: #1e1e24;">
@@ -625,6 +612,10 @@
                     </select>
                 </div>
             </div>
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Uang Diterima (Khusus Tunai)</label>
+                <input type="number" name="cash_amount" id="edit_cash_amount" placeholder="Contoh: 100000" class="filter-input" style="width: 100%; background: #1e1e24;">
+            </div>
             <div class="modal-grid-2">
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Ubah Foto Sebelum</label>
@@ -658,6 +649,7 @@
         document.getElementById('edit_payment_method').value = order.payment_method;
         document.getElementById('edit_payment_status').value = order.payment_status;
         document.getElementById('edit_status').value = order.status;
+        document.getElementById('edit_cash_amount').value = order.cash_amount || '';
         
         const proofContainer = document.getElementById('edit_payment_proof_container');
         const proofLink = document.getElementById('edit_payment_proof_link');
@@ -675,22 +667,4 @@
         document.getElementById(modalId).classList.remove('active');
     }
 
-    // Real-time Auto Refresh every 5 seconds for instant queue updates
-    let isInteracting = false;
-
-    // Detect if user is interacting with dropdowns or modals to avoid refreshing mid-selection
-    document.addEventListener('focusin', (e) => {
-        if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT' || e.target.closest('.modal-backdrop')) isInteracting = true;
-    });
-    document.addEventListener('focusout', (e) => {
-        if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT' || e.target.closest('.modal-backdrop')) isInteracting = false;
-    });
-    
-    // Also disable refresh when modal is open
-    setInterval(() => {
-        const isModalOpen = document.getElementById('createOrderModal').classList.contains('active');
-        if (!isInteracting && !isModalOpen) {
-            window.location.reload();
-        }
-    }, 5000); // 5 seconds
 </script>

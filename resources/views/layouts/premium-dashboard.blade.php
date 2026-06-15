@@ -1,3 +1,9 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('page_title', 'CleanUP Shoes')</title>
     <style>
         :root {
             --primary: #f97316; /* Orange 500 */
@@ -172,10 +178,18 @@
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: var(--radius-lg);
             padding: 1.5rem;
+        }
+
+        /* Only interactive/clickable glass cards should have scale transitions & active states */
+        a .glass-card,
+        a.glass-card,
+        .glass-card.interactive {
             transition: transform 0.2s ease, background 0.2s ease;
         }
 
-        .glass-card:active {
+        a:active .glass-card,
+        a.glass-card:active,
+        .glass-card.interactive:active {
             transform: scale(0.98);
             background: rgba(255, 255, 255, 0.08);
         }
@@ -456,7 +470,7 @@
                     <a href="{{ route('employee.orders.index') }}" class="nav-link {{ request()->routeIs('employee.orders.*') ? 'active' : '' }}" style="display: flex; align-items: center; justify-content: space-between;">
                         <div style="display: flex; align-items: center; gap: 0.8rem;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                            <span>Tugas Saya</span>
+                            <span>Orderan Masuk</span>
                         </div>
                         @php
                             $pendingOrdersCount = \App\Models\Order::where('status', 'pending')->count();
@@ -519,7 +533,7 @@
                     </a>
                     <ul class="submenu" style="display: {{ request()->routeIs('employee.reports.*') ? 'block' : 'none' }}; list-style: none; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem;">
                         <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#ringkasan" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Ringkasan Kinerja</a></li>
-                        <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#tugas" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Tugas Saya</a></li>
+                        <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#tugas" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Orderan Masuk</a></li>
                         <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#riwayat" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Riwayat Pekerjaan</a></li>
                         <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#absensi" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Rekap Absensi</a></li>
                         <li style="margin-bottom: 0.3rem;"><a href="{{ route('employee.reports.index') }}#rating" class="nav-link" style="font-size: 0.85rem; padding: 0.4rem 1rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">Rating Pelanggan</a></li>

@@ -5,12 +5,12 @@
         <title>Broadcast - WhatsApp API</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 
-        <link id="favicon" rel="shortcut icon" type="image/png" href="/assets/icon/favicon.png" />
+        <link id="favicon" rel="shortcut icon" type="image/png" href="assets/icon/favicon.png" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" type="text/css" href="/assets/css/icon-font.min.css" />
-        <link rel="stylesheet" type="text/css" href="/assets/css/core.css" />
-        <link rel="stylesheet" type="text/css" href="/assets/css/style.css" />
+        <link rel="stylesheet" type="text/css" href="assets/css/icon-font.min.css" />
+        <link rel="stylesheet" type="text/css" href="assets/css/core.css" />
+        <link rel="stylesheet" type="text/css" href="assets/css/style.css" />
 
         <style>
             body {
@@ -304,7 +304,7 @@
                 if (form.media.files.length > 0) {
                     const uploadData = new FormData();
                     uploadData.append("file", form.media.files[0]);
-                    const uploadRes = await fetch("/upload", { method: "POST", body: uploadData });
+                    const uploadRes = await fetch("upload", { method: "POST", body: uploadData });
                     const uploadJson = await uploadRes.json();
                     fileUrl = uploadJson.url;
                 }
@@ -317,7 +317,7 @@
                     delay: parseInt(form.delay.value) || 2,
                 };
 
-                const res = await fetch("/broadcast", {
+                const res = await fetch("broadcast", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload),

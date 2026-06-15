@@ -639,6 +639,10 @@
                     </select>
                 </div>
             </div>
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Uang Diterima (Khusus Tunai)</label>
+                <input type="number" name="cash_amount" placeholder="Contoh: 100000" class="filter-input" style="width: 100%; background: #1e1e24;">
+            </div>
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Foto Sepatu (Sebelum)</label>
                 <input type="file" name="shoe_photo" class="filter-input" style="width: 100%; background: #1e1e24;">
@@ -726,6 +730,10 @@
                     </select>
                 </div>
             </div>
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Uang Diterima (Khusus Tunai)</label>
+                <input type="number" name="cash_amount" id="edit_cash_amount" placeholder="Contoh: 100000" class="filter-input" style="width: 100%; background: #1e1e24;">
+            </div>
             <div class="modal-grid-2">
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Ubah Foto Sebelum</label>
@@ -759,6 +767,7 @@
         document.getElementById('edit_payment_method').value = order.payment_method;
         document.getElementById('edit_payment_status').value = order.payment_status;
         document.getElementById('edit_status').value = order.status;
+        document.getElementById('edit_cash_amount').value = order.cash_amount || '';
         
         document.getElementById('editOrderModal').classList.add('active');
     }

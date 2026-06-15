@@ -4,7 +4,7 @@
 
 @section('nav_items')
     <li class="nav-item"><a href="{{ route('employee.dashboard') }}" class="nav-link">Dashboard</a></li>
-    <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link">Tugas Saya</a></li>
+    <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link">Orderan Masuk</a></li>
     <li class="nav-item"><a href="{{ route('employee.inventories.index') }}" class="nav-link active">Stok Barang</a></li>
 @endsection
 

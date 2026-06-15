@@ -14,7 +14,20 @@ const PORT = process.env.PORT || 6969;
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIO(server);
+const io = socketIO(server, {
+    path: '/whatsapp-api/socket.io'
+});
+
+// Middleware to strip prefix in cPanel / Passenger subfolder deployment
+app.use((req, res, next) => {
+    if (req.url.startsWith('/whatsapp-api')) {
+        req.url = req.url.replace('/whatsapp-api', '');
+        if (req.url === '') {
+            req.url = '/';
+        }
+    }
+    next();
+});
 
 app.use(express.json());
 
@@ -345,7 +358,7 @@ app.post('/upload', async (req, res) =>
         return res.status(500).json({ status: false, message: 'Gagal upload file', error: err.message });
     }
 
-    const publicUrl = `http://${HOST}:${PORT}/assets/uploads/${encodeURIComponent(file.name)}`;
+    const publicUrl = `${req.protocol}://${req.get('host')}/whatsapp-api/assets/uploads/${encodeURIComponent(file.name)}`;
 
     res.json({ status: true, url: publicUrl });
 });

@@ -648,6 +648,24 @@ class OrderController extends Controller
 
         $serviceIds = $request->has('service_ids') ? $request->service_ids : [$request->service_id];
 
+        $groupTotalPrice = 0;
+        foreach ($serviceIds as $serviceId) {
+            if (!$serviceId) continue;
+            $mainService = \App\Models\Service::findOrFail($serviceId);
+            $itemPrice = $mainService->price * $shoeQuantity;
+            if ($request->processing_speed === 'express') {
+                $itemPrice += (25000 * $shoeQuantity);
+            }
+            $groupTotalPrice += $itemPrice;
+        }
+
+        $cashAmount = $request->input('cash_amount');
+        $changeAmount = null;
+        if ($cashAmount !== null && $cashAmount !== '') {
+            $cashAmount = (double) $cashAmount;
+            $changeAmount = max(0, $cashAmount - $groupTotalPrice);
+        }
+
         foreach ($serviceIds as $serviceId) {
             if (!$serviceId) continue;
             
@@ -677,11 +695,14 @@ class OrderController extends Controller
                 'total_price' => $totalPrice,
                 'payment_method' => $request->payment_method,
                 'payment_status' => $request->payment_status,
+                'status_pembayaran' => $request->payment_status === 'paid' ? 'Sudah Divalidasi' : 'pending',
                 'reception_date' => now(),
                 'shoe_name' => $request->shoe_name,
                 'shoe_size' => $request->shoe_size,
                 'photo_before' => $photoPath,
                 'shoe_quantity' => $shoeQuantity,
+                'cash_amount' => $cashAmount,
+                'change_amount' => $changeAmount,
             ]);
         }
 
@@ -719,6 +740,31 @@ class OrderController extends Controller
             $totalPrice += (25000 * $shoeQuantity);
         }
 
+        $groupTotalPrice = 0;
+        if ($order->group_id) {
+            $groupOrders = Order::where('group_id', $order->group_id)->get();
+            foreach ($groupOrders as $gOrder) {
+                $gService = $gOrder->service;
+                $gTotalPrice = $gService->price * $shoeQuantity;
+                if ($request->processing_speed === 'express') {
+                    $gTotalPrice += (25000 * $shoeQuantity);
+                }
+                if ($gOrder->delivery_fee > 0) {
+                    $gTotalPrice += $gOrder->delivery_fee;
+                }
+                $groupTotalPrice += $gTotalPrice;
+            }
+        } else {
+            $groupTotalPrice = $totalPrice;
+        }
+
+        $cashAmount = $request->input('cash_amount');
+        $changeAmount = null;
+        if ($cashAmount !== null && $cashAmount !== '') {
+            $cashAmount = (double) $cashAmount;
+            $changeAmount = max(0, $cashAmount - $groupTotalPrice);
+        }
+
         $data = [
             'queue_number' => $request->queue_number,
             'service_id' => $request->service_id,
@@ -728,8 +774,11 @@ class OrderController extends Controller
             'shoe_quantity' => $shoeQuantity,
             'payment_method' => $request->payment_method,
             'payment_status' => $request->payment_status,
+            'status_pembayaran' => $request->payment_status === 'paid' ? 'Sudah Divalidasi' : 'pending',
             'status' => $request->status,
             'total_price' => $totalPrice,
+            'cash_amount' => $cashAmount,
+            'change_amount' => $changeAmount,
         ];
 
         if ($request->hasFile('shoe_photo')) {
@@ -761,8 +810,11 @@ class OrderController extends Controller
                     'shoe_quantity' => $shoeQuantity,
                     'payment_method' => $request->payment_method,
                     'payment_status' => $request->payment_status,
+                    'status_pembayaran' => $request->payment_status === 'paid' ? 'Sudah Divalidasi' : 'pending',
                     'status' => $request->status,
                     'total_price' => $gTotalPrice,
+                    'cash_amount' => $cashAmount,
+                    'change_amount' => $changeAmount,
                 ];
                 
                 if (isset($data['photo_before'])) {
@@ -808,7 +860,7 @@ class OrderController extends Controller
         $query = Order::with(['user', 'service']);
 
         if ($request->has('queue')) {
-            $query->whereNotIn('status', ['completed', 'cancelled']);
+            $query->whereNotIn('status', ['pending', 'completed', 'cancelled']);
             if ($status) {
                 $query->where('status', $status);
             }
@@ -822,8 +874,8 @@ class OrderController extends Controller
             if ($status) {
                 $query->where('status', $status);
             } else {
-                // Default to active orders (not completed/cancelled)
-                $query->whereNotIn('status', ['completed', 'cancelled']);
+                // Default to pending orders (not yet validated)
+                $query->where('status', 'pending');
             }
         }
 
@@ -888,6 +940,24 @@ class OrderController extends Controller
 
         $serviceIds = $request->has('service_ids') ? $request->service_ids : [$request->service_id];
 
+        $groupTotalPrice = 0;
+        foreach ($serviceIds as $serviceId) {
+            if (!$serviceId) continue;
+            $mainService = \App\Models\Service::findOrFail($serviceId);
+            $itemPrice = $mainService->price * $shoeQuantity;
+            if ($request->processing_speed === 'express') {
+                $itemPrice += (25000 * $shoeQuantity);
+            }
+            $groupTotalPrice += $itemPrice;
+        }
+
+        $cashAmount = $request->input('cash_amount');
+        $changeAmount = null;
+        if ($cashAmount !== null && $cashAmount !== '') {
+            $cashAmount = (double) $cashAmount;
+            $changeAmount = max(0, $cashAmount - $groupTotalPrice);
+        }
+
         foreach ($serviceIds as $serviceId) {
             if (!$serviceId) continue;
             
@@ -917,11 +987,14 @@ class OrderController extends Controller
                 'total_price' => $totalPrice,
                 'payment_method' => $request->payment_method,
                 'payment_status' => $request->payment_status,
+                'status_pembayaran' => $request->payment_status === 'paid' ? 'Sudah Divalidasi' : 'pending',
                 'reception_date' => now(),
                 'shoe_name' => $request->shoe_name,
                 'shoe_size' => $request->shoe_size,
                 'photo_before' => $photoPath,
                 'shoe_quantity' => $shoeQuantity,
+                'cash_amount' => $cashAmount,
+                'change_amount' => $changeAmount,
             ]);
         }
 
@@ -988,13 +1061,13 @@ class OrderController extends Controller
         if ($request->status == 'cancelled') {
             $customer = $order->user;
             
-            // 1. Notify Customer via App (Point to dashboard since order will be deleted)
+            // 1. Notify Customer via App (Point to order detail page since order is not deleted anymore)
             $customer->notify(new \App\Notifications\AppNotification([
                 'title' => 'PESANAN DITOLAK',
                 'message' => 'Mohon maaf, pesanan Anda #' . $order->order_number . ' (' . $order->shoe_name . ') telah ditolak oleh admin.',
                 'icon' => 'x-circle',
                 'color' => 'red',
-                'url' => route('customer.dashboard'),
+                'url' => route('orders.show', $order->id, false),
                 'type' => 'status_update',
             ]));
 
@@ -1007,14 +1080,14 @@ class OrderController extends Controller
                 $this->whatsAppService->sendMessage($customer->phone, $waMessage);
             }
 
-            // 3. Forcefully delete from database for entire group if grouped
+            // 3. Update status to cancelled in database (do not delete)
             if ($order->group_id) {
-                Order::where('group_id', $order->group_id)->delete();
+                Order::where('group_id', $order->group_id)->update(['status' => 'cancelled']);
             } else {
-                $order->delete();
+                $order->update(['status' => 'cancelled']);
             }
             
-            return back()->with('success', 'Pesanan telah ditolak dan data telah dihapus.');
+            return back()->with('success', 'Pesanan telah ditolak.');
         }
 
         if ($order->group_id) {
@@ -1022,9 +1095,8 @@ class OrderController extends Controller
                 'status' => $request->status,
             ];
             if ($request->status == 'processing' && $order->status == 'pending') {
-                if ($order->payment_method == 'cash') {
-                    $updateData['payment_status'] = 'paid';
-                }
+                $updateData['payment_status'] = 'paid';
+                $updateData['status_pembayaran'] = 'Sudah Divalidasi';
             }
             if ($request->has('storage_location') && $request->storage_location) {
                 $updateData['storage_location'] = $request->storage_location;
@@ -1039,9 +1111,8 @@ class OrderController extends Controller
             $order->refresh();
         } else {
             if ($request->status == 'processing' && $order->status == 'pending') {
-                if ($order->payment_method == 'cash') {
-                    $order->payment_status = 'paid';
-                }
+                $order->payment_status = 'paid';
+                $order->status_pembayaran = 'Sudah Divalidasi';
             }
             $order->status = $request->status;
             $order->save();
@@ -1167,11 +1238,13 @@ class OrderController extends Controller
         if ($order->group_id) {
             Order::where('group_id', $order->group_id)->update([
                 'payment_status' => 'paid',
+                'status_pembayaran' => 'Sudah Divalidasi',
                 'status' => 'processing'
             ]);
         } else {
             $order->update([
                 'payment_status' => 'paid',
+                'status_pembayaran' => 'Sudah Divalidasi',
                 'status' => 'processing' // Langsung dikonfirmasi tanpa validasi
             ]);
         }

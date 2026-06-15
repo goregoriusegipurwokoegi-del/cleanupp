@@ -5,11 +5,11 @@
         <title>Device Sessions - WhatsApp API</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 
-        <link id="favicon" rel="shortcut icon" type="image/png" href="/assets/icon/favicon.png" />
+        <link id="favicon" rel="shortcut icon" type="image/png" href="assets/icon/favicon.png" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-        <link rel="stylesheet" type="text/css" href="/assets/css/core.css" />
-        <link rel="stylesheet" type="text/css" href="/assets/css/icon-font.min.css" />
-        <link rel="stylesheet" type="text/css" href="/assets/css/style.css" />
+        <link rel="stylesheet" type="text/css" href="assets/css/core.css" />
+        <link rel="stylesheet" type="text/css" href="assets/css/icon-font.min.css" />
+        <link rel="stylesheet" type="text/css" href="assets/css/style.css" />
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 
         <style>
@@ -217,7 +217,7 @@
                     }
                 });
 
-                var socket = io();
+                var socket = io({ path: '/whatsapp-api/socket.io' });
 
                 $(".add-client-btn").click(function () {
                     var clientId = $("#client-id").val();

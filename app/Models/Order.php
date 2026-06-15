@@ -52,7 +52,8 @@ class Order extends Model
         'payment_method', 'payment_status', 'status_pembayaran', 'snap_token', 'payment_proof', 'complaint', 'handling_notes',
         'photo_before', 'photo_before_2', 'photo_after', 'reception_date', 'completion_date',
         'rating', 'review', 'shoe_name', 'shoe_size', 'employee_id', 'storage_location',
-        'is_delivery', 'delivery_address', 'shoe_quantity', 'latitude', 'longitude'
+        'is_delivery', 'delivery_address', 'shoe_quantity', 'latitude', 'longitude',
+        'cash_amount', 'change_amount'
     ];
 
     protected $casts = [

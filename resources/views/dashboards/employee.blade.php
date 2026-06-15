@@ -4,7 +4,7 @@
 
 @section('nav_items')
     <li class="nav-item"><a href="{{ route('employee.dashboard') }}" class="nav-link active">Dashboard</a></li>
-    <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link">Tugas Saya</a></li>
+    <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link">Orderan Masuk</a></li>
     <li class="nav-item"><a href="{{ route('employee.inventories.index') }}" class="nav-link">Stok Barang</a></li>
 @endsection
 
@@ -18,231 +18,444 @@
 @endphp
 
 <style>
-    .accent-card {
+    /* Responsive Spacing & Design System */
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.8rem;
+        padding-bottom: 2rem;
+    }
+    
+    .quick-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+    }
+
+    .monitoring-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1.25rem;
+    }
+
+    /* Premium Modern Glassmorphic Card */
+    .premium-card {
+        background: rgba(30, 41, 59, 0.45); /* Soft premium slate */
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(24px) saturate(120%);
+        border-radius: 24px;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+    
+    .premium-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(249, 115, 22, 0.3);
+        background: rgba(30, 41, 59, 0.65);
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6), 0 0 15px rgba(249, 115, 22, 0.1);
+    }
+
+    /* Status Ambient Glow Backgrounds */
+    .status-glow {
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        filter: blur(50px);
+        opacity: 0.22;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* Pulse Dots for Realtime Feel */
+    .pulse-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        position: relative;
+    }
+    .pulse-dot::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 2px solid currentColor;
+        opacity: 0.8;
+        animation: pulse-ring 1.8s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
+    }
+
+    @keyframes pulse-ring {
+        0% { transform: scale(0.6); opacity: 1; }
+        100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    /* Action Buttons */
+    .action-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        height: 48px;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        position: relative;
+        z-index: 1;
+        text-decoration: none;
+        text-transform: uppercase;
+    }
+
+    .action-button:active {
+        transform: scale(0.97);
+    }
+
+    /* Accent indicator bars for list rows */
+    .accent-bar {
         position: relative;
         overflow: hidden;
     }
-    .accent-card::before {
+    .accent-bar::before {
         content: '';
         position: absolute;
         left: 0;
         top: 0;
         bottom: 0;
-        width: 4px;
+        width: 5px;
+        border-radius: 5px 0 0 5px;
     }
-    .accent-warning::before {
-        background: var(--warning);
+    .accent-bar-warning::before { background: linear-gradient(to bottom, #f59e0b, #d97706); }
+    .accent-bar-primary::before { background: linear-gradient(to bottom, var(--primary), #ea580c); }
+
+    /* Custom List Card styled beautifully */
+    .list-item-card {
+        background: rgba(30, 41, 59, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        transition: all 0.25s ease;
     }
-    .stat-label {
-        opacity: 0.6;
-        font-size: 0.72rem;
-        margin-bottom: 0.5rem;
-        text-transform: uppercase;
-        font-weight: 700;
-        letter-spacing: 0.5px;
+    .list-item-card:hover {
+        background: rgba(30, 41, 59, 0.55);
+        border-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(3px);
     }
 
-    @media (max-width: 768px) {
-        .header-welcome { text-align: left !important; padding: 1.5rem !important; }
-        .attendance-btns { grid-template-columns: 1fr 1fr !important; }
-        .grid-monitoring { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
-        .grid-monitoring > a > div { padding: 8px 10px !important; border-radius: 10px !important; }
-        .grid-monitoring .stat-label { font-size: 0.6rem !important; margin-bottom: 2px !important; }
-        .grid-monitoring div[style*="font-size: 1.8rem"] { font-size: 1.1rem !important; }
-        
-        .grid-2 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
-        .stat-card-compact { padding: 8px 10px !important; border-radius: 10px !important; }
-        .stat-card-compact .stat-label { font-size: 0.6rem !important; margin-bottom: 2px !important; }
-        .stat-card-compact div { font-size: 1.1rem !important; }
-    }
-
-    .premium-action-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
+    /* Horizontal Scrolling Container for New Orders */
+    .horizontal-scroll-container {
+        display: flex;
+        overflow-x: auto;
         gap: 1rem;
-        margin-bottom: 2rem;
+        padding-bottom: 0.8rem;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scroll-padding: 0 1rem;
     }
+    .horizontal-scroll-container::-webkit-scrollbar {
+        height: 6px;
+    }
+    .horizontal-scroll-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 10px;
+    }
+    .horizontal-scroll-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 10px;
+    }
+    .scroll-card {
+        flex: 0 0 280px;
+        scroll-snap-align: start;
+        background: rgba(30, 41, 59, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        padding: 1.25rem;
+        transition: all 0.25s ease;
+        position: relative;
+    }
+    .scroll-card:hover {
+        background: rgba(30, 41, 59, 0.6);
+        border-color: rgba(249, 115, 22, 0.25);
+        transform: translateY(-2px);
+    }
+    @media (max-width: 768px) {
+        .scroll-card {
+            flex: 0 0 250px;
+            padding: 1.1rem;
+            border-radius: 18px;
+        }
+    }
+
+    /* Colorized Dashboard Widgets (Optimized for readability) */
+    .widget-blue {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(30, 41, 59, 0.45) 100%);
+        border-color: rgba(14, 165, 233, 0.2);
+    }
+    .widget-blue:hover { border-color: rgba(14, 165, 233, 0.45); }
     
-    .action-widget {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    .widget-purple {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(30, 41, 59, 0.45) 100%);
+        border-color: rgba(168, 85, 247, 0.2);
     }
-    .action-widget:hover {
-        transform: translateY(-4px);
+    .widget-purple:hover { border-color: rgba(168, 85, 247, 0.45); }
+
+    .widget-emerald {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(30, 41, 59, 0.45) 100%);
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+    .widget-emerald:hover { border-color: rgba(16, 185, 129, 0.45); }
+
+    .widget-amber {
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(30, 41, 59, 0.45) 100%);
+        border-color: rgba(245, 158, 11, 0.2);
+    }
+    .widget-amber:hover { border-color: rgba(245, 158, 11, 0.45); }
+
+    /* Interactive scanning radar line effect */
+    .scanner-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(to right, transparent, var(--primary), transparent);
+        animation: scan-radar-line 3s linear infinite;
+        opacity: 0.6;
+        z-index: 1;
+        pointer-events: none;
+    }
+    @keyframes scan-radar-line {
+        0% { top: 0%; }
+        50% { top: 100%; }
+        100% { top: 0%; }
+    }
+
+    /* Media query optimizations for phones (HP view) */
+    @media (max-width: 768px) {
+        .dashboard-container { gap: 1.25rem; }
+        .quick-stats-grid { gap: 0.9rem; }
+        .monitoring-grid { grid-template-columns: repeat(2, 1fr); gap: 0.9rem; }
+        .premium-card { padding: 1.15rem; border-radius: 20px; }
+        
+        .stat-label { font-size: 0.65rem !important; letter-spacing: 0.3px; }
+        .stat-number { font-size: 1.45rem !important; }
+        .action-button { height: 42px; font-size: 0.8rem; border-radius: 12px; }
+        
+        .section-header { font-size: 0.95rem !important; }
+        .pulse-dot { width: 8px; height: 8px; }
     }
 </style>
 
-<!-- Quick Actions Grid -->
-<!-- Quick Actions Grid -->
-<div class="premium-action-grid">
-    <!-- Absensi Compact -->
-    <div class="glass-card action-widget" style="padding: 1.2rem; border-radius: 20px; background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
-        <!-- Background Glow -->
-        @if($isClockedOut)
-            <div style="position: absolute; right: -20%; top: -20%; width: 100px; height: 100px; background: rgba(239, 68, 68, 0.15); filter: blur(30px); border-radius: 50%;"></div>
-        @elseif($isClockedIn)
-            <div style="position: absolute; right: -20%; top: -20%; width: 100px; height: 100px; background: rgba(16, 185, 129, 0.15); filter: blur(30px); border-radius: 50%;"></div>
-        @else
-            <div style="position: absolute; right: -20%; top: -20%; width: 100px; height: 100px; background: rgba(245, 158, 11, 0.15); filter: blur(30px); border-radius: 50%;"></div>
-        @endif
-        
-        <div style="margin-bottom: 1.2rem; position: relative; z-index: 1;">
-            <p style="opacity: 0.6; font-size: 0.65rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; margin-bottom: 4px;">Kehadiran</p>
+<div class="dashboard-container">
+    
+    <!-- Top Action Cards -->
+    <div class="quick-stats-grid">
+        <!-- Kehadiran Widget -->
+        <div class="premium-card">
             @if($isClockedOut)
-                <div style="color: #f43f5e; font-size: 1rem; font-weight: 900;">Selesai</div>
+                <div class="status-glow" style="background: #f43f5e;"></div>
             @elseif($isClockedIn)
-                <div style="color: #10b981; font-size: 1rem; font-weight: 900;">Aktif</div>
+                <div class="status-glow" style="background: #10b981;"></div>
             @else
-                <div style="color: #f59e0b; font-size: 1rem; font-weight: 900;">Belum Absen</div>
+                <div class="status-glow" style="background: #fb923c;"></div>
             @endif
-        </div>
-        <div style="position: relative; z-index: 1;">
-            @if(!$isClockedIn)
-                <form action="{{ route('employee.attendance.clock-in') }}" method="POST" style="margin: 0;">
-                    @csrf
-                    <button type="submit" style="width: 100%; height: 42px; background: var(--success); color: #000; border: none; border-radius: 12px; font-weight: 900; font-size: 0.8rem; cursor: pointer; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);">MASUK</button>
-                </form>
-            @elseif(!$isClockedOut)
-                <form action="{{ route('employee.attendance.clock-out') }}" method="POST" style="margin: 0;">
-                    @csrf
-                    <button type="submit" style="width: 100%; height: 42px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; border-radius: 12px; font-weight: 900; font-size: 0.8rem; cursor: pointer; letter-spacing: 1px;">KELUAR</button>
-                </form>
-            @endif
-        </div>
-    </div>
 
-    <!-- Scan Button Box -->
-    <a href="{{ route('employee.orders.scan') }}" style="text-decoration: none;">
-        <div class="glass-card action-widget" style="padding: 1.2rem; border-radius: 20px; background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); position: relative; overflow: hidden;">
-            <!-- Background Glow -->
-            <div style="position: absolute; right: -20%; top: -20%; width: 100px; height: 100px; background: rgba(249, 115, 22, 0.15); filter: blur(30px); border-radius: 50%;"></div>
-            
-            <div style="margin-bottom: 1.2rem; position: relative; z-index: 1;">
-                <p style="opacity: 0.6; font-size: 0.65rem; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; color: #fff; margin-bottom: 4px;">Aksi Cepat</p>
-                <div style="color: #fff; font-size: 1rem; font-weight: 900;">Cari Data Sepatu</div>
-            </div>
-            <div style="position: relative; z-index: 1;">
-                <div style="width: 100%; height: 42px; background: var(--primary); color: #000; border-radius: 12px; font-weight: 900; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.25);">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M4 3h16a2 2 0 0 1 2 2v6h-2V5H4v14h6v2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><polyline points="14 14 18 18 22 14"/><line x1="18" y1="22" x2="18" y2="14"/></svg>
-                    BUKA
-                </div>
-            </div>
-        </div>
-    </a>
-</div>
-
-<!-- Incoming Orders Section Small -->
-<div style="margin-bottom: 2rem;">
-    <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
-        <span style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="width: 4px; height: 16px; background: var(--warning); border-radius: 4px;"></span>
-            Baru Masuk
-        </span>
-        @if($incomingOrders->count() > 0)
-            <span style="background: var(--warning); color: #000; font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 900;">{{ $incomingOrders->count() }}</span>
-        @endif
-    </h3>
-    <div style="display: grid; gap: 0.8rem;">
-        @forelse($incomingOrders as $order)
-        <div class="glass-card accent-card accent-warning" style="padding: 1rem 1.2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(245, 158, 11, 0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <div style="font-weight: 900; color: var(--warning); font-size: 1rem;">{{ $order->queue_number }}</div>
+            <div style="position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; justify-content: space-between; min-height: 108px;">
                 <div>
-                    <div style="font-weight: 700; color: #fff; font-size: 0.9rem; margin-bottom: 3px;">{{ Str::limit($order->service->name, 20) }}</div>
-                    <p style="font-size: 0.75rem; opacity: 0.5; font-weight: 500;">{{ $order->created_at->diffForHumans() }}</p>
+                    <span class="stat-label" style="display: block; opacity: 0.55; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">Presensi Hari Ini</span>
+                    @if($isClockedOut)
+                        <h4 style="color: #f43f5e; font-size: 0.95rem; font-weight: 900; display: flex; align-items: center; gap: 8px;">
+                            <span class="pulse-dot" style="color: #f43f5e;"></span> SELESAI BEKERJA
+                        </h4>
+                    @elseif($isClockedIn)
+                        <h4 style="color: #34d399; font-size: 0.95rem; font-weight: 900; display: flex; align-items: center; gap: 8px;">
+                            <span class="pulse-dot" style="color: #34d399;"></span> SEDANG BEKERJA
+                        </h4>
+                    @else
+                        <h4 style="color: #fb923c; font-size: 0.95rem; font-weight: 900; display: flex; align-items: center; gap: 8px;">
+                            <span class="pulse-dot" style="color: #fb923c;"></span> BELUM ABSEN MASUK
+                        </h4>
+                    @endif
+                </div>
+
+                <div style="margin-top: 1.2rem;">
+                    @if(!$isClockedIn)
+                        <form action="{{ route('employee.attendance.clock-in') }}" method="POST" style="margin: 0;">
+                            @csrf
+                            <button type="submit" class="action-button" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25); text-shadow: 0 1px 2px rgba(0,0,0,0.25);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+                                Absen Masuk
+                            </button>
+                        </form>
+                    @elseif(!$isClockedOut)
+                        <form action="{{ route('employee.attendance.clock-out') }}" method="POST" style="margin: 0;">
+                            @csrf
+                            <button type="submit" class="action-button" style="background: rgba(244, 63, 94, 0.08); border: 1.5px solid rgba(244, 63, 94, 0.35); color: #f43f5e; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.05);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                                Absen Pulang
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
-            <a href="{{ route('employee.orders.index') }}" style="background: rgba(255,255,255,0.08); color: #fff; padding: 6px 14px; border-radius: 8px; text-decoration: none; font-size: 0.8rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.1);">Detil</a>
         </div>
-        @empty
-        <div style="padding: 1.5rem; text-align: center; background: rgba(255,255,255,0.01); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.05);">
-            <p style="opacity: 0.3; font-size: 0.8rem;">Belum ada pesanan.</p>
+
+        <!-- Scan Widget -->
+        <div class="premium-card scanner-card">
+            <div class="status-glow" style="background: var(--primary);"></div>
+            <div style="position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; justify-content: space-between; min-height: 108px;">
+                <div>
+                    <span class="stat-label" style="display: block; opacity: 0.55; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">Aksi Cepat</span>
+                    <h4 style="color: #fff; font-size: 0.95rem; font-weight: 900; display: flex; align-items: center; gap: 8px;">
+                        🔍 PENCARIAN SEPATU
+                    </h4>
+                </div>
+
+                <div style="margin-top: 1.2rem;">
+                    <a href="{{ route('employee.orders.scan') }}" class="action-button" style="background: linear-gradient(135deg, var(--primary), #ea580c); color: #ffffff; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.25); text-shadow: 0 1px 2px rgba(0,0,0,0.25);">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        Buka Scanner
+                    </a>
+                </div>
+            </div>
         </div>
-        @endforelse
     </div>
-</div>
 
-
-<div class="grid-2" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1.2rem; margin-bottom: 3rem;">
-    <a href="{{ route('employee.orders.index', ['status' => 'pending']) }}" style="text-decoration: none; color: inherit;">
-        <div class="glass-card stat-card-compact accent-card accent-warning" style="background: rgba(245, 158, 11, 0.05); transition: 0.3s; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);" onmouseover="this.style.background='rgba(245, 158, 11, 0.1)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.05)'">
-            <p class="stat-label" style="color: var(--warning);">Butuh Validasi</p>
-            <div style="font-size: 2rem; font-weight: 900; color: #fff;">{{ $pendingOrdersCount }}</div>
+    <!-- Feed Baru Masuk (Compact Auto-sliding Banner) -->
+    @if($incomingOrders->isNotEmpty())
+    <div>
+        <div class="carousel-wrapper" style="position: relative; overflow: hidden; border-radius: 16px; border: 1.5px solid rgba(251, 146, 60, 0.25); background: linear-gradient(135deg, rgba(251, 146, 60, 0.12) 0%, rgba(30, 41, 59, 0.6) 100%); backdrop-filter: blur(24px); box-shadow: 0 8px 30px rgba(0,0,0,0.35); margin-bottom: 0.5rem;">
+            <div id="carousel-track" style="display: flex; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); width: 100%;">
+                @foreach($incomingOrders as $order)
+                <div class="carousel-slide" style="flex: 0 0 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.1rem; min-width: 100%; box-sizing: border-box;">
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex-grow: 1; padding-right: 8px;">
+                        <span class="pulse-dot" style="color: #fb923c; flex-shrink: 0;"></span>
+                        <span style="font-weight: 900; color: #fb923c; font-size: 0.85rem; font-family: monospace; letter-spacing: -0.5px; background: rgba(251, 146, 60, 0.15); padding: 2px 6px; border-radius: 6px; flex-shrink: 0;">{{ $order->queue_number }}</span>
+                        <div style="min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; font-size: 0.8rem;">
+                            <span style="font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px;" title="{{ $order->service->name }}">{{ $order->service->name }}</span>
+                            <span style="font-size: 0.68rem; opacity: 0.5; font-weight: 600; white-space: nowrap; flex-shrink: 0;">({{ $order->created_at->diffForHumans() }})</span>
+                        </div>
+                    </div>
+                    <a href="{{ route('employee.orders.index') }}" style="background: #fb923c; color: #000; padding: 4px 11px; border-radius: 6px; text-decoration: none; font-size: 0.7rem; font-weight: 900; transition: 0.25s; flex-shrink: 0; letter-spacing: 0.5px;" onmouseover="this.style.background='#ea580c'" onmouseout="this.style.background='#fb923c'">PROSES</a>
+                </div>
+                @endforeach
+            </div>
         </div>
-    </a>
-    <a href="{{ route('employee.orders.index', ['status' => 'completed']) }}" style="text-decoration: none; color: inherit;">
-        <div class="glass-card stat-card-compact" style="transition: 0.3s; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-            <p class="stat-label">Selesai (Minggu Ini)</p>
-            <div style="font-size: 2rem; font-weight: 900; color: #fff;">{{ $weeklyCompletedCount }}</div>
-        </div>
-    </a>
-</div>
-
-<!-- Cleaning Monitoring -->
-<div style="margin-bottom: 2.5rem;">
-    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span style="width: 4px; height: 18px; background: var(--primary); border-radius: 4px;"></span>
-        Monitoring Cuci Sepatu
-    </h3>
-    <div class="grid-monitoring" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
-        <a href="{{ route('employee.orders.index', ['status' => 'processing', 'category' => 'cleaning']) }}" style="text-decoration: none;">
-            <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.15); padding: 1.2rem; border-radius: 18px; transition: 0.3s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.15)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.08)'">
-                <p class="stat-label" style="color: #fff;">Dicuci</p>
-                <div style="font-size: 1.8rem; font-weight: 900; color: #3b82f6;">{{ $cleaningCounts['washing'] }}</div>
-            </div>
-        </a>
-        <a href="{{ route('employee.orders.index', ['status' => 'finishing', 'category' => 'cleaning']) }}" style="text-decoration: none;">
-            <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.15); padding: 1.2rem; border-radius: 18px; transition: 0.3s;" onmouseover="this.style.background='rgba(168, 85, 247, 0.15)'" onmouseout="this.style.background='rgba(168, 85, 247, 0.08)'">
-                <p class="stat-label" style="color: #fff;">Pengeringan</p>
-                <div style="font-size: 1.8rem; font-weight: 900; color: #a855f7;">{{ $cleaningCounts['drying'] }}</div>
-            </div>
-        </a>
-        <a href="{{ route('employee.orders.index', ['status' => 'ready', 'category' => 'cleaning']) }}" style="text-decoration: none;">
-            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.15); padding: 1.2rem; border-radius: 18px; transition: 0.3s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.15)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'">
-                <p class="stat-label" style="color: #fff;">Siap Diambil</p>
-                <div style="font-size: 1.8rem; font-weight: 900; color: #10b981;">{{ $cleaningCounts['ready'] }}</div>
-            </div>
-        </a>
-        <a href="{{ route('employee.orders.index', ['status' => 'uncollected', 'category' => 'cleaning']) }}" style="text-decoration: none;">
-            <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.15); padding: 1.2rem; border-radius: 18px; transition: 0.3s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.15)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.08)'">
-                <p class="stat-label" style="color: #fff;">Belum Diambil</p>
-                <div style="font-size: 1.8rem; font-weight: 900; color: #f59e0b;">{{ $cleaningCounts['uncollected'] }}</div>
-            </div>
-        </a>
     </div>
-</div>
+    @endif
 
-<!-- Repair Monitoring -->
-<div style="margin-bottom: 6rem;">
-    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span style="width: 4px; height: 18px; background: #f59e0b; border-radius: 4px;"></span>
-        Monitoring Reparasi Sepatu
-    </h3>
-    <div class="grid-monitoring" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
-        <a href="{{ route('employee.orders.index', ['status' => 'processing', 'category' => 'repair']) }}" style="text-decoration: none;">
-            <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.15); padding: 1.2rem; border-radius: 18px; transition: 0.3s;" onmouseover="this.style.background='rgba(59, 130, 246, 0.15)'" onmouseout="this.style.background='rgba(59, 130, 246, 0.08)'">
-                <p class="stat-label" style="color: #fff;">Dikerjakan</p>
-                <div style="font-size: 1.8rem; font-weight: 900; color: #3b82f6;">{{ $repairCounts['processing'] }}</div>
+    <!-- Summary Stats Row -->
+    <div class="quick-stats-grid">
+        <a href="{{ route('employee.orders.index', ['status' => 'pending']) }}" style="text-decoration: none; color: inherit; display: block;">
+            <div class="premium-card accent-bar accent-bar-warning" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.06) 0%, rgba(30, 41, 59, 0.45) 100%); border-color: rgba(239, 68, 68, 0.18); height: 100%;">
+                <p class="stat-label" style="color: #f87171; font-size: 0.72rem; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.8px;">BUTUH VALIDASI</p>
+                <div class="stat-number" style="font-size: 1.9rem; font-weight: 900; color: #fff; line-height: 1;">{{ $pendingOrdersCount }}</div>
             </div>
         </a>
-        <a href="{{ route('employee.orders.index', ['status' => 'finishing', 'category' => 'repair']) }}" style="text-decoration: none;">
-            <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.15); padding: 1.2rem; border-radius: 18px; transition: 0.3s;" onmouseover="this.style.background='rgba(168, 85, 247, 0.15)'" onmouseout="this.style.background='rgba(168, 85, 247, 0.08)'">
-                <p class="stat-label" style="color: #fff;">Proses Finishing</p>
-                <div style="font-size: 1.8rem; font-weight: 900; color: #a855f7;">{{ $repairCounts['finishing'] }}</div>
-            </div>
-        </a>
-        <a href="{{ route('employee.orders.index', ['status' => 'ready', 'category' => 'repair']) }}" style="text-decoration: none;">
-            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.15); padding: 1.2rem; border-radius: 18px; transition: 0.3s;" onmouseover="this.style.background='rgba(16, 185, 129, 0.15)'" onmouseout="this.style.background='rgba(16, 185, 129, 0.08)'">
-                <p class="stat-label" style="color: #fff;">Siap Diambil</p>
-                <div style="font-size: 1.8rem; font-weight: 900; color: #10b981;">{{ $repairCounts['ready'] }}</div>
-            </div>
-        </a>
-        <a href="{{ route('employee.orders.index', ['status' => 'uncollected', 'category' => 'repair']) }}" style="text-decoration: none;">
-            <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.15); padding: 1.2rem; border-radius: 18px; transition: 0.3s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.15)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.08)'">
-                <p class="stat-label" style="color: #fff;">Belum Diambil</p>
-                <div style="font-size: 1.8rem; font-weight: 900; color: #f59e0b;">{{ $repairCounts['uncollected'] }}</div>
+        <a href="{{ route('employee.orders.index', ['status' => 'completed']) }}" style="text-decoration: none; color: inherit; display: block;">
+            <div class="premium-card accent-bar accent-bar-primary" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, rgba(30, 41, 59, 0.45) 100%); border-color: rgba(16, 185, 129, 0.18); height: 100%;">
+                <p class="stat-label" style="color: #34d399; font-size: 0.72rem; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.8px;">SELESAI (MINGGU INI)</p>
+                <div class="stat-number" style="font-size: 1.9rem; font-weight: 900; color: #fff; line-height: 1;">{{ $weeklyCompletedCount }}</div>
             </div>
         </a>
     </div>
+
+    <!-- Cleaning Monitoring Grid -->
+    <div>
+        <h3 class="section-header" style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.9rem; display: flex; align-items: center; gap: 8px; color: #fff;">
+            <span style="width: 4px; height: 18px; background: #38bdf8; border-radius: 4px;"></span>
+            Monitoring Cuci Sepatu (Cleaning)
+        </h3>
+        <div class="monitoring-grid">
+            <a href="{{ route('employee.orders.index', ['status' => 'processing', 'category' => 'cleaning']) }}" style="text-decoration: none;">
+                <div class="premium-card widget-blue" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; min-height: 86px;">
+                    <span class="stat-label" style="color: #94a3b8; font-weight: 800; font-size: 0.68rem; letter-spacing: 0.5px;">DICUCI</span>
+                    <div class="stat-number" style="font-size: 1.7rem; font-weight: 900; color: #38bdf8; line-height: 1;">{{ $cleaningCounts['washing'] }}</div>
+                </div>
+            </a>
+            <a href="{{ route('employee.orders.index', ['status' => 'finishing', 'category' => 'cleaning']) }}" style="text-decoration: none;">
+                <div class="premium-card widget-purple" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; min-height: 86px;">
+                    <span class="stat-label" style="color: #94a3b8; font-weight: 800; font-size: 0.68rem; letter-spacing: 0.5px;">PENGERINGAN</span>
+                    <div class="stat-number" style="font-size: 1.7rem; font-weight: 900; color: #c084fc; line-height: 1;">{{ $cleaningCounts['drying'] }}</div>
+                </div>
+            </a>
+            <a href="{{ route('employee.orders.index', ['status' => 'ready', 'category' => 'cleaning']) }}" style="text-decoration: none;">
+                <div class="premium-card widget-emerald" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; min-height: 86px;">
+                    <span class="stat-label" style="color: #94a3b8; font-weight: 800; font-size: 0.68rem; letter-spacing: 0.5px;">SIAP DIAMBIL</span>
+                    <div class="stat-number" style="font-size: 1.7rem; font-weight: 900; color: #34d399; line-height: 1;">{{ $cleaningCounts['ready'] }}</div>
+                </div>
+            </a>
+            <a href="{{ route('employee.orders.index', ['status' => 'uncollected', 'category' => 'cleaning']) }}" style="text-decoration: none;">
+                <div class="premium-card widget-amber" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; min-height: 86px;">
+                    <span class="stat-label" style="color: #94a3b8; font-weight: 800; font-size: 0.68rem; letter-spacing: 0.5px;">BELUM DIAMBIL</span>
+                    <div class="stat-number" style="font-size: 1.7rem; font-weight: 900; color: #fbbf24; line-height: 1;">{{ $cleaningCounts['uncollected'] }}</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Repair Monitoring Grid -->
+    <div style="margin-bottom: 2rem;">
+        <h3 class="section-header" style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.9rem; display: flex; align-items: center; gap: 8px; color: #fff;">
+            <span style="width: 4px; height: 18px; background: #fbbf24; border-radius: 4px;"></span>
+            Monitoring Reparasi Sepatu (Repair)
+        </h3>
+        <div class="monitoring-grid">
+            <a href="{{ route('employee.orders.index', ['status' => 'processing', 'category' => 'repair']) }}" style="text-decoration: none;">
+                <div class="premium-card widget-blue" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; min-height: 86px;">
+                    <span class="stat-label" style="color: #94a3b8; font-weight: 800; font-size: 0.68rem; letter-spacing: 0.5px;">DIKERJAKAN</span>
+                    <div class="stat-number" style="font-size: 1.7rem; font-weight: 900; color: #38bdf8; line-height: 1;">{{ $repairCounts['processing'] }}</div>
+                </div>
+            </a>
+            <a href="{{ route('employee.orders.index', ['status' => 'finishing', 'category' => 'repair']) }}" style="text-decoration: none;">
+                <div class="premium-card widget-purple" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; min-height: 86px;">
+                    <span class="stat-label" style="color: #94a3b8; font-weight: 800; font-size: 0.68rem; letter-spacing: 0.5px;">FINISHING</span>
+                    <div class="stat-number" style="font-size: 1.7rem; font-weight: 900; color: #c084fc; line-height: 1;">{{ $repairCounts['finishing'] }}</div>
+                </div>
+            </a>
+            <a href="{{ route('employee.orders.index', ['status' => 'ready', 'category' => 'repair']) }}" style="text-decoration: none;">
+                <div class="premium-card widget-emerald" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; min-height: 86px;">
+                    <span class="stat-label" style="color: #94a3b8; font-weight: 800; font-size: 0.68rem; letter-spacing: 0.5px;">SIAP DIAMBIL</span>
+                    <div class="stat-number" style="font-size: 1.7rem; font-weight: 900; color: #34d399; line-height: 1;">{{ $repairCounts['ready'] }}</div>
+                </div>
+            </a>
+            <a href="{{ route('employee.orders.index', ['status' => 'uncollected', 'category' => 'repair']) }}" style="text-decoration: none;">
+                <div class="premium-card widget-amber" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; min-height: 86px;">
+                    <span class="stat-label" style="color: #94a3b8; font-weight: 800; font-size: 0.68rem; letter-spacing: 0.5px;">BELUM DIAMBIL</span>
+                    <div class="stat-number" style="font-size: 1.7rem; font-weight: 900; color: #fbbf24; line-height: 1;">{{ $repairCounts['uncollected'] }}</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const track = document.getElementById('carousel-track');
+        if (track) {
+            const slides = track.querySelectorAll('.carousel-slide');
+            const totalSlides = slides.length;
+            if (totalSlides > 1) {
+                let currentIndex = 0;
+                setInterval(() => {
+                    currentIndex = (currentIndex + 1) % totalSlides;
+                    track.style.transform = `translateX(-${currentIndex * 100}%)`;
+                }, 3000);
+            }
+        }
+    });
+</script>
+@endpush
 
 @endsection
