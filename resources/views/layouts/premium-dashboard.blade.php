@@ -430,6 +430,15 @@
                 display: block !important;
             }
         }
+
+        .mobile-only-header-cart {
+            display: none !important;
+        }
+        @media (max-width: 768px) {
+            .mobile-only-header-cart {
+                display: flex !important;
+            }
+        }
     </style>
     @if(false)
     <style>
@@ -729,6 +738,14 @@
                 </div>
 
                 @if(Auth::user()->role == 'customer')
+                <a href="{{ route('cart.index') }}" class="mobile-only-header-cart" title="Keranjang Saya" style="padding: 0.5rem; border-radius: 12px; transition: 0.3s; color: {{ request()->routeIs('cart.index') ? 'var(--primary)' : 'var(--text)' }}; background: {{ request()->routeIs('cart.index') ? 'rgba(255,255,255,0.05)' : 'transparent' }}; border: none; cursor: pointer; display: none; align-items: center; justify-content: center; text-decoration: none; position: relative;" onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.color='var(--primary)'" onmouseout="this.style.background='{{ request()->routeIs('cart.index') ? 'rgba(255,255,255,0.05)' : 'transparent' }}'; this.style.color='{{ request()->routeIs('cart.index') ? 'var(--primary)' : 'var(--text)' }}'">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    @if(Session::has('cart') && count(Session::get('cart')) > 0)
+                        <span style="position: absolute; top: 2px; right: 2px; background: var(--primary); color: #000; font-size: 0.6rem; font-weight: 900; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2.5px solid var(--bg);">
+                            {{ count(Session::get('cart')) }}
+                        </span>
+                    @endif
+                </a>
                 <a href="{{ route('addresses.index') }}" title="Pengaturan Alamat" style="padding: 0.5rem; border-radius: 12px; transition: 0.3s; color: {{ request()->routeIs('addresses.*') ? 'var(--primary)' : 'var(--text)' }}; background: {{ request()->routeIs('addresses.*') ? 'rgba(255,255,255,0.05)' : 'transparent' }}; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none;" onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.color='var(--primary)'" onmouseout="this.style.background='{{ request()->routeIs('addresses.*') ? 'rgba(255,255,255,0.05)' : 'transparent' }}'; this.style.color='{{ request()->routeIs('addresses.*') ? 'var(--primary)' : 'var(--text)' }}'">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                 </a>
@@ -915,15 +932,6 @@
                 @endif
             </div>
             Pesanan
-        </a>
-        <a href="{{ route('cart.index') }}" class="mobile-nav-item {{ request()->routeIs('cart.index') ? 'active' : '' }}">
-            <div class="mobile-nav-icon-wrapper">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                @if(Session::has('cart') && count(Session::get('cart')) > 0)
-                    <span class="mobile-nav-badge">{{ count(Session::get('cart')) }}</span>
-                @endif
-            </div>
-            Keranjang
         </a>
         <a href="{{ route('profile.edit') }}" class="mobile-nav-item {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
             <div class="mobile-nav-icon-wrapper">
