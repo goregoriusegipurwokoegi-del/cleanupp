@@ -164,13 +164,13 @@
                 @csrf
                 <div class="form-group">
                     <label>Alamat Email</label>
-                    <input type="email" name="email" value="" required autofocus placeholder="customer@shoe.com" autocomplete="off">
+                    <input type="email" name="email" value="" required autofocus autocomplete="off">
                 </div>
 
                 <div class="form-group">
                     <label>Kata Sandi</label>
                     <div style="position: relative;">
-                        <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password" style="padding-right: 3rem;">
+                        <input type="password" id="password" name="password" required autocomplete="current-password" style="padding-right: 3rem;">
                         <button type="button" onclick="togglePassword('password', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                             <i data-lucide="eye" size="18"></i>
                         </button>
