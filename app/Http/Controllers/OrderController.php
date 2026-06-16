@@ -123,7 +123,7 @@ class OrderController extends Controller
             'additional_services' => 'nullable|array',
             'additional_services.*' => 'exists:services,id',
             'processing_speed' => 'required|in:regular,express',
-            'payment_method' => 'required|in:cash,qris,transfer',
+            'payment_method' => 'required|in:cash,transfer',
             'is_delivery' => 'required|boolean',
             'delivery_address' => 'required_if:is_delivery,1|nullable|string',
             'shoe_quantity' => 'required_if:is_delivery,1|integer|min:1',
@@ -266,9 +266,6 @@ class OrderController extends Controller
             $paymentInstruction = "";
             if ($order->payment_method == 'cash') {
                 $paymentInstruction = "Metode Pembayaran: TUNAI (Bayar di Tempat)\n";
-            } elseif ($order->payment_method == 'qris') {
-                $paymentInstruction = "Metode Pembayaran: QRIS\n" .
-                                     "Silakan scan kode QRIS di halaman detail pesanan untuk melakukan pembayaran.\n";
             } else {
                 $paymentInstruction = "Metode Pembayaran: TRANSFER BANK\n" .
                                      "Silakan transfer ke rekening outlet dan konfirmasi ke admin.\n";
@@ -326,7 +323,7 @@ class OrderController extends Controller
         $request->validate([
             'is_delivery' => 'required|boolean',
             'address_id' => 'required_if:is_delivery,1|exists:user_addresses,id',
-            'payment_method' => 'required|in:cash,qris,transfer',
+            'payment_method' => 'required|in:cash,transfer',
             'shoe_photo' => 'required|image|max:2048',
             'shoe_photo_2' => 'required|image|max:2048',
             'payment_proof' => 'nullable|image|max:4096',
@@ -453,9 +450,6 @@ class OrderController extends Controller
             $paymentInstruction = "";
             if ($repOrder->payment_method == 'cash') {
                 $paymentInstruction = "Metode Pembayaran: TUNAI (Bayar di Tempat)\n";
-            } elseif ($repOrder->payment_method == 'qris') {
-                $paymentInstruction = "Metode Pembayaran: QRIS\n" .
-                                     "Silakan scan kode QRIS di halaman pesanan untuk melakukan pembayaran.\n";
             } else {
                 $paymentInstruction = "Metode Pembayaran: TRANSFER BANK\n" .
                                      "Silakan transfer ke rekening outlet dan konfirmasi ke admin.\n";
@@ -620,7 +614,7 @@ class OrderController extends Controller
             'shoe_name' => 'required|string|max:255',
             'shoe_size' => 'required|string|max:10',
             'shoe_quantity' => 'required|integer|min:1',
-            'payment_method' => 'required|in:cash,qris,transfer',
+            'payment_method' => 'required|in:cash,transfer',
             'payment_status' => 'required|in:paid,unpaid',
             'status' => 'required|string',
             'shoe_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -725,7 +719,7 @@ class OrderController extends Controller
             'shoe_name' => 'required|string|max:255',
             'shoe_size' => 'required|string|max:10',
             'shoe_quantity' => 'required|integer|min:1',
-            'payment_method' => 'required|in:cash,qris,transfer',
+            'payment_method' => 'required|in:cash,transfer',
             'payment_status' => 'required|in:paid,unpaid',
             'status' => 'required|string',
             'shoe_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -912,7 +906,7 @@ class OrderController extends Controller
             'shoe_name' => 'required|string|max:255',
             'shoe_size' => 'required|string|max:10',
             'shoe_quantity' => 'required|integer|min:1',
-            'payment_method' => 'required|in:cash,qris,transfer',
+            'payment_method' => 'required|in:cash,transfer',
             'payment_status' => 'required|in:paid,unpaid',
             'status' => 'required|string',
             'shoe_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',

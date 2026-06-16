@@ -277,19 +277,19 @@
                             </label>
 
 
-                            <!-- QRIS -->
+                            <!-- Transfer Bank -->
                             <div style="padding: 0.6rem 1.2rem; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <p style="font-size: 0.65rem; font-weight: 800; color: #8b5cf6; text-transform: uppercase; letter-spacing: 1px;">QRIS</p>
+                                <p style="font-size: 0.65rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px;">Transfer Bank</p>
                             </div>
                             <label style="display: flex; align-items: center; justify-content: space-between; padding: 1.2rem; cursor: pointer; transition: 0.3s; border-bottom: 1px solid rgba(255,255,255,0.03);" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
-                                <input type="radio" name="payment_method" value="qris" style="display: none;" onchange="updatePaymentUI(this, 'QRIS')">
+                                <input type="radio" name="payment_method" value="transfer" style="display: none;" onchange="updatePaymentUI(this, 'Transfer Bank')">
                                 <div style="display: flex; align-items: center; gap: 1rem;">
-                                    <div style="width: 36px; height: 36px; background: rgba(139, 92, 246, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="0.5"/><rect x="20" y="14" width="2" height="2"/><rect x="14" y="20" width="2" height="2"/><rect x="18" y="18" width="4" height="4" rx="0.5"/></svg>
+                                    <div style="width: 36px; height: 36px; background: rgba(249, 115, 22, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                                     </div>
                                     <div>
-                                        <span style="font-weight: 700; font-size: 0.95rem; color: #fff; display: block;">QRIS</span>
-                                        <span style="font-size: 0.78rem; color: var(--text-secondary);">Scan QR Code — Gopay, OVO, Dana, dll</span>
+                                        <span style="font-weight: 700; font-size: 0.95rem; color: #fff; display: block;">Transfer Bank</span>
+                                        <span style="font-size: 0.78rem; color: var(--text-secondary);">Transfer ke rekening outlet (BCA / Mandiri)</span>
                                     </div>
                                 </div>
                                 <div class="checkmark-icon" style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); background: transparent; display: flex; align-items: center; justify-content: center; transition: 0.3s; flex-shrink: 0;">

@@ -350,34 +350,7 @@
                         </div>
                     @endif
 
-                    @if($order->payment_method == 'qris')
-                        <div style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); padding: 1.5rem; border-radius: 20px; margin-bottom: 20px;">
-                            <div style="display: flex; gap: 12px; align-items: start; margin-bottom: 16px;">
-                                <div style="width: 32px; height: 32px; background: rgba(139, 92, 246, 0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #8b5cf6;">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="0.5"/></svg>
-                                </div>
-                                <div>
-                                    <p style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: #8b5cf6; margin-bottom: 4px;">Bayar dengan QRIS</p>
-                                    <p style="font-size: 0.8rem; color: #d1d5db; margin: 0; line-height: 1.5;">Scan kode QR di bawah menggunakan aplikasi e-wallet (Gopay, OVO, Dana, ShopeePay, dll)</p>
-                                </div>
-                            </div>
-                            @php
-                                $qris_image = \App\Models\Setting::where('key', 'qris_image')->first()?->value;
-                            @endphp
-                            @if($qris_image)
-                            <div style="background: #fff; border-radius: 16px; padding: 1rem; text-align: center;">
-                                <img src="{{ asset('storage/' . $qris_image) }}" alt="QRIS Code" style="max-width: 250px; width: 100%; height: auto; border-radius: 8px;">
-                            </div>
-                            @else
-                            <div style="background: rgba(255,255,255,0.03); border-radius: 16px; padding: 2rem; text-align: center; border: 2px dashed rgba(139, 92, 246, 0.2);">
-                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.5" style="margin-bottom: 0.5rem; opacity: 0.5;"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="0.5"/></svg>
-                                <p style="font-size: 0.8rem; color: #8b5cf6; font-weight: 700; margin-bottom: 4px;">Kode QRIS Belum Tersedia</p>
-                                <p style="font-size: 0.7rem; color: #6b7280; margin: 0;">Silakan hubungi admin untuk mendapatkan kode QRIS</p>
-                            </div>
-                            @endif
-                            <p style="font-size: 0.7rem; color: #9ca3af; text-align: center; margin-top: 12px;">Setelah pembayaran, konfirmasi ke admin agar pesanan segera diproses.</p>
-                        </div>
-                    @endif
+
                     
                     @if($order->payment_method == 'transfer')
                         <div style="background: rgba(249, 115, 22, 0.05); border: 1px solid rgba(249, 115, 22, 0.2); padding: 1.5rem; border-radius: 20px; margin-bottom: 20px;">
@@ -429,7 +402,7 @@
                         </div>
                     @endif
                     
-                    @if(in_array($order->payment_method, ['qris', 'transfer']))
+                    @if($order->payment_method == 'transfer')
                         <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); padding: 1.5rem; border-radius: 20px; margin-bottom: 20px;">
                             <h5 style="color: #60a5fa; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; margin-top: 0; margin-bottom: 12px;">Konfirmasi Pembayaran</h5>
                             

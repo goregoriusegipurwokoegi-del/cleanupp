@@ -112,7 +112,6 @@
                         <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 1rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Metode Pembayaran</label>
                         <select name="payment_method" id="payment_method" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1rem;">
                             <option value="cash">Tunai (Bayar di Outlet / COD)</option>
-                            <option value="qris">QRIS (E-Wallet)</option>
                             <option value="transfer">Transfer Bank (BCA / Mandiri)</option>
                         </select>
                     </div>
@@ -181,20 +180,7 @@
                             </div>
                         </div>
 
-                        <!-- QRIS Info -->
-                        <div id="qris_info" style="display: none; margin-bottom: 1.5rem;">
-                            <h4 style="font-size: 0.85rem; font-weight: 800; margin-bottom: 0.8rem; color: #8b5cf6; text-transform: uppercase; letter-spacing: 1px;">Scan QRIS:</h4>
-                            @if(!empty($qrisImage))
-                            <div style="background: #fff; border-radius: 16px; padding: 12px; text-align: center; max-width: 200px; margin: 0 auto 0.8rem auto; border: 1px solid rgba(255,255,255,0.1);">
-                                <img src="{{ asset('storage/' . $qrisImage) }}" alt="QRIS Code" style="width: 100%; height: auto; border-radius: 8px; display: block;">
-                            </div>
-                            <p style="font-size: 0.75rem; color: #94a3b8; text-align: center; margin: 0; line-height: 1.4;">Scan dengan OVO, GoPay, Dana, LinkAja, ShopeePay atau Aplikasi Bank Anda.</p>
-                            @else
-                            <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 1.5rem; text-align: center; border: 2px dashed rgba(139, 92, 246, 0.2);">
-                                <p style="font-size: 0.8rem; color: #8b5cf6; font-weight: 700; margin-bottom: 4px;">Kode QRIS Belum Tersedia</p>
-                            </div>
-                            @endif
-                        </div>
+
 
                         <!-- Upload Proof Input -->
                         <div id="proof_upload_container">
@@ -388,21 +374,14 @@
         const method = document.getElementById('payment_method').value;
         const infoSection = document.getElementById('payment_info_section');
         const bankInfo = document.getElementById('bank_transfer_info');
-        const qrisInfo = document.getElementById('qris_info');
         const proofInput = document.getElementById('payment_proof');
 
         if (method === 'transfer') {
             infoSection.style.display = 'block';
             bankInfo.style.display = 'block';
-            qrisInfo.style.display = 'none';
-        } else if (method === 'qris') {
-            infoSection.style.display = 'block';
-            bankInfo.style.display = 'none';
-            qrisInfo.style.display = 'block';
         } else {
             infoSection.style.display = 'none';
             bankInfo.style.display = 'none';
-            qrisInfo.style.display = 'none';
             proofInput.value = ''; // Clear file input
         }
     }

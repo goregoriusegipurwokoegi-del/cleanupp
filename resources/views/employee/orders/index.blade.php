@@ -492,7 +492,6 @@
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Metode Pembayaran</label>
                     <select name="payment_method" required class="filter-input" style="width: 100%; background: #1e1e24;">
                         <option value="cash">Tunai (Cash)</option>
-                        <option value="qris">QRIS</option>
                         <option value="transfer">Transfer Bank</option>
                     </select>
                 </div>
@@ -582,7 +581,6 @@
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Metode Pembayaran</label>
                     <select name="payment_method" id="edit_payment_method" required class="filter-input" style="width: 100%; background: #1e1e24;">
                         <option value="cash">Tunai (Cash)</option>
-                        <option value="qris">QRIS</option>
                         <option value="transfer">Transfer Bank</option>
                     </select>
                 </div>
