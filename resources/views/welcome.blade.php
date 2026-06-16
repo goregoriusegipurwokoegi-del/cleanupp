@@ -13,14 +13,14 @@
 
     <style>
         :root {
-            --primary: #2563eb;       /* Royal Blue from mockup */
-            --primary-glow: rgba(37, 99, 235, 0.4);
+            --primary: #4f46e5;       /* Premium Indigo */
+            --primary-glow: rgba(79, 70, 229, 0.35);
             --bg: #05070c;            /* Deep black-blue background */
             --card-bg: rgba(15, 23, 42, 0.45);
             --text-main: #ffffff;     /* Solid white */
             --text-dim: #94a3b8;      /* Slate gray */
             --text-muted: #475569;    /* Muted gray for tags */
-            --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            --gradient-blue: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
         }
 
         * {
@@ -53,7 +53,7 @@
             left: -10%;
             width: 60%;
             height: 60%;
-            background: radial-gradient(circle, rgba(37, 99, 235, 0.06) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.08) 0%, transparent 70%);
             z-index: -1;
             pointer-events: none;
         }
@@ -167,7 +167,7 @@
 
         .hero-text h1 span {
             color: var(--primary);
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -214,17 +214,19 @@
         }
 
         .btn-services {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            color: #ffffff;
+            background: rgba(79, 70, 229, 0.03);
+            border: 1.5px solid rgba(79, 70, 229, 0.35);
+            color: #cbd5e1;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
         }
 
         .btn-services:hover {
             transform: translateY(-3px);
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.05);
+            border-color: #6366f1;
+            background: rgba(79, 70, 229, 0.1);
+            color: #ffffff;
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.2);
         }
 
         /* Services Section */
@@ -266,23 +268,14 @@
             cursor: default;
         }
 
-        /* Card 1: Active glowing blue border */
-        .service-card.cuci {
-            border: 1.5px solid var(--primary);
-            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.12);
-        }
-
-        /* Card 2: Subtle card border */
+        /* Service cards subtle styling */
+        .service-card.cuci,
         .service-card.reparasi {
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
         }
 
-        .service-card.cuci:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 15px 35px rgba(37, 99, 235, 0.22);
-        }
-
+        .service-card.cuci:hover,
         .service-card.reparasi:hover {
             transform: translateY(-6px);
             border-color: rgba(255, 255, 255, 0.2);
@@ -445,12 +438,12 @@
                 <div class="service-card cuci">
                     <!-- Clean Lucide Icon instead of OS emoji -->
                     <h3>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
                             <path d="M4 6h5.426a1 1 0 0 1 .863 .496l1.064 1.823a3 3 0 0 0 1.896 1.407l4.677 1.114a4 4 0 0 1 3.074 3.89v2.27a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-10a1 1 0 0 1 1 -1" />
                             <path d="M14 13l1 -2" />
                             <path d="M8 18v-1a4 4 0 0 0 -4 -4h-1" />
                             <path d="M10 12l1.5 -3" />
-                            <path d="M18 3l.5 1.5l1.5 .5l-1.5 .5l-.5 1.5l-.5 -1.5l-1.5 -.5l1.5 -.5z" fill="#3b82f6" stroke="none" />
+                            <path d="M18 3l.5 1.5l1.5 .5l-1.5 .5l-.5 1.5l-.5 -1.5l-1.5 -.5l1.5 -.5z" fill="#94a3b8" stroke="none" />
                         </svg>
                         Cuci Sepatu
                     </h3>
