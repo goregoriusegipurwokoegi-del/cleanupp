@@ -11,7 +11,7 @@ class CustomerManagementController extends Controller
 {
     public function index()
     {
-        $customers = User::where('role', 'customer')->latest()->get();
+        $customers = User::where(['role' => 'customer'])->latest()->get();
         return view('admin.customers.index', compact('customers'));
     }
 

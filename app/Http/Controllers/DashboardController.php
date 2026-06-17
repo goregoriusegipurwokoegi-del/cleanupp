@@ -22,42 +22,42 @@ class DashboardController extends Controller
     public function admin()
     {
         // Total Order Revenue (KPI Cards) - Count all accepted/processed orders as projected/current revenue
-        $orderToday = Order::where('payment_status', 'paid')
-            ->where('status', '!=', 'cancelled')
+        $orderToday = Order::where(['payment_status' => 'paid'])
+            ->where([['status', '!=', 'cancelled']])
             ->whereDate('updated_at', now())
             ->sum('total_price');
             
-        $orderMonthly = Order::where('payment_status', 'paid')
-            ->where('status', '!=', 'cancelled')
+        $orderMonthly = Order::where(['payment_status' => 'paid'])
+            ->where([['status', '!=', 'cancelled']])
             ->whereMonth('updated_at', now()->month)
             ->whereYear('updated_at', now()->year)
             ->sum('total_price');
 
         // Manual Finance Entries
-        $manualToday = \App\Models\Finance::where('type', 'income')->whereDate('date', now())->sum('amount');
-        $manualMonthly = \App\Models\Finance::where('type', 'income')
+        $manualToday = \App\Models\Finance::where(['type' => 'income'])->whereDate('date', now())->sum('amount');
+        $manualMonthly = \App\Models\Finance::where(['type' => 'income'])
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
             ->sum('amount');
             
-        $orderTotal = Order::where('payment_status', 'paid')
-            ->where('status', '!=', 'cancelled')
+        $orderTotal = Order::where(['payment_status' => 'paid'])
+            ->where([['status', '!=', 'cancelled']])
             ->sum('total_price');
-        $manualTotal = \App\Models\Finance::where('type', 'income')->sum('amount');
+        $manualTotal = \App\Models\Finance::where(['type' => 'income'])->sum('amount');
 
         $todayRevenue = $orderToday + $manualToday;
         $monthlyRevenue = $orderMonthly + $manualMonthly;
         $totalRevenue = $orderTotal + $manualTotal;
-        $totalOrdersCount = Order::where('status', '!=', 'cancelled')->count();
-        $totalCustomers = User::where('role', 'customer')->count();
-        $totalEmployees = User::where('role', 'employee')->count();
+        $totalOrdersCount = Order::where([['status', '!=', 'cancelled']])->count();
+        $totalCustomers = User::where(['role' => 'customer'])->count();
+        $totalEmployees = User::where(['role' => 'employee'])->count();
 
         // Status Pekerjaan (Counts)
         $statusCounts = [
-            'pending' => Order::where('status', 'pending')->count(),
+            'pending' => Order::where(['status' => 'pending'])->count(),
             'processing' => Order::whereIn('status', ['washing', 'drying', 'finishing', 'ready'])->count(),
-            'uncollected' => Order::where('status', 'uncollected')->count(),
-            'completed' => Order::where('status', 'picked_up')->count(),
+            'uncollected' => Order::where(['status' => 'uncollected'])->count(),
+            'completed' => Order::where(['status' => 'picked_up'])->count(),
         ];
 
         // Grafik Pendapatan & Transaksi dengan Filter
@@ -66,8 +66,8 @@ class DashboardController extends Controller
         $dateFormat = 'DATE(updated_at)';
         $dateCreatedFormat = 'DATE(created_at)';
         
-        $revenueQuery = Order::where('payment_status', 'paid')->where('status', '!=', 'cancelled');
-        $transactionQuery = Order::where('status', '!=', 'cancelled');
+        $revenueQuery = Order::where(['payment_status' => 'paid'])->where([['status', '!=', 'cancelled']]);
+        $transactionQuery = Order::where([['status', '!=', 'cancelled']]);
 
         if ($filter === 'day') {
             $limit = 24;
@@ -113,7 +113,7 @@ class DashboardController extends Controller
         // Aktivitas Terbaru (Hanya Hari Ini)
         $recentOrders = Order::with(['user', 'service'])
             ->whereDate('created_at', now())
-            ->where('status', '!=', 'cancelled')
+            ->where([['status', '!=', 'cancelled']])
             ->latest()
             ->limit(10)
             ->get();
@@ -134,7 +134,7 @@ class DashboardController extends Controller
     {
         // Fetch incoming orders (Pending)
         $incomingOrders = Order::with(['user', 'service'])
-            ->where('status', 'pending')
+            ->where(['status' => 'pending'])
             ->latest()
             ->limit(5)
             ->get();
@@ -146,33 +146,33 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
             
-        $pendingOrdersCount = Order::where('status', 'pending')->count();
-        $weeklyCompletedCount = Order::where('status', 'completed')
+        $pendingOrdersCount = Order::where(['status' => 'pending'])->count();
+        $weeklyCompletedCount = Order::where(['status' => 'completed'])
             ->whereBetween('updated_at', [now()->startOfWeek(), now()->endOfWeek()])
             ->count();
 
         // Specific counts for Cleaning
         $cleaningCounts = [
-            'washing' => Order::whereHas('service', fn($q) => $q->where('category', 'cleaning'))
-                ->where('status', 'processing')->count(),
-            'drying' => Order::whereHas('service', fn($q) => $q->where('category', 'cleaning'))
-                ->where('status', 'finishing')->count(),
-            'ready' => Order::whereHas('service', fn($q) => $q->where('category', 'cleaning'))
-                ->where('status', 'ready')->count(),
-            'uncollected' => Order::whereHas('service', fn($q) => $q->where('category', 'cleaning'))
-                ->where('status', 'uncollected')->count(),
+            'washing' => Order::whereHas('service', fn($q) => $q->where(['category' => 'cleaning']))
+                ->where(['status' => 'processing'])->count(),
+            'drying' => Order::whereHas('service', fn($q) => $q->where(['category' => 'cleaning']))
+                ->where(['status' => 'finishing'])->count(),
+            'ready' => Order::whereHas('service', fn($q) => $q->where(['category' => 'cleaning']))
+                ->where(['status' => 'ready'])->count(),
+            'uncollected' => Order::whereHas('service', fn($q) => $q->where(['category' => 'cleaning']))
+                ->where(['status' => 'uncollected'])->count(),
         ];
 
         // Specific counts for Repair
         $repairCounts = [
-            'processing' => Order::whereHas('service', fn($q) => $q->where('category', 'repair'))
-                ->where('status', 'processing')->count(),
-            'finishing' => Order::whereHas('service', fn($q) => $q->where('category', 'repair'))
-                ->where('status', 'finishing')->count(),
-            'ready' => Order::whereHas('service', fn($q) => $q->where('category', 'repair'))
-                ->where('status', 'ready')->count(),
-            'uncollected' => Order::whereHas('service', fn($q) => $q->where('category', 'repair'))
-                ->where('status', 'uncollected')->count(),
+            'processing' => Order::whereHas('service', fn($q) => $q->where(['category' => 'repair']))
+                ->where(['status' => 'processing'])->count(),
+            'finishing' => Order::whereHas('service', fn($q) => $q->where(['category' => 'repair']))
+                ->where(['status' => 'finishing'])->count(),
+            'ready' => Order::whereHas('service', fn($q) => $q->where(['category' => 'repair']))
+                ->where(['status' => 'ready'])->count(),
+            'uncollected' => Order::whereHas('service', fn($q) => $q->where(['category' => 'repair']))
+                ->where(['status' => 'uncollected'])->count(),
         ];
 
         return view('dashboards.employee', compact(

@@ -30,7 +30,7 @@ class AttendanceController extends Controller
     public function clockOut()
     {
         $today = now()->format('Y-m-d');
-        $attendance = Attendance::where('user_id', Auth::id())->where('date', $today)->first();
+        $attendance = Attendance::where(['user_id' => Auth::id(), 'date' => $today])->first();
 
         if (!$attendance) {
             return back()->with('error', 'Anda belum absen masuk hari ini.');

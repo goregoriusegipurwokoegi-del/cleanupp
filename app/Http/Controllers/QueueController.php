@@ -44,7 +44,7 @@ class QueueController extends Controller
 
         // Antrian siap diambil
         $ready = Order::with(['user', 'service'])
-            ->where('status', 'ready')
+            ->where(['status' => 'ready'])
             ->latest()
             ->limit(8)
             ->get()
@@ -58,7 +58,7 @@ class QueueController extends Controller
 
         // Antrian menunggu (pending)
         $pending = Order::with(['user', 'service'])
-            ->where('status', 'pending')
+            ->where(['status' => 'pending'])
             ->latest()
             ->limit(5)
             ->get()
@@ -89,7 +89,7 @@ class QueueController extends Controller
 
         if ($queueNumber) {
             $order = Order::with(['user', 'service'])
-                ->where('queue_number', strtoupper($queueNumber))
+                ->where(['queue_number' => strtoupper($queueNumber)])
                 ->first();
         }
 

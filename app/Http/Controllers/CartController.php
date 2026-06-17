@@ -84,7 +84,7 @@ class CartController extends Controller
         }
 
         // Get user's addresses (load latitude & longitude for real-time fee calculation)
-        $addresses = \App\Models\UserAddress::where('user_id', auth()->id())->get();
+        $addresses = \App\Models\UserAddress::where(['user_id' => auth()->id()])->get();
 
         // Store location & delivery fee settings (for front-end distance calculation)
         $storeLat              = \App\Models\Setting::where('key', 'store_latitude')->first()?->value ?? '-0.0513462';

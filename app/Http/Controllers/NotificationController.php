@@ -69,7 +69,7 @@ class NotificationController extends Controller
      */
     public function markAsRead($id)
     {
-        $notification = Auth::user()->notifications()->where('id', $id)->first();
+        $notification = Auth::user()->notifications()->where(['id' => $id])->first();
         if ($notification) {
             $notification->markAsRead();
         }
@@ -106,7 +106,7 @@ class NotificationController extends Controller
      */
     public function destroy($id)
     {
-        $notification = Auth::user()->notifications()->where('id', $id)->first();
+        $notification = Auth::user()->notifications()->where(['id' => $id])->first();
         if ($notification) {
             $notification->delete();
         }

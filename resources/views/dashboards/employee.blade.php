@@ -10,7 +10,7 @@
 
 @section('content')
 @php
-    $todayAttendance = \App\Models\Attendance::where('user_id', Auth::id())
+    $todayAttendance = \App\Models\Attendance::where(['user_id' => Auth::id()])
         ->whereDate('date', \Carbon\Carbon::today())
         ->first();
     $isClockedIn = $todayAttendance ? true : false;

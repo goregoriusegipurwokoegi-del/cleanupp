@@ -15,10 +15,10 @@ class FinanceController extends Controller
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
 
-        $dateOrdersQuery = Order::where('payment_status', 'paid')->whereBetween('updated_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+        $dateOrdersQuery = Order::where(['payment_status' => 'paid'])->whereBetween('updated_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
         $dateManualQuery = Finance::whereBetween('date', [$startDate, $endDate]);
 
-        $ordersQuery = Order::where('payment_status', 'paid');
+        $ordersQuery = Order::where(['payment_status' => 'paid']);
         $manualFinanceQuery = Finance::query();
 
         if ($filter == 'daily') {
@@ -47,20 +47,20 @@ class FinanceController extends Controller
             });
             
             if ($tab == 'pemasukan') {
-                $finances = $orders->merge($manuals->where('type', 'income'))->sortByDesc('date');
+                $finances = $orders->merge($manuals->where(fn($item) => $item->type === 'income'))->sortByDesc('date');
             } elseif ($tab == 'pengeluaran') {
-                $finances = $manuals->where('type', 'expense')->sortByDesc('date');
+                $finances = $manuals->where(fn($item) => $item->type === 'expense')->sortByDesc('date');
             } else {
                 $finances = $orders->merge($manuals)->sortByDesc('date');
             }
 
-            $totalIncome = $ordersQuery->sum('total_price') + (clone $manualFinanceQuery)->where('type', 'income')->sum('amount');
-            $totalExpense = (clone $manualFinanceQuery)->where('type', 'expense')->sum('amount');
+            $totalIncome = $ordersQuery->sum('total_price') + (clone $manualFinanceQuery)->where(['type' => 'income'])->sum('amount');
+            $totalExpense = (clone $manualFinanceQuery)->where(['type' => 'expense'])->sum('amount');
             $netBalance = $totalIncome - $totalExpense;
 
         } elseif ($tab == 'laba-rugi') {
-            $totalIncome = $dateOrdersQuery->sum('total_price') + (clone $dateManualQuery)->where('type', 'income')->sum('amount');
-            $totalExpense = (clone $dateManualQuery)->where('type', 'expense')->sum('amount');
+            $totalIncome = $dateOrdersQuery->sum('total_price') + (clone $dateManualQuery)->where(['type' => 'income'])->sum('amount');
+            $totalExpense = (clone $dateManualQuery)->where(['type' => 'expense'])->sum('amount');
             $netBalance = $totalIncome - $totalExpense;
 
         } elseif ($tab == 'grafik') {
@@ -68,9 +68,9 @@ class FinanceController extends Controller
                 $d = now()->subDays($i)->format('Y-m-d');
                 $chartData['labels'][] = now()->subDays($i)->format('d M');
                 
-                $incOrders = Order::where('payment_status', 'paid')->whereDate('updated_at', $d)->sum('total_price');
-                $incManual = Finance::where('type', 'income')->whereDate('date', $d)->sum('amount');
-                $expManual = Finance::where('type', 'expense')->whereDate('date', $d)->sum('amount');
+                $incOrders = Order::where(['payment_status' => 'paid'])->whereDate('updated_at', $d)->sum('total_price');
+                $incManual = Finance::where(['type' => 'income'])->whereDate('date', $d)->sum('amount');
+                $expManual = Finance::where(['type' => 'expense'])->whereDate('date', $d)->sum('amount');
                 
                 $chartData['income'][] = $incOrders + $incManual;
                 $chartData['expense'][] = $expManual;
@@ -108,7 +108,7 @@ class FinanceController extends Controller
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
 
-        $orders = Order::where('payment_status', 'paid')
+        $orders = Order::where(['payment_status' => 'paid'])
             ->whereBetween('updated_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             ->get()->map(function($order) {
                 return (object) ['date' => $order->updated_at->format('Y-m-d'), 'description' => 'Pesanan #' . $order->order_number, 'type' => 'income', 'amount' => $order->total_price];

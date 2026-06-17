@@ -18,7 +18,7 @@ class ReportController extends Controller
         // Base query for orders
         $query = \App\Models\Order::with(['user', 'service'])
             ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('status', '!=', 'cancelled');
+            ->where([['status', '!=', 'cancelled']]);
 
         switch ($tab) {
             case 'ringkasan':
@@ -51,8 +51,8 @@ class ReportController extends Controller
         for ($i = 6; $i >= 0; $i--) {
             $d = now()->subDays($i)->format('Y-m-d');
             $chartData['labels'][] = now()->subDays($i)->format('d M');
-            $chartData['revenue'][] = \App\Models\Order::where('status', '!=', 'cancelled')
-                ->where('status', '!=', 'pending')
+            $chartData['revenue'][] = \App\Models\Order::where([['status', '!=', 'cancelled']])
+                ->where([['status', '!=', 'pending']])
                 ->whereDate('created_at', $d)
                 ->sum('total_price');
         }
@@ -89,9 +89,9 @@ class ReportController extends Controller
     private function labaRugiTab($query, $startDate, $endDate)
     {
         $tab = 'laba-rugi';
-        $totalIncome = (clone $query)->where('status', '!=', 'pending')->sum('total_price') + 
-                       \App\Models\Finance::where('type', 'income')->whereBetween('date', [$startDate, $endDate])->sum('amount');
-        $totalExpense = \App\Models\Finance::where('type', 'expense')->whereBetween('date', [$startDate, $endDate])->sum('amount');
+        $totalIncome = (clone $query)->where([['status', '!=', 'pending']])->sum('total_price') + 
+                       \App\Models\Finance::where(['type' => 'income'])->whereBetween('date', [$startDate, $endDate])->sum('amount');
+        $totalExpense = \App\Models\Finance::where(['type' => 'expense'])->whereBetween('date', [$startDate, $endDate])->sum('amount');
         $netBalance = $totalIncome - $totalExpense;
         
         return view('admin.reports.index', compact('tab', 'startDate', 'endDate', 'totalIncome', 'totalExpense', 'netBalance'));
@@ -117,9 +117,9 @@ class ReportController extends Controller
     {
         $tab = 'pinjaman';
         $loans = Loan::with('user')->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])->latest()->get();
-        $totalLoansApproved = $loans->where('status', 'approved')->sum('amount');
-        $totalLoansPending = $loans->where('status', 'pending')->sum('amount');
-        $totalLoansRejected = $loans->where('status', 'rejected')->count();
+        $totalLoansApproved = $loans->where(fn($l) => $l->status === 'approved')->sum(fn($l) => $l->amount);
+        $totalLoansPending = $loans->where(fn($l) => $l->status === 'pending')->sum(fn($l) => $l->amount);
+        $totalLoansRejected = $loans->where(fn($l) => $l->status === 'rejected')->count();
         
         return view('admin.reports.index', compact('tab', 'startDate', 'endDate', 'loans', 'totalLoansApproved', 'totalLoansPending', 'totalLoansRejected'));
     }
@@ -133,7 +133,7 @@ class ReportController extends Controller
 
         $query = \App\Models\Order::with(['user', 'service'])
             ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('status', '!=', 'cancelled');
+            ->where([['status', '!=', 'cancelled']]);
 
         if ($category) {
             $query->whereHas('service', function($q) use($category) {
@@ -142,7 +142,7 @@ class ReportController extends Controller
         }
 
         if ($status) {
-            $query->where('status', $status);
+            $query->where(['status' => $status]);
         }
 
         $orders = $query->get();
@@ -188,8 +188,8 @@ class ReportController extends Controller
 
         $orders = \App\Models\Order::with(['user', 'service'])
             ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('status', '!=', 'pending')
-            ->where('status', '!=', 'cancelled')
+            ->where([['status', '!=', 'pending']])
+            ->where([['status', '!=', 'cancelled']])
             ->get();
 
         $fileName = 'Laporan_Keuangan_' . $startDate . '_to_' . $endDate . '.csv';
@@ -236,11 +236,11 @@ class ReportController extends Controller
 
         $orders = \App\Models\Order::with(['user', 'service'])
             ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('status', '!=', 'pending')
-            ->where('status', '!=', 'cancelled')
+            ->where([['status', '!=', 'pending']])
+            ->where([['status', '!=', 'cancelled']])
             ->get();
 
-        $totalRevenue = $orders->sum('total_price');
+        $totalRevenue = $orders->sum(fn($o) => $o->total_price);
 
         return view('admin.reports.revenue-print', compact('orders', 'startDate', 'endDate', 'totalRevenue'));
     }
@@ -265,7 +265,7 @@ class ReportController extends Controller
         // Base query for current employee's tasks
         $query = \App\Models\Order::with(['user', 'service'])
             ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->where('status', '!=', 'cancelled');
+            ->where([['status', '!=', 'cancelled']]);
 
         if ($search) {
             $query->where(function($q) use($search) {
@@ -279,23 +279,23 @@ class ReportController extends Controller
         $allOrders = $query->latest()->get();
 
         // Fetch current employee's daily attendance records
-        $attendances = \App\Models\Attendance::where('user_id', $user->id)
+        $attendances = \App\Models\Attendance::where(['user_id' => $user->id])
             ->whereBetween('date', [$startDate, $endDate])
             ->orderBy('date', 'desc')
             ->get();
 
         // Performance Statistics
         $stats = [
-            'total_completed' => $allOrders->where('status', 'completed')->count(),
-            'cleaning_done' => $allOrders->where('status', 'completed')->filter(function($o) {
+            'total_completed' => $allOrders->where(fn($o) => $o->status === 'completed')->count(),
+            'cleaning_done' => $allOrders->where(fn($o) => $o->status === 'completed')->filter(function($o) {
                 return str_contains(strtolower($o->service->category ?? ''), 'clean');
             })->count(),
-            'repair_done' => $allOrders->where('status', 'completed')->filter(function($o) {
+            'repair_done' => $allOrders->where(fn($o) => $o->status === 'completed')->filter(function($o) {
                 return str_contains(strtolower($o->service->category ?? ''), 'repair');
             })->count(),
-            'processing' => $allOrders->whereIn('status', ['processing', 'washing', 'drying', 'finishing'])->count(),
-            'avg_rating' => round($allOrders->whereNotNull('rating')->avg('rating') ?? 0, 1),
-            'total_delivery' => $allOrders->where('is_delivery', true)->count(),
+            'processing' => $allOrders->filter(fn($o) => in_array($o->status, ['processing', 'washing', 'drying', 'finishing']))->count(),
+            'avg_rating' => round($allOrders->filter(fn($o) => $o->rating !== null)->avg(fn($o) => $o->rating) ?? 0, 1),
+            'total_delivery' => $allOrders->where(fn($o) => $o->is_delivery)->count(),
         ];
 
         // Chart Data (Last 7 Days)
@@ -304,14 +304,14 @@ class ReportController extends Controller
             $date = now()->subDays($i)->format('Y-m-d');
             $chartData['labels'][] = now()->subDays($i)->format('D');
             $chartData['counts'][] = \App\Models\Order::whereDate('created_at', $date)
-                ->where('status', 'completed')
+                ->where(['status' => 'completed'])
                 ->count();
         }
 
-        $myTasks = $allOrders->whereIn('status', ['processing', 'washing', 'drying', 'finishing', 'ready', 'uncollected']);
-        $historyTasks = $allOrders->where('status', 'completed');
-        $customerRatings = $allOrders->whereNotNull('rating');
-        $deliveryTasks = $allOrders->where('is_delivery', true);
+        $myTasks = $allOrders->filter(fn($o) => in_array($o->status, ['processing', 'washing', 'drying', 'finishing', 'ready', 'uncollected']));
+        $historyTasks = $allOrders->where(fn($o) => $o->status === 'completed');
+        $customerRatings = $allOrders->filter(fn($o) => $o->rating !== null);
+        $deliveryTasks = $allOrders->where(fn($o) => $o->is_delivery);
 
         return view('employee.reports.index', compact(
             'allOrders', 'stats', 'chartData', 'startDate', 'endDate', 
@@ -325,7 +325,7 @@ class ReportController extends Controller
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
 
-        $attendances = \App\Models\Attendance::where('user_id', $user->id)
+        $attendances = \App\Models\Attendance::where(['user_id' => $user->id])
             ->whereBetween('date', [$startDate, $endDate])
             ->orderBy('date', 'asc')
             ->get();
@@ -389,7 +389,7 @@ class ReportController extends Controller
         $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
         $endDate = $request->input('end_date', now()->toDateString());
 
-        $attendances = \App\Models\Attendance::where('user_id', $user->id)
+        $attendances = \App\Models\Attendance::where(['user_id' => $user->id])
             ->whereBetween('date', [$startDate, $endDate])
             ->orderBy('date', 'desc')
             ->get();

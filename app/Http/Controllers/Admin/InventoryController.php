@@ -13,7 +13,8 @@ class InventoryController extends Controller
      */
     public function index()
     {
-        $inventories = Inventory::orderBy('name')->get();
+        $sortBy = 'name';
+        $inventories = Inventory::orderBy($sortBy)->get();
         return view('admin.inventories.index', compact('inventories'));
     }
 
