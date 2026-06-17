@@ -64,8 +64,8 @@ class ReportController extends Controller
     {
         $tab = 'pesanan';
         if ($category) {
-            $query->whereHas('service', function($q) use($category) {
-                $q->where('category', $category);
+            $query->whereHas('service', function(\Illuminate\Database\Eloquent\Builder $q) use($category) {
+                $q->where(['category' => $category]);
             });
         }
         if ($status) {
@@ -136,8 +136,8 @@ class ReportController extends Controller
             ->where([['status', '!=', 'cancelled']]);
 
         if ($category) {
-            $query->whereHas('service', function($q) use($category) {
-                $q->where('category', $category);
+            $query->whereHas('service', function(\Illuminate\Database\Eloquent\Builder $q) use($category) {
+                $q->where(['category' => $category]);
             });
         }
 
@@ -268,10 +268,10 @@ class ReportController extends Controller
             ->where([['status', '!=', 'cancelled']]);
 
         if ($search) {
-            $query->where(function($q) use($search) {
-                $q->where('queue_number', 'like', "%$search%")
-                  ->orWhereHas('user', function($uq) use($search) {
-                      $uq->where('name', 'like', "%$search%");
+            $query->where(function(\Illuminate\Database\Eloquent\Builder $q) use($search) {
+                $q->where([['queue_number', 'like', "%$search%"]])
+                  ->orWhereHas('user', function(\Illuminate\Database\Eloquent\Builder $uq) use($search) {
+                      $uq->where([['name', 'like', "%$search%"]]);
                   });
             });
         }

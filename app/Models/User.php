@@ -22,6 +22,10 @@ use Illuminate\Notifications\Notifiable;
  * @property string|null $password_plain
  * @property string $role
  * @property string|null $google_id
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Order> $orders
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UserAddress> $addresses
+ *
+ * @mixin \Illuminate\Database\Eloquent\Builder
  */
 class User extends Authenticatable
 {

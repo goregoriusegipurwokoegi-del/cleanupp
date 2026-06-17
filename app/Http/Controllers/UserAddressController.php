@@ -10,7 +10,10 @@ class UserAddressController extends Controller
 {
     public function index()
     {
-        $addresses = Auth::user()->addresses()->orderByDesc('is_main_address')->latest()->get();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $orderByCol = 'is_main_address';
+        $addresses = $user->addresses()->orderBy($orderByCol, 'desc')->latest()->get();
         return view('profile.addresses.index', compact('addresses'));
     }
 
@@ -51,7 +54,9 @@ class UserAddressController extends Controller
         $validated = $this->validateAddress($request);
 
         if ($request->has('is_main_address')) {
-            Auth::user()->addresses()->where('id', '!=', $address->id)->update(['is_main_address' => false]);
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $user->addresses()->where([['id', '!=', $address->id]])->update(['is_main_address' => false]);
             $validated['is_main_address'] = true;
         } else {
             // Can't unset main address if it's the only one
@@ -76,7 +81,10 @@ class UserAddressController extends Controller
 
         // If we deleted the main address, assign main to the most recently updated one
         if ($wasMain) {
-            $newMain = Auth::user()->addresses()->latest('updated_at')->first();
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $orderByCol = 'updated_at';
+            $newMain = $user->addresses()->orderBy($orderByCol, 'desc')->first();
             if ($newMain) {
                 $newMain->update(['is_main_address' => true]);
             }

@@ -39,11 +39,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $shoe_quantity
  * @property string|null $latitude
  * @property string|null $longitude
+ * @property float|null $cash_amount
+ * @property float|null $change_amount
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User $user
  * @property-read \App\Models\Service $service
  * @property-read \App\Models\User|null $employee
+ *
+ * @mixin \Illuminate\Database\Eloquent\Builder
  */
 class Order extends Model
 {

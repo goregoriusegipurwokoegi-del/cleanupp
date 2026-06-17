@@ -23,8 +23,9 @@ class OrderController extends Controller
     {
         $sort = $request->input('sort', 'desc');
         $search = $request->input('search');
-        
-        $query = Auth::user()->orders()->with('service')
+        /** @var User $authUser */
+        $authUser = Auth::user();
+        $query = $authUser->orders()->with('service')
             ->whereNotIn('status', ['completed', 'cancelled', 'dikirim']);
 
         if ($search) {
@@ -34,7 +35,8 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->orderBy('created_at', $sort)->get()->groupBy(function ($order) {
+        $orderByCol = 'created_at';
+        $orders = $query->orderBy($orderByCol, $sort)->get()->groupBy(function (Order $order) {
             return $order->group_id ?: 'single_' . $order->id;
         });
             
@@ -49,21 +51,22 @@ class OrderController extends Controller
         $sort = $request->input('sort', 'desc');
         $search = $request->input('search');
         $status_filter = $request->input('status_filter', 'all');
-        
-        $query = Auth::user()->orders()->with('service');
+        /** @var User $authUser */
+        $authUser = Auth::user();
+        $query = $authUser->orders()->with('service');
 
         if ($status_filter === 'unpaid') {
-            $query->where('payment_status', 'unpaid');
+            $query->where(['payment_status' => 'unpaid']);
         } elseif ($status_filter === 'pending') {
-            $query->where('status', 'pending');
+            $query->where(['status' => 'pending']);
         } elseif ($status_filter === 'processing') {
             $query->whereIn('status', ['processing', 'finishing', 'ready', 'uncollected']);
         } elseif ($status_filter === 'dikirim') {
-            $query->where('status', 'dikirim');
+            $query->where(['status' => 'dikirim']);
         } elseif ($status_filter === 'completed') {
-            $query->where('status', 'completed');
+            $query->where(['status' => 'completed']);
         } elseif ($status_filter === 'cancelled') {
-            $query->where('status', 'cancelled');
+            $query->where(['status' => 'cancelled']);
         }
 
         if ($search) {
@@ -73,7 +76,8 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->orderBy('created_at', $sort)->get()->groupBy(function ($order) {
+        $orderByCol = 'created_at';
+        $orders = $query->orderBy($orderByCol, $sort)->get()->groupBy(function (Order $order) {
             return $order->group_id ?: 'single_' . $order->id;
         });
             
@@ -100,7 +104,9 @@ class OrderController extends Controller
         $deliveryThresholdKm = \App\Models\Setting::where('key', 'delivery_threshold_km')->first()?->value ?? 5;
         $deliveryFeeAboveThreshold = \App\Models\Setting::where('key', 'delivery_fee_above_threshold')->first()?->value ?? 25000;
 
-        $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
+        /** @var User $authUser */
+        $authUser = Auth::user();
+        $mainAddress = $authUser->addresses()->where(['is_main_address' => true])->first();
         $isProfileComplete = $mainAddress && 
                              !empty($mainAddress->recipient_name) && 
                              !empty($mainAddress->phone) && 
@@ -136,8 +142,10 @@ class OrderController extends Controller
         ]);
 
         // Jika antar jemput, validasi kelengkapan profil (dari alamat utama)
+        /** @var User $authUser */
+        $authUser = Auth::user();
         if ($request->is_delivery) {
-            $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
+            $mainAddress = $authUser->addresses()->where(['is_main_address' => true])->first();
             $isProfileComplete = $mainAddress &&
                                  !empty($mainAddress->recipient_name) &&
                                  !empty($mainAddress->phone) &&
@@ -159,8 +167,9 @@ class OrderController extends Controller
 
         // Calculate Additional Services
         if ($request->has('additional_services')) {
+            /** @var \Illuminate\Database\Eloquent\Collection $extras */
             $extras = \App\Models\Service::whereIn('id', $request->additional_services)->get();
-            $totalPrice += ($extras->sum('price') * $shoeQuantity);
+            $totalPrice += ($extras->sum(fn($item) => $item->price) * $shoeQuantity);
         }
 
         // Processing Speed Premium
@@ -183,7 +192,7 @@ class OrderController extends Controller
         $deliveryFee = 0;
         
         if ($request->is_delivery) {
-            $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
+            $mainAddress = $authUser->addresses()->where(['is_main_address' => true])->first();
             $userLat = $mainAddress ? $mainAddress->latitude : null;
             $userLng = $mainAddress ? $mainAddress->longitude : null;
             
@@ -216,7 +225,9 @@ class OrderController extends Controller
 
         // Generate Order Number & Queue Number
         $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(8));
-        $lastOrder = Order::orderBy('id', 'desc')->first();
+        /** @var Order|null $lastOrder */
+        $orderByCol = 'id';
+        $lastOrder = Order::orderBy($orderByCol, 'desc')->first();
         $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
         $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
@@ -225,7 +236,7 @@ class OrderController extends Controller
         $orderLat = null;
         $orderLng = null;
         if ($request->is_delivery) {
-            $mainAddress = Auth::user()->addresses()->where('is_main_address', true)->first();
+            $mainAddress = $authUser->addresses()->where(['is_main_address' => true])->first();
             if ($mainAddress) {
                 $deliveryAddress = $mainAddress->full_address . ', ' . $mainAddress->village . ', ' . $mainAddress->kecamatan . ', ' . $mainAddress->city . ', ' . $mainAddress->province . ' ' . $mainAddress->postal_code . ' (Penerima: ' . $mainAddress->recipient_name . ' - ' . $mainAddress->phone . ')';
                 if ($mainAddress->address_landmark) $deliveryAddress .= ' [Patokan: ' . $mainAddress->address_landmark . ']';
@@ -302,7 +313,7 @@ class OrderController extends Controller
         ];
         
         foreach ($staff as $user) {
-            /** @var \App\Models\User $user */
+            /** @var User $user */
             $notificationData['url'] = $user->role == 'admin' 
                 ? route('admin.orders.index', [], false) 
                 : route('employee.orders.index', [], false);
@@ -360,7 +371,8 @@ class OrderController extends Controller
         $deliveryFee = 0;
 
         if ($request->is_delivery && $request->address_id) {
-            $address = \App\Models\UserAddress::where('id', $request->address_id)->where('user_id', Auth::id())->firstOrFail();
+            /** @var \App\Models\UserAddress $address */
+            $address = \App\Models\UserAddress::where(['id' => $request->address_id, 'user_id' => Auth::id()])->firstOrFail();
             $deliveryAddress = $address->full_address . ', ' . $address->village . ', ' . $address->kecamatan . ', ' . $address->city . ', ' . $address->province . ' ' . $address->postal_code . ' (Penerima: ' . $address->recipient_name . ' - ' . $address->phone . ')';
             $orderLat = $address->latitude;
             $orderLng = $address->longitude;
@@ -393,7 +405,9 @@ class OrderController extends Controller
         $orders = [];
         $firstOrder = true;
 
-        $lastOrder = Order::orderBy('id', 'desc')->first();
+        /** @var Order|null $lastOrder */
+        $orderByCol = 'id';
+        $lastOrder = Order::orderBy($orderByCol, 'desc')->first();
         $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
         $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
@@ -483,7 +497,7 @@ class OrderController extends Controller
         ];
         
         foreach ($staff as $user) {
-            /** @var \App\Models\User $user */
+            /** @var User $user */
             $notificationData['url'] = $user->role == 'admin' 
                 ? route('admin.orders.index', [], false) 
                 : route('employee.orders.index', [], false);
@@ -519,7 +533,9 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         // Security check: only the owner or an admin/employee can view the details
-        if ($order->user_id !== Auth::id() && !in_array(Auth::user()->role, ['admin', 'employee'])) {
+        /** @var User $authUser */
+        $authUser = Auth::user();
+        if ($order->user_id !== Auth::id() && !in_array($authUser->role, ['admin', 'employee'])) {
             abort(403);
         }
 
@@ -527,8 +543,8 @@ class OrderController extends Controller
         $bank_account = \App\Models\Setting::where('key', 'bank_account')->first()?->value;
         $bank_holder = \App\Models\Setting::where('key', 'bank_holder')->first()?->value;
         
-        $groupTotal = $order->group_id ? Order::where('group_id', $order->group_id)->sum('total_price') : $order->total_price;
-        $groupOrders = $order->group_id ? Order::where('group_id', $order->group_id)->get() : collect([$order]);
+        $groupTotal = $order->group_id ? Order::query()->where(['group_id' => $order->group_id])->sum('total_price') : $order->total_price;
+        $groupOrders = $order->group_id ? Order::query()->where(['group_id' => $order->group_id])->get() : collect([$order]);
 
         return view('orders.show', compact('order', 'bank_name', 'bank_account', 'bank_holder', 'groupTotal', 'groupOrders'));
     }
@@ -539,12 +555,14 @@ class OrderController extends Controller
     public function receipt(Order $order)
     {
         // Security check: only the owner or an admin/employee can view the receipt
-        if ($order->user_id !== Auth::id() && !in_array(Auth::user()->role, ['admin', 'employee'])) {
+        /** @var User $authUser */
+        $authUser = Auth::user();
+        if ($order->user_id !== Auth::id() && !in_array($authUser->role, ['admin', 'employee'])) {
             abort(403);
         }
 
-        $groupOrders = $order->group_id ? Order::with('service')->where('group_id', $order->group_id)->get() : collect([$order]);
-        $groupTotal = $order->group_id ? Order::where('group_id', $order->group_id)->sum('total_price') : $order->total_price;
+        $groupOrders = $order->group_id ? Order::with('service')->where(['group_id' => $order->group_id])->get() : collect([$order]);
+        $groupTotal = $order->group_id ? Order::query()->where(['group_id' => $order->group_id])->sum('total_price') : $order->total_price;
 
         return view('orders.receipt', compact('order', 'groupOrders', 'groupTotal'));
     }
@@ -559,17 +577,17 @@ class OrderController extends Controller
         if ($request->has('queue')) {
             $query->whereNotIn('status', ['completed', 'cancelled']);
             if ($request->filled('status')) {
-                $query->where('status', $request->status);
+                $query->where(['status' => $request->status]);
             }
         } elseif ($request->has('delivery')) {
-            $query->where('is_delivery', true)
+            $query->where(['is_delivery' => true])
                   ->whereNotIn('status', ['completed', 'cancelled']);
             if ($request->filled('status')) {
-                $query->where('status', $request->status);
+                $query->where(['status' => $request->status]);
             }
         } else {
             if ($request->filled('status')) {
-                $query->where('status', $request->status);
+                $query->where(['status' => $request->status]);
             } elseif (!$request->has('status')) {
                 // Default to active orders when accessed from sidebar (no query params)
                 $query->whereNotIn('status', ['completed', 'cancelled']);
@@ -587,10 +605,10 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->get()->groupBy(function ($order) {
+        $orders = $query->get()->groupBy(function (Order $order) {
             return $order->group_id ?: 'single_' . $order->id;
         });
-        $customers = User::where('role', 'customer')->get();
+        $customers = User::query()->where(['role' => 'customer'])->get();
         $services = \App\Models\Service::all();
             
         return view('admin.orders.index', compact('orders', 'customers', 'services'));
@@ -601,7 +619,9 @@ class OrderController extends Controller
      */
     public function adminStore(Request $request)
     {
-        if (Auth::user()->role !== 'admin') {
+        /** @var User $authUser */
+        $authUser = Auth::user();
+        if ($authUser->role !== 'admin') {
             abort(403);
         }
 
@@ -628,12 +648,13 @@ class OrderController extends Controller
             $photoPath = $request->file('shoe_photo')->store('orders/photos', 'public');
         }
 
+        /** @var User $customer */
         $customer = User::findOrFail($request->user_id);
         $customerName = $customer->name;
         $customerPhone = $customer->phone;
         $customerAddress = $customer->address;
         
-        $mainAddress = $customer->addresses()->where('is_main_address', true)->first();
+        $mainAddress = $customer->addresses()->where(['is_main_address' => true])->first();
         if ($mainAddress) {
             $customerName = $mainAddress->recipient_name;
             $customerPhone = $mainAddress->phone;
@@ -671,7 +692,9 @@ class OrderController extends Controller
             }
 
             $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(8));
-            $lastOrder = Order::orderBy('id', 'desc')->first();
+            /** @var Order|null $lastOrder */
+            $orderByCol = 'id';
+            $lastOrder = Order::orderBy($orderByCol, 'desc')->first();
             $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
             $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
@@ -736,7 +759,7 @@ class OrderController extends Controller
 
         $groupTotalPrice = 0;
         if ($order->group_id) {
-            $groupOrders = Order::where('group_id', $order->group_id)->get();
+            $groupOrders = Order::query()->where(['group_id' => $order->group_id])->get();
             foreach ($groupOrders as $gOrder) {
                 $gService = $gOrder->service;
                 $gTotalPrice = $gService->price * $shoeQuantity;
@@ -784,8 +807,8 @@ class OrderController extends Controller
         }
 
         if ($order->group_id) {
-            $groupOrders = Order::where('group_id', $order->group_id)->get();
-            /** @var \App\Models\Order $gOrder */
+            $groupOrders = Order::where(['group_id' => $order->group_id])->get();
+            /** @var Order $gOrder */
             foreach ($groupOrders as $gOrder) {
                 $gService = $gOrder->service;
                 $gTotalPrice = $gService->price * $shoeQuantity;
@@ -856,33 +879,33 @@ class OrderController extends Controller
         if ($request->has('queue')) {
             $query->whereNotIn('status', ['pending', 'completed', 'cancelled']);
             if ($status) {
-                $query->where('status', $status);
+                $query->where(['status' => $status]);
             }
         } elseif ($delivery) {
-            $query->where('is_delivery', true)
+            $query->where(['is_delivery' => true])
                   ->whereNotIn('status', ['completed', 'cancelled']);
             if ($status) {
-                $query->where('status', $status);
+                $query->where(['status' => $status]);
             }
         } else {
             if ($status) {
-                $query->where('status', $status);
+                $query->where(['status' => $status]);
             } else {
                 // Default to pending orders (not yet validated)
-                $query->where('status', 'pending');
+                $query->where(['status' => 'pending']);
             }
         }
 
         if ($category) {
-            $query->whereHas('service', function($q) use ($category) {
-                $q->where('category', $category);
+            $query->whereHas('service', function(\Illuminate\Database\Eloquent\Builder $q) use ($category) {
+                $q->where(['category' => $category]);
             });
         }
 
-        $orders = $query->latest()->get()->groupBy(function ($order) {
+        $orders = $query->latest()->get()->groupBy(function (Order $order) {
             return $order->group_id ?: 'single_' . $order->id;
         });
-        $customers = User::where('role', 'customer')->get();
+        $customers = User::query()->where(['role' => 'customer'])->get();
         $services = \App\Models\Service::all();
             
         return view('employee.orders.index', compact('orders', 'status', 'customers', 'services'));
@@ -893,7 +916,9 @@ class OrderController extends Controller
      */
     public function employeeStore(Request $request)
     {
-        if (Auth::user()->role !== 'employee') {
+        /** @var User $authUser */
+        $authUser = Auth::user();
+        if ($authUser->role !== 'employee') {
             abort(403);
         }
 
@@ -920,12 +945,13 @@ class OrderController extends Controller
             $photoPath = $request->file('shoe_photo')->store('orders/photos', 'public');
         }
 
+        /** @var User $customer */
         $customer = User::findOrFail($request->user_id);
         $customerName = $customer->name;
         $customerPhone = $customer->phone;
         $customerAddress = $customer->address;
         
-        $mainAddress = $customer->addresses()->where('is_main_address', true)->first();
+        $mainAddress = $customer->addresses()->where(['is_main_address' => true])->first();
         if ($mainAddress) {
             $customerName = $mainAddress->recipient_name;
             $customerPhone = $mainAddress->phone;
@@ -963,7 +989,9 @@ class OrderController extends Controller
             }
 
             $orderNumber = 'ORD-' . strtoupper(\Illuminate\Support\Str::random(8));
-            $lastOrder = Order::orderBy('id', 'desc')->first();
+            /** @var Order|null $lastOrder */
+            $orderByCol = 'id';
+            $lastOrder = Order::orderBy($orderByCol, 'desc')->first();
             $nextNumber = $lastOrder ? ((int) substr($lastOrder->queue_number, 1)) + 1 : 1;
             $queueNumber = 'Q' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
@@ -1005,8 +1033,8 @@ class OrderController extends Controller
 
         if ($search) {
             $order = Order::with(['user', 'service'])
-                ->where('order_number', $search)
-                ->orWhere('queue_number', $search)
+                ->where(['order_number' => $search])
+                ->orWhere(['queue_number' => $search])
                 ->first();
         }
 
@@ -1044,7 +1072,9 @@ class OrderController extends Controller
      */
     public function updateStatus(Request $request, Order $order)
     {
-        if (!in_array(Auth::user()->role, ['admin', 'employee'])) {
+        /** @var User $authUser */
+        $authUser = Auth::user();
+        if (!in_array($authUser->role, ['admin', 'employee'])) {
             abort(403);
         }
 
@@ -1076,7 +1106,7 @@ class OrderController extends Controller
 
             // 3. Update status to cancelled in database (do not delete)
             if ($order->group_id) {
-                Order::where('group_id', $order->group_id)->update(['status' => 'cancelled']);
+                Order::query()->where(['group_id' => $order->group_id])->update(['status' => 'cancelled']);
             } else {
                 $order->update(['status' => 'cancelled']);
             }
@@ -1095,13 +1125,13 @@ class OrderController extends Controller
             if ($request->has('storage_location') && $request->storage_location) {
                 $updateData['storage_location'] = $request->storage_location;
             }
-            if (!$order->employee_id && in_array(Auth::user()->role, ['admin', 'employee'])) {
+            if (!$order->employee_id && in_array($authUser->role, ['admin', 'employee'])) {
                 $updateData['employee_id'] = Auth::id();
             }
             if ($request->status == 'completed' && !$order->completion_date) {
                 $updateData['completion_date'] = now();
             }
-            Order::where('group_id', $order->group_id)->update($updateData);
+            Order::query()->where(['group_id' => $order->group_id])->update($updateData);
             $order->refresh();
         } else {
             if ($request->status == 'processing' && $order->status == 'pending') {
@@ -1114,7 +1144,7 @@ class OrderController extends Controller
             if ($request->has('storage_location') && $request->storage_location) {
                 $order->update(['storage_location' => $request->storage_location]);
             }
-            if (!$order->employee_id && in_array(Auth::user()->role, ['admin', 'employee'])) {
+            if (!$order->employee_id && in_array($authUser->role, ['admin', 'employee'])) {
                 $order->update(['employee_id' => Auth::id()]);
             }
             if ($request->status == 'completed' && !$order->completion_date) {
@@ -1164,7 +1194,7 @@ class OrderController extends Controller
             }
 
             // Notify Admin
-            $admins = User::where('role', 'admin')->get();
+            $admins = User::query()->where(['role' => 'admin'])->get();
             foreach ($admins as $admin) {
                 /** @var User $admin */
                 $admin->notify(new \App\Notifications\AppNotification([
@@ -1204,7 +1234,7 @@ class OrderController extends Controller
         ]);
 
         // Notify Admins about new review
-        $admins = User::where('role', 'admin')->get();
+        $admins = User::query()->where(['role' => 'admin'])->get();
         foreach ($admins as $admin) {
             /** @var User $admin */
             $admin->notify(new \App\Notifications\AppNotification([
@@ -1225,12 +1255,14 @@ class OrderController extends Controller
      */
     public function confirmPayment(Order $order)
     {
-        if (!in_array(Auth::user()->role, ['admin', 'employee'])) {
+        /** @var User $authUser */
+        $authUser = Auth::user();
+        if (!in_array($authUser->role, ['admin', 'employee'])) {
             abort(403);
         }
 
         if ($order->group_id) {
-            Order::where('group_id', $order->group_id)->update([
+            Order::query()->where(['group_id' => $order->group_id])->update([
                 'payment_status' => 'paid',
                 'status_pembayaran' => 'Sudah Divalidasi',
                 'status' => 'processing'
@@ -1297,7 +1329,7 @@ class OrderController extends Controller
 
         // Update status to cancelled for the entire group if grouped
         if ($order->group_id) {
-            Order::where('group_id', $order->group_id)->update([
+            Order::query()->where(['group_id' => $order->group_id])->update([
                 'status' => 'cancelled'
             ]);
         } else {
@@ -1308,7 +1340,7 @@ class OrderController extends Controller
 
         // Notify Admins and Customer
         try {
-            $admins = User::where('role', 'admin')->get();
+            $admins = User::query()->where(['role' => 'admin'])->get();
             foreach ($admins as $admin) {
                 /** @var User $admin */
                 $admin->notify(new \App\Notifications\AppNotification([
@@ -1348,7 +1380,7 @@ class OrderController extends Controller
             $proofPath = $request->file('payment_proof')->store('orders/payments', 'public');
             
             if ($order->group_id) {
-                Order::where('group_id', $order->group_id)->update([
+                Order::query()->where(['group_id' => $order->group_id])->update([
                     'payment_proof' => $proofPath,
                     'status_pembayaran' => 'Menunggu Validasi',
                     'payment_status' => 'paid'
@@ -1362,9 +1394,9 @@ class OrderController extends Controller
             }
 
             // Notify Admins
-            $admins = User::where('role', 'admin')->get();
+            $admins = User::query()->where(['role' => 'admin'])->get();
             foreach ($admins as $admin) {
-                /** @var \App\Models\User $admin */
+                /** @var User $admin */
                 $admin->notify(new \App\Notifications\AppNotification([
                     'title' => 'Bukti Pembayaran Baru',
                     'message' => 'Pelanggan ' . Auth::user()->name . ' telah mengunggah bukti pembayaran untuk pesanan #' . $order->order_number,

@@ -482,6 +482,7 @@
                             <span>Orderan Masuk</span>
                         </div>
                         @php
+                            /** @var int $pendingOrdersCount */
                             $pendingOrdersCount = \App\Models\Order::where('status', 'pending')->count();
                         @endphp
                         @if($pendingOrdersCount > 0)
@@ -498,6 +499,7 @@
                             <span>Antar Jemput</span>
                         </div>
                         @php
+                            /** @var int $deliveryOrdersCount */
                             $deliveryOrdersCount = \App\Models\Order::where('is_delivery', 1)->whereNotIn('status', ['completed', 'cancelled'])->count();
                         @endphp
                         @if($deliveryOrdersCount > 0)
@@ -564,6 +566,7 @@
                             <span>Pesanan</span>
                         </div>
                         @php
+                            /** @var int $adminPendingCount */
                             $adminPendingCount = \App\Models\Order::where('status', 'pending')->count();
                         @endphp
                         @if($adminPendingCount > 0)
@@ -580,6 +583,7 @@
                             <span>Antar Jemput</span>
                         </div>
                         @php
+                            /** @var int $adminDeliveryCount */
                             $adminDeliveryCount = \App\Models\Order::where('is_delivery', 1)->whereNotIn('status', ['completed', 'cancelled'])->count();
                         @endphp
                         @if($adminDeliveryCount > 0)
@@ -671,7 +675,10 @@
                             <span>Pesanan Saya</span>
                         </div>
                         @php
-                            $custActiveCount = \App\Models\Order::where('user_id', Auth::id())->whereNotIn('status', ['completed', 'cancelled'])->count();
+                            /** @var int|string|null $currentUserId */
+                            $currentUserId = Auth::id();
+                            /** @var int $custActiveCount */
+                            $custActiveCount = \App\Models\Order::where('user_id', $currentUserId)->whereNotIn('status', ['completed', 'cancelled'])->count();
                         @endphp
                         @if($custActiveCount > 0)
                             <span style="background: var(--primary); color: #000; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4); margin-left: 0.5rem; line-height: 1;">
@@ -925,7 +932,10 @@
             <div class="mobile-nav-icon-wrapper">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></svg>
                 @php
-                    $custActiveCount = \App\Models\Order::where('user_id', Auth::id())->whereNotIn('status', ['completed', 'cancelled'])->count();
+                    /** @var int|string|null $currentUserId */
+                    $currentUserId = Auth::id();
+                    /** @var int $custActiveCount */
+                    $custActiveCount = \App\Models\Order::where('user_id', $currentUserId)->whereNotIn('status', ['completed', 'cancelled'])->count();
                 @endphp
                 @if($custActiveCount > 0)
                     <span class="mobile-nav-badge">{{ $custActiveCount }}</span>
