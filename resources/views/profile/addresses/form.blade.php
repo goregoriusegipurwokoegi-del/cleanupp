@@ -53,6 +53,10 @@
         background: rgba(255, 255, 255, 0.08);
         box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
     }
+    select.form-input option {
+        background: #0f172a;
+        color: #fff;
+    }
     .btn-save {
         background: var(--primary);
         color: #0f172a;
@@ -196,11 +200,17 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div>
                     <label class="form-label">Provinsi</label>
-                    <input type="text" name="province" class="form-input" value="{{ old('province', $address->province ?? '') }}" placeholder="Contoh: Kalimantan Barat" oninput="this.value = this.value.replace(/[0-9]/g, '');">
+                    <select id="province_select" class="form-input">
+                        <option value="">Memuat Provinsi...</option>
+                    </select>
+                    <input type="hidden" name="province" id="province" value="{{ old('province', $address->province ?? '') }}">
                 </div>
                 <div>
                     <label class="form-label">Kabupaten/Kota</label>
-                    <input type="text" name="city" class="form-input" value="{{ old('city', $address->city ?? '') }}" placeholder="Contoh: Kota Pontianak" oninput="this.value = this.value.replace(/[0-9]/g, '');">
+                    <select id="city_select" class="form-input" disabled>
+                        <option value="">Pilih Provinsi Dahulu</option>
+                    </select>
+                    <input type="hidden" name="city" id="city" value="{{ old('city', $address->city ?? '') }}">
                 </div>
             </div>
 
@@ -208,11 +218,17 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div>
                     <label class="form-label">Kecamatan</label>
-                    <input type="text" name="kecamatan" class="form-input" value="{{ old('kecamatan', $address->kecamatan ?? '') }}" placeholder="Contoh: Pontianak Selatan" oninput="this.value = this.value.replace(/[0-9]/g, '');">
+                    <select id="kecamatan_select" class="form-input" disabled>
+                        <option value="">Pilih Kabupaten/Kota Dahulu</option>
+                    </select>
+                    <input type="hidden" name="kecamatan" id="kecamatan" value="{{ old('kecamatan', $address->kecamatan ?? '') }}">
                 </div>
                 <div>
                     <label class="form-label">Kelurahan/Desa</label>
-                    <input type="text" name="village" class="form-input" value="{{ old('village', $address->village ?? '') }}" placeholder="Contoh: Akcaya" oninput="this.value = this.value.replace(/[0-9]/g, '');">
+                    <select id="village_select" class="form-input" disabled>
+                        <option value="">Pilih Kecamatan Dahulu</option>
+                    </select>
+                    <input type="hidden" name="village" id="village" value="{{ old('village', $address->village ?? '') }}">
                 </div>
             </div>
 
@@ -277,6 +293,11 @@
     let userLng = @json(old('longitude', $address->longitude));
     let defaultLat = -0.0513462;
     let defaultLng = 109.3210380;
+
+    let initialProvince = @json(old('province', $address->province ?? ''));
+    let initialCity = @json(old('city', $address->city ?? ''));
+    let initialKecamatan = @json(old('kecamatan', $address->kecamatan ?? ''));
+    let initialVillage = @json(old('village', $address->village ?? ''));
 
     function enableManualMode() {
         if (marker) {
@@ -400,7 +421,328 @@
                 searchTimeout = setTimeout(() => searchAddress(query), 600);
             });
         }
+
+        // Initialize Wilayah Dropdowns
+        initWilayahDropdowns();
+
+        // Chained selects listeners
+        const provinceSelect = document.getElementById('province_select');
+        const citySelect = document.getElementById('city_select');
+        const kecamatanSelect = document.getElementById('kecamatan_select');
+        const villageSelect = document.getElementById('village_select');
+
+        provinceSelect.addEventListener('change', function() {
+            const val = this.value;
+            const hidden = document.getElementById('province');
+            const cityHidden = document.getElementById('city');
+            const kecHidden = document.getElementById('kecamatan');
+            const vilHidden = document.getElementById('village');
+
+            if (!val) {
+                hidden.value = '';
+                citySelect.innerHTML = '<option value="">Pilih Provinsi Dahulu</option>';
+                citySelect.disabled = true;
+                cityHidden.value = '';
+                kecamatanSelect.innerHTML = '<option value="">Pilih Kabupaten/Kota Dahulu</option>';
+                kecamatanSelect.disabled = true;
+                kecHidden.value = '';
+                villageSelect.innerHTML = '<option value="">Pilih Kecamatan Dahulu</option>';
+                villageSelect.disabled = true;
+                vilHidden.value = '';
+                return;
+            }
+
+            hidden.value = this.options[this.selectedIndex].text;
+            citySelect.innerHTML = '<option value="">Memuat Kabupaten/Kota...</option>';
+            citySelect.disabled = true;
+            cityHidden.value = '';
+            kecamatanSelect.innerHTML = '<option value="">Pilih Kabupaten/Kota Dahulu</option>';
+            kecamatanSelect.disabled = true;
+            kecHidden.value = '';
+            villageSelect.innerHTML = '<option value="">Pilih Kecamatan Dahulu</option>';
+            villageSelect.disabled = true;
+            vilHidden.value = '';
+
+            loadCities(val);
+        });
+
+        citySelect.addEventListener('change', function() {
+            const val = this.value;
+            const hidden = document.getElementById('city');
+            const kecHidden = document.getElementById('kecamatan');
+            const vilHidden = document.getElementById('village');
+
+            if (!val) {
+                hidden.value = '';
+                kecamatanSelect.innerHTML = '<option value="">Pilih Kabupaten/Kota Dahulu</option>';
+                kecamatanSelect.disabled = true;
+                kecHidden.value = '';
+                villageSelect.innerHTML = '<option value="">Pilih Kecamatan Dahulu</option>';
+                villageSelect.disabled = true;
+                vilHidden.value = '';
+                return;
+            }
+
+            hidden.value = this.options[this.selectedIndex].text;
+            kecamatanSelect.innerHTML = '<option value="">Memuat Kecamatan...</option>';
+            kecamatanSelect.disabled = true;
+            kecHidden.value = '';
+            villageSelect.innerHTML = '<option value="">Pilih Kecamatan Dahulu</option>';
+            villageSelect.disabled = true;
+            vilHidden.value = '';
+
+            loadDistricts(val);
+        });
+
+        kecamatanSelect.addEventListener('change', function() {
+            const val = this.value;
+            const hidden = document.getElementById('kecamatan');
+            const vilHidden = document.getElementById('village');
+
+            if (!val) {
+                hidden.value = '';
+                villageSelect.innerHTML = '<option value="">Pilih Kecamatan Dahulu</option>';
+                villageSelect.disabled = true;
+                vilHidden.value = '';
+                return;
+            }
+
+            hidden.value = this.options[this.selectedIndex].text;
+            villageSelect.innerHTML = '<option value="">Memuat Kelurahan/Desa...</option>';
+            villageSelect.disabled = true;
+            vilHidden.value = '';
+
+            loadVillages(val);
+        });
+
+        villageSelect.addEventListener('change', function() {
+            const val = this.value;
+            const hidden = document.getElementById('village');
+            if (!val) {
+                hidden.value = '';
+                return;
+            }
+            hidden.value = this.options[this.selectedIndex].text;
+        });
     });
+
+    async function loadProvinces() {
+        try {
+            const response = await fetch('/customer/api/wilayah/provinces');
+            const data = await response.json();
+            const select = document.getElementById('province_select');
+            select.innerHTML = '<option value="">Pilih Provinsi</option>';
+            data.forEach(item => {
+                select.innerHTML += `<option value="${item.kode}">${item.nama}</option>`;
+            });
+        } catch (error) {
+            console.error('Error loading provinces:', error);
+        }
+    }
+
+    async function loadCities(provinceId) {
+        try {
+            const response = await fetch(`/customer/api/wilayah/cities?province_id=${provinceId}`);
+            const data = await response.json();
+            const select = document.getElementById('city_select');
+            select.innerHTML = '<option value="">Pilih Kabupaten/Kota</option>';
+            data.forEach(item => {
+                select.innerHTML += `<option value="${item.kode}">${item.nama}</option>`;
+            });
+            select.disabled = false;
+        } catch (error) {
+            console.error('Error loading cities:', error);
+        }
+    }
+
+    async function loadDistricts(cityId) {
+        try {
+            const response = await fetch(`/customer/api/wilayah/districts?city_id=${cityId}`);
+            const data = await response.json();
+            const select = document.getElementById('kecamatan_select');
+            select.innerHTML = '<option value="">Pilih Kecamatan</option>';
+            data.forEach(item => {
+                select.innerHTML += `<option value="${item.kode}">${item.nama}</option>`;
+            });
+            select.disabled = false;
+        } catch (error) {
+            console.error('Error loading districts:', error);
+        }
+    }
+
+    async function loadVillages(districtId) {
+        try {
+            const response = await fetch(`/customer/api/wilayah/villages?district_id=${districtId}`);
+            const data = await response.json();
+            const select = document.getElementById('village_select');
+            select.innerHTML = '<option value="">Pilih Kelurahan/Desa</option>';
+            data.forEach(item => {
+                select.innerHTML += `<option value="${item.kode}">${item.nama}</option>`;
+            });
+            select.disabled = false;
+        } catch (error) {
+            console.error('Error loading villages:', error);
+        }
+    }
+
+    const cleanStr = str => str ? str.toLowerCase().replace(/^(provinsi|kabupaten|kab\.|kota|kecamatan|kelurahan|desa|dki)\s+/i, '').replace(/\s+(kabupaten|kab\.|kota|kecamatan|kelurahan|desa)$/i, '').replace(/\s+/g, ' ').trim() : '';
+
+    async function initWilayahDropdowns() {
+        await loadProvinces();
+        
+        if (initialProvince) {
+            const provSelect = document.getElementById('province_select');
+            let matchProvCode = '';
+            const cleanProv = cleanStr(initialProvince);
+            
+            for (let i = 0; i < provSelect.options.length; i++) {
+                if (cleanStr(provSelect.options[i].text) === cleanProv || provSelect.options[i].text.toLowerCase().includes(cleanProv)) {
+                    matchProvCode = provSelect.options[i].value;
+                    provSelect.selectedIndex = i;
+                    break;
+                }
+            }
+            
+            if (matchProvCode && initialCity) {
+                await loadCities(matchProvCode);
+                const citySelect = document.getElementById('city_select');
+                let matchCityCode = '';
+                const cleanCity = cleanStr(initialCity);
+                
+                for (let i = 0; i < citySelect.options.length; i++) {
+                    if (cleanStr(citySelect.options[i].text) === cleanCity || citySelect.options[i].text.toLowerCase().includes(cleanCity)) {
+                        matchCityCode = citySelect.options[i].value;
+                        citySelect.selectedIndex = i;
+                        break;
+                    }
+                }
+                
+                if (matchCityCode && initialKecamatan) {
+                    await loadDistricts(matchCityCode);
+                    const kecSelect = document.getElementById('kecamatan_select');
+                    let matchKecCode = '';
+                    const cleanKec = cleanStr(initialKecamatan);
+                    
+                    for (let i = 0; i < kecSelect.options.length; i++) {
+                        if (cleanStr(kecSelect.options[i].text) === cleanKec || kecSelect.options[i].text.toLowerCase().includes(cleanKec)) {
+                            matchKecCode = kecSelect.options[i].value;
+                            kecSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    if (matchKecCode && initialVillage) {
+                        await loadVillages(matchKecCode);
+                        const vilSelect = document.getElementById('village_select');
+                        const cleanVil = cleanStr(initialVillage);
+                        
+                        for (let i = 0; i < vilSelect.options.length; i++) {
+                            if (cleanStr(vilSelect.options[i].text) === cleanVil || vilSelect.options[i].text.toLowerCase().includes(cleanVil)) {
+                                vilSelect.selectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    async function matchAndSelectRegion(provName, cityName, kecName, vilName) {
+        if (!provName) return;
+        
+        // 1. Find matching province
+        const provSelect = document.getElementById('province_select');
+        const provOpts = provSelect.options;
+        let matchProvValue = '';
+        const cleanProvSearch = cleanStr(provName);
+        
+        for (let i = 0; i < provOpts.length; i++) {
+            if (cleanStr(provOpts[i].text) === cleanProvSearch || provOpts[i].text.toLowerCase().includes(cleanProvSearch)) {
+                matchProvValue = provOpts[i].value;
+                provSelect.selectedIndex = i;
+                break;
+            }
+        }
+        
+        if (matchProvValue) {
+            document.getElementById('province').value = provSelect.options[provSelect.selectedIndex].text;
+            
+            // 2. Fetch and select city
+            await loadCities(matchProvValue);
+            const citySelect = document.getElementById('city_select');
+            let matchCityValue = '';
+            if (cityName) {
+                const cleanCitySearch = cleanStr(cityName);
+                const cityOpts = citySelect.options;
+                for (let i = 0; i < cityOpts.length; i++) {
+                    if (cleanStr(cityOpts[i].text) === cleanCitySearch || cityOpts[i].text.toLowerCase().includes(cleanCitySearch)) {
+                        matchCityValue = cityOpts[i].value;
+                        citySelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            
+            if (matchCityValue) {
+                document.getElementById('city').value = citySelect.options[citySelect.selectedIndex].text;
+                
+                // 3. Fetch and select kecamatan
+                await loadDistricts(matchCityValue);
+                const kecSelect = document.getElementById('kecamatan_select');
+                let matchKecValue = '';
+                if (kecName) {
+                    const cleanKecSearch = cleanStr(kecName);
+                    const kecOpts = kecSelect.options;
+                    for (let i = 0; i < kecOpts.length; i++) {
+                        if (cleanStr(kecOpts[i].text) === cleanKecSearch || kecOpts[i].text.toLowerCase().includes(cleanKecSearch)) {
+                            matchKecValue = kecOpts[i].value;
+                            kecSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+                
+                if (matchKecValue) {
+                    document.getElementById('kecamatan').value = kecSelect.options[kecSelect.selectedIndex].text;
+                    
+                    // 4. Fetch and select village
+                    await loadVillages(matchKecValue);
+                    const vilSelect = document.getElementById('village_select');
+                    let matchVilValue = '';
+                    if (vilName) {
+                        const cleanVilSearch = cleanStr(vilName);
+                        const vilOpts = vilSelect.options;
+                        for (let i = 0; i < vilOpts.length; i++) {
+                            if (cleanStr(vilOpts[i].text) === cleanVilSearch || vilOpts[i].text.toLowerCase().includes(cleanVilSearch)) {
+                                matchVilValue = vilOpts[i].value;
+                                vilSelect.selectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (matchVilValue) {
+                        document.getElementById('village').value = vilSelect.options[vilSelect.selectedIndex].text;
+                    } else {
+                        document.getElementById('village').value = '';
+                    }
+                } else {
+                    document.getElementById('kecamatan').value = '';
+                    document.getElementById('village').value = '';
+                }
+            } else {
+                document.getElementById('city').value = '';
+                document.getElementById('kecamatan').value = '';
+                document.getElementById('village').value = '';
+            }
+        } else {
+            document.getElementById('province').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('kecamatan').value = '';
+            document.getElementById('village').value = '';
+        }
+    }
 
     function searchAddress(query) {
         const resultsContainer = document.getElementById('search_results');
@@ -457,29 +799,27 @@
         document.getElementById('delivery_address').value = place.display_name;
         document.getElementById('search_results').style.display = 'none';
         
+        let pName = '', cName = '', kName = '', vName = '';
+        
         // Auto-fill form fields if available
         if (place.address) {
-            const province = place.address.state || place.address.region || place.address.state_district;
-            if (province) document.querySelector('input[name="province"]').value = province;
-            
-            const city = place.address.city || place.address.county || place.address.municipality || place.address.town || place.address.city_district;
-            if (city) document.querySelector('input[name="city"]').value = city;
-            
-            const kecamatan = place.address.city_district || place.address.suburb || place.address.county || place.address.municipality;
-            if (kecamatan) document.querySelector('input[name="kecamatan"]').value = kecamatan;
-            
-            const village = place.address.village || place.address.neighbourhood || place.address.residential || place.address.suburb || place.address.hamlet;
-            if (village) document.querySelector('input[name="village"]').value = village;
+            pName = place.address.state || place.address.region || place.address.state_district || '';
+            cName = place.address.city || place.address.county || place.address.municipality || place.address.town || place.address.city_district || '';
+            kName = place.address.city_district || place.address.suburb || place.address.county || place.address.municipality || '';
+            vName = place.address.village || place.address.neighbourhood || place.address.residential || place.address.suburb || place.address.hamlet || '';
             
             if (place.address.postcode) document.querySelector('input[name="postal_code"]').value = place.address.postcode;
         } else {
             // Fallback: parse display_name
             const parts = place.display_name.split(',').map(s => s.trim());
             if (parts.length >= 4) {
-                document.querySelector('input[name="province"]').value = parts[parts.length - 2] || '';
-                document.querySelector('input[name="city"]').value = parts[parts.length - 3] || '';
+                pName = parts[parts.length - 2] || '';
+                cName = parts[parts.length - 3] || '';
             }
         }
+        
+        // Match and select dropdowns
+        matchAndSelectRegion(pName, cName, kName, vName);
 
         const lat = parseFloat(place.lat);
         const lng = parseFloat(place.lon);

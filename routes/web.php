@@ -145,6 +145,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Legacy Address Route (Redirect to new Address Book)
         Route::redirect('/address', '/customer/addresses')->name('address.edit');
         
+        // Wilayah Indonesia APIs
+        Route::get('/api/wilayah/provinces', [App\Http\Controllers\WilayahApiController::class, 'getProvinces'])->name('api.wilayah.provinces');
+        Route::get('/api/wilayah/cities', [App\Http\Controllers\WilayahApiController::class, 'getCities'])->name('api.wilayah.cities');
+        Route::get('/api/wilayah/districts', [App\Http\Controllers\WilayahApiController::class, 'getDistricts'])->name('api.wilayah.districts');
+        Route::get('/api/wilayah/villages', [App\Http\Controllers\WilayahApiController::class, 'getVillages'])->name('api.wilayah.villages');
+        
 
     });
     Route::get('/customer/orders/{order}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
