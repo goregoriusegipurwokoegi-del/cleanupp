@@ -30,6 +30,7 @@ class AttendanceController extends Controller
     public function clockOut()
     {
         $today = now()->format('Y-m-d');
+        /** @var Attendance|null $attendance */
         $attendance = Attendance::where(['user_id' => Auth::id(), 'date' => $today])->first();
 
         if (!$attendance) {

@@ -23,7 +23,7 @@ class FinanceController extends Controller
 
         if ($filter == 'daily') {
             $ordersQuery->whereDate('updated_at', now());
-            $manualFinanceQuery->whereDate('date', now());
+            $manualFinanceQuery->where('date', now()->toDateString());
         } elseif ($filter == 'monthly') {
             $ordersQuery->whereMonth('updated_at', now()->month)->whereYear('updated_at', now()->year);
             $manualFinanceQuery->whereMonth('date', now()->month)->whereYear('date', now()->year);
@@ -69,8 +69,8 @@ class FinanceController extends Controller
                 $chartData['labels'][] = now()->subDays($i)->format('d M');
                 
                 $incOrders = Order::where(['payment_status' => 'paid'])->whereDate('updated_at', $d)->sum('total_price');
-                $incManual = Finance::where(['type' => 'income'])->whereDate('date', $d)->sum('amount');
-                $expManual = Finance::where(['type' => 'expense'])->whereDate('date', $d)->sum('amount');
+                $incManual = Finance::where(['type' => 'income'])->where('date', $d)->sum('amount');
+                $expManual = Finance::where(['type' => 'expense'])->where('date', $d)->sum('amount');
                 
                 $chartData['income'][] = $incOrders + $incManual;
                 $chartData['expense'][] = $expManual;

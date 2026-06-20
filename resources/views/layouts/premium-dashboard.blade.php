@@ -483,7 +483,7 @@
                         </div>
                         @php
                             /** @var int $pendingOrdersCount */
-                            $pendingOrdersCount = \App\Models\Order::where('status', 'pending')->count();
+                            $pendingOrdersCount = \App\Models\Order::whereStatus('pending')->count();
                         @endphp
                         @if($pendingOrdersCount > 0)
                             <span class="badge-pulse" style="background: #f43f5e; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(244, 63, 94, 0.4); margin-left: 0.5rem; line-height: 1;">
@@ -500,7 +500,7 @@
                         </div>
                         @php
                             /** @var int $deliveryOrdersCount */
-                            $deliveryOrdersCount = \App\Models\Order::where('is_delivery', 1)->whereNotIn('status', ['completed', 'cancelled'])->count();
+                            $deliveryOrdersCount = \App\Models\Order::whereIsDelivery(1)->whereNotIn('status', ['completed', 'cancelled'])->count();
                         @endphp
                         @if($deliveryOrdersCount > 0)
                             <span style="background: #f59e0b; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; margin-left: 0.5rem; line-height: 1;">
@@ -567,7 +567,7 @@
                         </div>
                         @php
                             /** @var int $adminPendingCount */
-                            $adminPendingCount = \App\Models\Order::where('status', 'pending')->count();
+                            $adminPendingCount = \App\Models\Order::whereStatus('pending')->count();
                         @endphp
                         @if($adminPendingCount > 0)
                             <span class="badge-pulse" style="background: #f43f5e; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(244, 63, 94, 0.4); margin-left: 0.5rem; line-height: 1;">
@@ -584,7 +584,7 @@
                         </div>
                         @php
                             /** @var int $adminDeliveryCount */
-                            $adminDeliveryCount = \App\Models\Order::where('is_delivery', 1)->whereNotIn('status', ['completed', 'cancelled'])->count();
+                            $adminDeliveryCount = \App\Models\Order::whereIsDelivery(1)->whereNotIn('status', ['completed', 'cancelled'])->count();
                         @endphp
                         @if($adminDeliveryCount > 0)
                             <span style="background: #f59e0b; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; margin-left: 0.5rem; line-height: 1;">
@@ -678,7 +678,7 @@
                             /** @var int|string|null $currentUserId */
                             $currentUserId = Auth::id();
                             /** @var int $custActiveCount */
-                            $custActiveCount = \App\Models\Order::where('user_id', $currentUserId)->whereNotIn('status', ['completed', 'cancelled'])->count();
+                            $custActiveCount = \App\Models\Order::whereUserId($currentUserId)->whereNotIn('status', ['completed', 'cancelled'])->count();
                         @endphp
                         @if($custActiveCount > 0)
                             <span style="background: var(--primary); color: #000; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 20px; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4); margin-left: 0.5rem; line-height: 1;">
@@ -935,7 +935,7 @@
                     /** @var int|string|null $currentUserId */
                     $currentUserId = Auth::id();
                     /** @var int $custActiveCount */
-                    $custActiveCount = \App\Models\Order::where('user_id', $currentUserId)->whereNotIn('status', ['completed', 'cancelled'])->count();
+                    $custActiveCount = \App\Models\Order::whereUserId($currentUserId)->whereNotIn('status', ['completed', 'cancelled'])->count();
                 @endphp
                 @if($custActiveCount > 0)
                     <span class="mobile-nav-badge">{{ $custActiveCount }}</span>

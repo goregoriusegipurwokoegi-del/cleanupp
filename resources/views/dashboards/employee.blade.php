@@ -11,7 +11,7 @@
 @section('content')
 @php
     $todayAttendance = \App\Models\Attendance::where(['user_id' => Auth::id()])
-        ->whereDate('date', \Carbon\Carbon::today())
+        ->where('date', \Carbon\Carbon::today()->toDateString())
         ->first();
     $isClockedIn = $todayAttendance ? true : false;
     $isClockedOut = ($todayAttendance && $todayAttendance->clock_out) ? true : false;

@@ -24,7 +24,7 @@ class DashboardController extends Controller
         // Total Order Revenue (KPI Cards) - Count all accepted/processed orders as projected/current revenue
         $orderToday = Order::where(['payment_status' => 'paid'])
             ->where([['status', '!=', 'cancelled']])
-            ->whereDate('updated_at', now())
+            ->whereBetween('updated_at', [now()->startOfDay(), now()->endOfDay()])
             ->sum('total_price');
             
         $orderMonthly = Order::where(['payment_status' => 'paid'])
@@ -34,7 +34,7 @@ class DashboardController extends Controller
             ->sum('total_price');
 
         // Manual Finance Entries
-        $manualToday = \App\Models\Finance::where(['type' => 'income'])->whereDate('date', now())->sum('amount');
+        $manualToday = \App\Models\Finance::where(['type' => 'income'])->where('date', now()->toDateString())->sum('amount');
         $manualMonthly = \App\Models\Finance::where(['type' => 'income'])
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
@@ -73,8 +73,8 @@ class DashboardController extends Controller
             $limit = 24;
             $dateFormat = 'DATE_FORMAT(updated_at, "%H:00")';
             $dateCreatedFormat = 'DATE_FORMAT(created_at, "%H:00")';
-            $revenueQuery->whereDate('updated_at', now());
-            $transactionQuery->whereDate('created_at', now());
+            $revenueQuery->whereBetween('updated_at', [now()->startOfDay(), now()->endOfDay()]);
+            $transactionQuery->whereBetween('created_at', [now()->startOfDay(), now()->endOfDay()]);
         } elseif ($filter === 'month') {
             $limit = 30;
         } elseif ($filter === 'year') {
@@ -112,14 +112,14 @@ class DashboardController extends Controller
 
         // Aktivitas Terbaru (Hanya Hari Ini)
         $recentOrders = Order::with(['user', 'service'])
-            ->whereDate('created_at', now())
+            ->whereBetween('created_at', [now()->startOfDay(), now()->endOfDay()])
             ->where([['status', '!=', 'cancelled']])
             ->latest()
             ->limit(10)
             ->get();
 
         // Staff Aktif (Absensi hari ini yang belum pulang)
-        $activeStaff = \App\Models\Attendance::whereDate('date', now())
+        $activeStaff = \App\Models\Attendance::where('date', now()->toDateString())
             ->whereNull('clock_out')
             ->with('user')
             ->get();
