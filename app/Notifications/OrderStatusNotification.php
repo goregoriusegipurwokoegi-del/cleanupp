@@ -42,7 +42,8 @@ class OrderStatusNotification extends Notification
     {
         $statusLabels = [
             'pending' => 'Menunggu Konfirmasi',
-            'processing' => ($this->order->service->category == 'cleaning' ? 'Sedang Dicuci' : 'Sedang Dikerjakan'),
+            'processing' => 'Dalam Antrian',
+            'washing' => ($this->order->service->category == 'cleaning' ? 'Sedang Dicuci' : 'Sedang Dikerjakan'),
             'finishing' => ($this->order->service->category == 'cleaning' ? 'Proses Pengeringan' : 'Proses Finishing'),
             'ready' => 'Siap Diambil',
             'uncollected' => 'Belum Diambil',
@@ -75,7 +76,8 @@ class OrderStatusNotification extends Notification
     {
         $statusLabels = [
             'pending' => 'Menunggu',
-            'processing' => ($this->order->service->category == 'cleaning' ? 'Dicuci' : 'Dikerjakan'),
+            'processing' => 'Dalam Antrian',
+            'washing' => ($this->order->service->category == 'cleaning' ? 'Dicuci' : 'Dikerjakan'),
             'finishing' => ($this->order->service->category == 'cleaning' ? 'Pengeringan' : 'Finishing'),
             'ready' => 'SIAP DIAMBIL',
             'uncollected' => 'Belum Diambil',

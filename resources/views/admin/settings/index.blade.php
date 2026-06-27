@@ -18,8 +18,8 @@
         display: flex;
         gap: 0.5rem;
         margin-bottom: 2rem;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.06);
+        background: var(--surface-variant);
+        border: 1px solid var(--border-color);
         border-radius: 16px;
         padding: 0.4rem;
         overflow-x: auto;
@@ -33,7 +33,7 @@
         font-size: 0.85rem;
         cursor: pointer;
         text-decoration: none;
-        color: rgba(255,255,255,0.5);
+        color: var(--text-secondary);
         transition: all 0.3s;
         display: flex;
         align-items: center;
@@ -43,11 +43,11 @@
     }
     .tab-btn.active {
         background: var(--primary);
-        color: #0f172a;
+        color: #fff;
     }
     .tab-btn:not(.active):hover {
-        background: rgba(255,255,255,0.05);
-        color: #fff;
+        background: var(--primary-glow);
+        color: var(--primary);
     }
     .setting-group {
         margin-bottom: 1.5rem;
@@ -56,14 +56,20 @@
         display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; opacity: 0.7;
     }
     .setting-input {
-        width: 100%; padding: 1rem 1.2rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;
+        width: 100%; padding: 1rem 1.2rem;
+        background: var(--surface-variant);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        color: var(--text);
+        outline: none;
+        transition: 0.3s;
     }
     .setting-input:focus {
         border-color: var(--primary);
-        background: rgba(255,255,255,0.05);
+        background: var(--surface-variant);
     }
     .save-btn {
-        background: var(--primary); color: #0f172a; border: none; padding: 1rem 2rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;
+        background: var(--primary); color: #fff; border: none; padding: 1rem 2rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;
     }
     .save-btn:hover {
         transform: translateY(-2px);

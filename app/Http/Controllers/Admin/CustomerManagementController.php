@@ -9,9 +9,20 @@ use Illuminate\Support\Facades\Hash;
 
 class CustomerManagementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customers = User::where(['role' => 'customer'])->latest()->get();
+        $query = User::where(['role' => 'customer']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('email', 'like', "%$search%")
+                  ->orWhere('phone', 'like', "%$search%");
+            });
+        }
+
+        $customers = $query->latest()->get();
         return view('admin.customers.index', compact('customers'));
     }
 

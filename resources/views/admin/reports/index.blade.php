@@ -21,8 +21,8 @@
         body { background: #fff !important; }
     }
     .filter-card {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.05);
+        background: var(--surface-variant);
+        border: 1px solid var(--border-color);
         border-radius: 20px;
         padding: 1.2rem;
         margin-bottom: 1.5rem;
@@ -31,8 +31,8 @@
         display: flex;
         gap: 0.5rem;
         margin-bottom: 1.5rem;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.06);
+        background: var(--surface-variant);
+        border: 1px solid var(--border-color);
         border-radius: 16px;
         padding: 0.4rem;
         overflow-x: auto;
@@ -46,7 +46,7 @@
         font-size: 0.85rem;
         cursor: pointer;
         text-decoration: none;
-        color: rgba(255,255,255,0.5);
+        color: var(--text-secondary);
         transition: all 0.3s;
         display: flex;
         align-items: center;
@@ -56,17 +56,27 @@
     }
     .tab-btn.active {
         background: var(--primary);
-        color: #0f172a;
+        color: #fff;
     }
     .tab-btn:not(.active):hover {
-        background: rgba(255,255,255,0.05);
-        color: #fff;
+        background: var(--primary-glow);
+        color: var(--primary);
     }
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
     .tab-content { animation: fadeIn 0.4s ease; }
+    .form-input {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        padding: 0.8rem;
+        border-radius: 12px;
+        color: var(--text);
+        outline: none;
+    }
+    .form-input:focus { border-color: var(--primary); }
 </style>
 
 
@@ -89,17 +99,17 @@
         <input type="hidden" name="tab" value="{{ $tab }}">
         <div style="flex: 1; min-width: 150px;">
             <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Dari Tanggal</label>
-            <input type="date" name="start_date" value="{{ $startDate }}" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 12px; color: #fff; outline: none;">
+            <input type="date" name="start_date" value="{{ $startDate }}" class="form-input">
         </div>
         <div style="flex: 1; min-width: 150px;">
             <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Sampai Tanggal</label>
-            <input type="date" name="end_date" value="{{ $endDate }}" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 12px; color: #fff; outline: none;">
+            <input type="date" name="end_date" value="{{ $endDate }}" class="form-input">
         </div>
         
         @if($tab == 'pesanan')
         <div style="flex: 1; min-width: 150px;">
             <label style="display: block; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Kategori</label>
-            <select name="category" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 12px; color: #fff; outline: none;">
+            <select name="category" class="form-input">
                 <option value="" style="color: #000;">Semua Kategori</option>
                 <option value="cleaning" {{ request('category') == 'cleaning' ? 'selected' : '' }} style="color: #000;">Cleaning</option>
                 <option value="repair" {{ request('category') == 'repair' ? 'selected' : '' }} style="color: #000;">Repair</option>
@@ -108,7 +118,7 @@
         @endif
 
         <div>
-            <button type="submit" style="background: var(--primary); color: #0f172a; border: none; padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;">Filter Laporan</button>
+            <button type="submit" style="background: var(--primary); color: #fff; border: none; padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s;">Filter Laporan</button>
         </div>
     </form>
 </div>

@@ -15,9 +15,9 @@
 @section('content')
 <style>
     .glass-card {
-        background: rgba(255,255,255,0.03);
+        background: var(--surface);
         backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--border-color);
         border-radius: 24px;
         padding: 1.5rem;
     }
@@ -25,19 +25,29 @@
         width: 100%;
         overflow-x: auto;
         border-radius: 20px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.05);
+        background: var(--surface);
+        border: 1px solid var(--border-color);
     }
     table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px; }
-    th { padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    td { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.02); }
+    th { padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6; border-bottom: 1px solid var(--border-color); }
+    td { padding: 1.5rem; border-bottom: 1px solid var(--border-color); }
     tr { transition: 0.3s; }
-    tr:hover { background: rgba(255,255,255,0.01); }
+    tr:hover { background: var(--surface-variant); }
+    .form-input {
+        width: 100%; padding: 0.8rem 1.2rem;
+        background: var(--surface-variant);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        color: var(--text);
+        outline: none;
+        transition: 0.3s;
+    }
+    .form-input:focus { border-color: var(--primary); }
 </style>
 
 <div class="header-actions" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
 
-    <button onclick="openModal()" style="background: var(--primary); color: #0f172a; border: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: 0.3s;">
+    <button onclick="openModal()" style="background: var(--primary); color: #fff; border: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: 0.3s;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Tambah Barang
     </button>
@@ -52,7 +62,7 @@
 <div class="table-container">
     <table>
         <thead>
-            <tr style="background: rgba(255,255,255,0.03);">
+            <tr style="background: var(--surface-variant);">
                 <th>Nama Barang</th>
                 <th>Sisa Stok</th>
                 <th>Satuan</th>
@@ -80,7 +90,8 @@
                     @endif
                 </td>
                 <td style="text-align: center; display: flex; justify-content: center; gap: 0.5rem;">
-                    <button onclick="editModal({{ $inv->id }}, '{{ $inv->name }}', {{ $inv->stock }}, '{{ $inv->unit }}', {{ $inv->min_stock }})" style="background: rgba(255,255,255,0.05); border: none; color: var(--primary); padding: 0.5rem; border-radius: 8px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+                    <button onclick="editModal({{ $inv->id }}, '{{ $inv->name }}', {{ $inv->stock }}, '{{ $inv->unit }}', {{ $inv->min_stock }})" style="background: var(--surface-variant); border: 1px solid var(--border-color); color: var(--primary); padding: 0.5rem; border-radius: 8px; cursor: pointer; transition: 0.3s;"
+                        onmouseover="this.style.background='var(--primary-glow)'" onmouseout="this.style.background='var(--surface-variant)'">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </button>
                     <form action="{{ route('admin.inventories.destroy', $inv->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus barang ini?');">
@@ -107,7 +118,7 @@
     <div class="glass-card" style="width: 90%; max-width: 500px; padding: 2.5rem; border-radius: 24px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <h3 id="modal-title" style="font-size: 1.5rem;">Tambah Barang</h3>
-            <button onclick="closeModal()" style="background: transparent; border: none; color: #fff; cursor: pointer; opacity: 0.5;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            <button onclick="closeModal()" style="background: transparent; border: none; color: var(--text); cursor: pointer; opacity: 0.5;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
         </div>
         
         <form id="inventory-form" method="POST" action="{{ route('admin.inventories.store') }}">
@@ -116,26 +127,26 @@
             
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Nama Barang</label>
-                <input type="text" name="name" id="input-name" required placeholder="Contoh: Sabun Cuci" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                <input type="text" name="name" id="input-name" required placeholder="Contoh: Sabun Cuci" class="form-input" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
             </div>
 
             <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
                 <div style="flex: 1;">
                     <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Sisa Stok</label>
-                    <input type="number" step="any" name="stock" id="input-stock" required min="0" placeholder="0" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <input type="number" step="any" name="stock" id="input-stock" required min="0" placeholder="0" class="form-input" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
                 </div>
                 <div style="flex: 1;">
                     <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Satuan</label>
-                    <input type="text" name="unit" id="input-unit" required placeholder="Pcs, Botol, Liter" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                    <input type="text" name="unit" id="input-unit" required placeholder="Pcs, Botol, Liter" class="form-input" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
                 </div>
             </div>
 
             <div style="margin-bottom: 2rem;">
                 <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Batas Minimum Stok (Peringatan)</label>
-                <input type="number" step="any" name="min_stock" id="input-min-stock" required min="0" placeholder="0" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                <input type="number" step="any" name="min_stock" id="input-min-stock" required min="0" placeholder="0" class="form-input" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
             </div>
 
-            <button type="submit" id="submit-button" style="width: 100%; background: var(--primary); color: #0f172a; border: none; padding: 1rem; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;">Simpan Barang</button>
+            <button type="submit" id="submit-button" style="width: 100%; background: var(--primary); color: #fff; border: none; padding: 1rem; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;">Simpan Barang</button>
         </form>
     </div>
 </div>

@@ -93,6 +93,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         Route::post('/attendance/clock-in', [App\Http\Controllers\AttendanceController::class, 'clockIn'])->name('employee.attendance.clock-in');
         Route::post('/attendance/clock-out', [App\Http\Controllers\AttendanceController::class, 'clockOut'])->name('employee.attendance.clock-out');
+        Route::get('/attendance', [App\Http\Controllers\AttendanceController::class, 'employeeAttendance'])->name('employee.attendance.index');
         
         Route::get('/orders/scan', [App\Http\Controllers\OrderController::class, 'scan'])->name('employee.orders.scan');
         Route::post('/orders/scan/process', [App\Http\Controllers\OrderController::class, 'processScan'])->name('employee.orders.scan.process');

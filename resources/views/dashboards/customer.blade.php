@@ -82,7 +82,7 @@
                     @php
                         $statusColor = match($order->status) {
                             'pending' => 'var(--secondary)',
-                            'processing', 'finishing' => 'var(--primary)',
+                            'processing', 'washing', 'drying', 'finishing' => 'var(--primary)',
                             'ready', 'dikirim' => '#10b981',
                             default => '#6b7280'
                         };
@@ -101,7 +101,9 @@
                 @php
                     $statusIndo = match($order->status) {
                         'pending' => 'Menunggu',
-                        'processing' => ($order->service->category == 'cleaning' ? 'Dicuci' : 'Dikerjakan'),
+                        'processing' => 'Dalam Antrian',
+                        'washing' => ($order->service->category == 'cleaning' ? 'Dicuci' : 'Dikerjakan'),
+                        'drying' => 'Dijemur',
                         'finishing' => ($order->service->category == 'cleaning' ? 'Pengeringan' : 'Finishing'),
                         'ready' => 'Siap Ambil',
                         'dikirim' => 'Dikirim',
@@ -116,12 +118,11 @@
             </div>
         </div>
 
-        <!-- Realtime Progress Bar with Dots & Labels Aligned -->
         @php
             // Define stage indicators
             $isPending = true;
-            $isProcessing = in_array($order->status, ['processing', 'finishing', 'ready', 'dikirim', 'uncollected', 'completed']);
-            $isFinishing = in_array($order->status, ['finishing', 'ready', 'dikirim', 'uncollected', 'completed']);
+            $isProcessing = in_array($order->status, ['processing', 'washing', 'drying', 'finishing', 'ready', 'dikirim', 'uncollected', 'completed']);
+            $isFinishing = in_array($order->status, ['drying', 'finishing', 'ready', 'dikirim', 'uncollected', 'completed']);
             $isReady = in_array($order->status, ['ready', 'dikirim', 'uncollected', 'completed']);
             
             $steps = [
@@ -140,8 +141,8 @@
             @php
                 $lineWidth = match($order->status) {
                     'pending' => 0,
-                    'processing' => 33.33,
-                    'finishing' => 66.66,
+                    'processing', 'washing' => 33.33,
+                    'drying', 'finishing' => 66.66,
                     'ready', 'dikirim', 'uncollected', 'completed' => 100,
                     default => 0
                 };

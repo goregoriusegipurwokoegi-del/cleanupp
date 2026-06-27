@@ -34,9 +34,20 @@ class ServiceController extends Controller
     /**
      * Display a listing for admin management.
      */
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
-        $services = Service::all();
+        $query = Service::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('description', 'like', "%$search%")
+                  ->orWhere('category', 'like', "%$search%");
+            });
+        }
+
+        $services = $query->get();
         return view('admin.services.index', compact('services'));
     }
 

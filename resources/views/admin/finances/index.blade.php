@@ -17,8 +17,8 @@
         display: flex;
         gap: 0.5rem;
         margin-bottom: 1.5rem;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.06);
+        background: var(--surface-variant);
+        border: 1px solid var(--border-color);
         border-radius: 16px;
         padding: 0.4rem;
         overflow-x: auto;
@@ -32,7 +32,7 @@
         font-size: 0.85rem;
         cursor: pointer;
         text-decoration: none;
-        color: rgba(255,255,255,0.5);
+        color: var(--text-secondary);
         transition: all 0.3s;
         display: flex;
         align-items: center;
@@ -42,11 +42,11 @@
     }
     .tab-btn.active {
         background: var(--primary);
-        color: #0f172a;
+        color: #fff;
     }
     .tab-btn:not(.active):hover {
-        background: rgba(255,255,255,0.05);
-        color: #fff;
+        background: var(--primary-glow);
+        color: var(--primary);
     }
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
@@ -54,12 +54,22 @@
     }
     .tab-content { animation: fadeIn 0.4s ease; }
     .filter-card {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.05);
+        background: var(--surface-variant);
+        border: 1px solid var(--border-color);
         border-radius: 20px;
         padding: 1.2rem;
         margin-bottom: 1rem;
     }
+    .form-input {
+        background: var(--surface);
+        border: 1px solid var(--border-color);
+        color: var(--text);
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        outline: none;
+        cursor: pointer;
+    }
+    .form-input:focus { border-color: var(--primary); }
 </style>
 
 <div class="header-actions" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
@@ -98,7 +108,7 @@
     <div style="margin-bottom: 1.5rem;">
         <form action="{{ route('admin.finances.index') }}" method="GET" style="display: flex; gap: 10px;">
             <input type="hidden" name="tab" value="{{ $tab }}">
-            <select name="filter" onchange="this.form.submit()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem 1rem; border-radius: 12px; outline: none; cursor: pointer;">
+            <select name="filter" onchange="this.form.submit()" class="form-input">
                 <option value="all" style="color: #000;" {{ $filter == 'all' ? 'selected' : '' }}>Semua Waktu</option>
                 <option value="daily" style="color: #000;" {{ $filter == 'daily' ? 'selected' : '' }}>Hari Ini</option>
                 <option value="monthly" style="color: #000;" {{ $filter == 'monthly' ? 'selected' : '' }}>Bulan Ini</option>
@@ -127,7 +137,7 @@
     <div class="table-container">
         <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;">
             <thead>
-                <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <tr style="background: var(--surface-variant); border-bottom: 1px solid var(--border-color);">
                     <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Tanggal</th>
                     <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Kategori</th>
                     <th style="padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6;">Keterangan</th>
@@ -138,11 +148,11 @@
             </thead>
             <tbody>
                 @foreach($finances as $finance)
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.02); transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.01)'" onmouseout="this.style.background='transparent'">
+                <tr style="border-bottom: 1px solid var(--border-color); transition: 0.3s;" onmouseover="this.style.background='var(--surface-variant)'" onmouseout="this.style.background='transparent'">
                     <td style="padding: 1.5rem; font-weight: 600;">{{ \Carbon\Carbon::parse($finance->date)->format('d/m/Y') }}</td>
                     <td style="padding: 1.5rem; opacity: 0.9;">
                         @if(isset($finance->category) && $finance->category)
-                            <span style="background: rgba(255,255,255,0.1); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem;">{{ $finance->category }}</span>
+                            <span style="background: var(--surface-variant); padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.75rem;">{{ $finance->category }}</span>
                         @else
                             <span style="opacity: 0.3">-</span>
                         @endif
@@ -192,14 +202,14 @@
             <input type="hidden" name="tab" value="laba-rugi">
             <div style="flex: 1;">
                 <label style="display: block; font-size: 0.75rem; margin-bottom: 0.5rem; opacity: 0.6;">Dari Tanggal</label>
-                <input type="date" name="start_date" value="{{ $startDate }}" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 12px; color: #fff; outline: none;">
+                <input type="date" name="start_date" value="{{ $startDate }}" class="form-input" style="width: 100%;">
             </div>
             <div style="flex: 1;">
                 <label style="display: block; font-size: 0.75rem; margin-bottom: 0.5rem; opacity: 0.6;">Sampai Tanggal</label>
-                <input type="date" name="end_date" value="{{ $endDate }}" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem; border-radius: 12px; color: #fff; outline: none;">
+                <input type="date" name="end_date" value="{{ $endDate }}" class="form-input" style="width: 100%;">
             </div>
             <div>
-                <button type="submit" style="background: var(--primary); color: #0f172a; border: none; padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer;">Kalkulasi</button>
+                <button type="submit" style="background: var(--primary); color: #fff; border: none; padding: 0.85rem 1.5rem; border-radius: 12px; font-weight: 800; cursor: pointer;">Kalkulasi</button>
             </div>
         </form>
     </div>
@@ -220,7 +230,7 @@
         </div>
     </div>
     
-    <div class="glass-card" style="text-align: center; background: rgba(255,255,255,0.05);">
+    <div class="glass-card" style="text-align: center;">
         <p style="opacity: 0.6; font-size: 1rem; margin-bottom: 0.5rem;">Laba/Rugi Bersih</p>
         <h3 style="font-size: 3rem; font-weight: 900; color: {{ $netBalance >= 0 ? 'var(--primary)' : '#f43f5e' }};">
             Rp {{ number_format($netBalance, 0, ',', '.') }}
@@ -302,11 +312,11 @@
             <div style="display: flex; gap: 1rem;">
                 <div style="flex: 1;">
                     <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Dari Tanggal</label>
-                    <input type="date" name="start_date" id="exp_start" value="{{ $startDate }}" style="width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none;">
+                    <input type="date" name="start_date" id="exp_start" value="{{ $startDate }}" class="form-input" style="width: 100%;">
                 </div>
                 <div style="flex: 1;">
                     <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Sampai Tanggal</label>
-                    <input type="date" name="end_date" id="exp_end" value="{{ $endDate }}" style="width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none;">
+                    <input type="date" name="end_date" id="exp_end" value="{{ $endDate }}" class="form-input" style="width: 100%;">
                 </div>
             </div>
             
@@ -332,7 +342,7 @@
     <div class="glass-card" style="width: 90%; max-width: 500px; padding: 2.5rem; border-radius: 24px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
             <h3 id="modal-title" style="font-size: 1.5rem;">Catat Transaksi</h3>
-            <button onclick="closeModal()" style="background: transparent; border: none; color: #fff; cursor: pointer; opacity: 0.5;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            <button onclick="closeModal()" style="background: transparent; border: none; color: var(--text); cursor: pointer; opacity: 0.5;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
         </div>
         
         <form method="POST" action="{{ route('admin.finances.store') }}">
@@ -341,25 +351,25 @@
             
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Tanggal</label>
-                <input type="date" name="date" required value="{{ date('Y-m-d') }}" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                <input type="date" name="date" required value="{{ date('Y-m-d') }}" class="form-input" style="width: 100%;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
             </div>
 
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Kategori</label>
-                <input type="text" name="category" placeholder="Contoh: Operasional, Gaji, Bahan Baku" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                <input type="text" name="category" placeholder="Contoh: Operasional, Gaji, Bahan Baku" class="form-input" style="width: 100%;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
             </div>
 
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Nominal (Rp)</label>
-                <input type="number" name="amount" min="1" required placeholder="Contoh: 50000" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                <input type="number" name="amount" min="1" required placeholder="Contoh: 50000" class="form-input" style="width: 100%;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
             </div>
 
             <div style="margin-bottom: 2rem;">
                 <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Keterangan</label>
-                <input type="text" name="description" required placeholder="Contoh: Beli Sabun" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+                <input type="text" name="description" required placeholder="Contoh: Beli Sabun" class="form-input" style="width: 100%;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
             </div>
 
-            <button type="submit" id="submit-button" style="width: 100%; background: var(--primary); color: #0f172a; border: none; padding: 1rem; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;">Simpan Transaksi</button>
+            <button type="submit" id="submit-button" style="width: 100%; background: var(--primary); color: #fff; border: none; padding: 1rem; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;">Simpan Transaksi</button>
         </form>
     </div>
 </div>

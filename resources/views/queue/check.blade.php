@@ -257,19 +257,19 @@
     @php
         $statusMap = [
             'pending'    => ['label' => 'Menunggu Konfirmasi', 'step' => 0, 'color' => '#f59e0b', 'bg' => 'rgba(245,158,11,0.12)'],
-            'processing' => ['label' => 'Sedang Diproses',    'step' => 1, 'color' => '#3b82f6', 'bg' => 'rgba(59,130,246,0.12)'],
-            'washing'    => ['label' => 'Sedang Dicuci',      'step' => 1, 'color' => '#0ea5e9', 'bg' => 'rgba(14,165,233,0.12)'],
-            'drying'     => ['label' => 'Dijemur',            'step' => 2, 'color' => '#6366f1', 'bg' => 'rgba(99,102,241,0.12)'],
-            'finishing'  => ['label' => 'Finishing',          'step' => 2, 'color' => '#a855f7', 'bg' => 'rgba(168,85,247,0.12)'],
-            'ready'      => ['label' => '✅ Siap Diambil!',   'step' => 3, 'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.15)'],
-            'completed'  => ['label' => 'Sudah Diambil',      'step' => 4, 'color' => '#64748b', 'bg' => 'rgba(100,116,139,0.12)'],
+            'processing' => ['label' => 'Dalam Antrian',        'step' => 1, 'color' => '#94a3b8', 'bg' => 'rgba(148,163,184,0.12)'],
+            'washing'    => ['label' => ($order->service->category === 'cleaning' ? 'Sedang Dicuci' : 'Sedang Dikerjakan'), 'step' => 2, 'color' => '#3b82f6', 'bg' => 'rgba(59,130,246,0.12)'],
+            'drying'     => ['label' => 'Dijemur',            'step' => 3, 'color' => '#a855f7', 'bg' => 'rgba(168,85,247,0.12)'],
+            'finishing'  => ['label' => 'Finishing',          'step' => 3, 'color' => '#a855f7', 'bg' => 'rgba(168,85,247,0.12)'],
+            'ready'      => ['label' => '✅ Siap Diambil!',   'step' => 4, 'color' => '#10b981', 'bg' => 'rgba(16,185,129,0.15)'],
+            'completed'  => ['label' => 'Sudah Diambil',      'step' => 5, 'color' => '#2563eb', 'bg' => 'rgba(37,99,235,0.12)'],
             'cancelled'  => ['label' => 'Dibatalkan',         'step' => -1,'color' => '#f43f5e', 'bg' => 'rgba(244,63,94,0.12)'],
         ];
         $s = $statusMap[$order->status] ?? ['label' => strtoupper($order->status), 'step' => 0, 'color' => '#fff', 'bg' => 'rgba(255,255,255,0.05)'];
 
         $steps = $order->service->category === 'cleaning'
-            ? ['Terima', 'Cuci', 'Jemur', 'Siap']
-            : ['Terima', 'Kerjakan', 'Finishing', 'Siap'];
+            ? ['Diterima', 'Dalam Antrian', 'Dicuci', 'Jemur', 'Siap']
+            : ['Diterima', 'Dalam Antrian', 'Kerjakan', 'Finishing', 'Siap'];
     @endphp
     <div class="result-card">
         <div class="result-header">

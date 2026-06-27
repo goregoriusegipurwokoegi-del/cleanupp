@@ -45,4 +45,21 @@ class AttendanceController extends Controller
 
         return back()->with('success', 'Absen keluar berhasil dilakukan jam ' . $attendance->clock_out);
     }
+
+    public function employeeAttendance()
+    {
+        $todayAttendance = Attendance::where([
+            'user_id' => Auth::id(),
+            'date' => now()->toDateString()
+        ])->first();
+
+        $isClockedIn = !is_null($todayAttendance);
+        $isClockedOut = $todayAttendance && !is_null($todayAttendance->clock_out);
+
+        $attendances = Attendance::where(['user_id' => Auth::id()])
+            ->orderBy('date', 'desc')
+            ->get();
+
+        return view('employee.attendance.index', compact('todayAttendance', 'isClockedIn', 'isClockedOut', 'attendances'));
+    }
 }

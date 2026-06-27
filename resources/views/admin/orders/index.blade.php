@@ -13,43 +13,92 @@
 
 @section('content')
 <style>
-    .filter-bar {
+    .controls-row {
         display: flex;
+        justify-content: space-between;
+        align-items: center;
         gap: 15px;
         margin-bottom: 25px;
         flex-wrap: wrap;
     }
+    .btn-primary-custom {
+        background: var(--primary);
+        color: #fff !important;
+        border: none;
+        padding: 11px 22px;
+        border-radius: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
+    }
+    .btn-primary-custom:hover {
+        opacity: 0.95;
+        transform: translateY(-1px);
+    }
+    .btn-primary-custom:active {
+        transform: translateY(0);
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 12px;
+        margin: 0;
+        flex-wrap: wrap;
+    }
     .filter-input {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.05);
-        color: #fff;
+        background: var(--surface);
+        border: 1.5px solid var(--border-color);
+        color: var(--text);
         padding: 10px 15px;
         border-radius: 12px;
         font-size: 0.9rem;
         outline: none;
-        transition: 0.3s;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
     }
     .filter-input:focus {
         border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
     }
     
     .order-table-container {
-        background: rgba(255,255,255,0.02);
-        border: 1px solid rgba(255,255,255,0.05);
+        background: var(--surface);
+        border: 1.5px solid var(--border-color);
         border-radius: 20px;
         overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+    
+    .order-table-desktop table td {
+        padding: 16px 15px;
+        vertical-align: middle;
+    }
+    .order-table-desktop table th {
+        padding: 14px 15px;
+        vertical-align: middle;
+    }
+    .clickable-row {
+        transition: background-color 0.2s ease;
+    }
+    .clickable-row:hover {
+        background-color: var(--surface-variant) !important;
     }
     
     .order-card-mobile {
         display: none;
     }
-
+ 
     @media (max-width: 1024px) {
         .order-table-desktop { display: none; }
         .order-card-mobile { 
             display: block; 
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
+            background: var(--surface);
+            border: 1.5px solid var(--border-color);
             border-radius: 16px;
             padding: 15px;
             margin-bottom: 15px;
@@ -57,13 +106,13 @@
         .card-header-mobile { display: flex; justify-content: space-between; margin-bottom: 10px; }
         .card-body-mobile { margin-bottom: 15px; }
     }
-
+ 
     /* Modal Styles */
     .modal-backdrop {
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.7);
+        background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(8px);
         z-index: 1100;
         align-items: center;
@@ -74,8 +123,8 @@
         display: flex;
     }
     .modal-box {
-        background: #111114;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--surface);
+        border: 1.5px solid var(--border-color);
         border-radius: 24px;
         width: 100%;
         max-width: 650px;
@@ -83,16 +132,16 @@
         overflow-y: auto;
         padding: 2rem;
         position: relative;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-        color: #fff;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        color: var(--text);
     }
     .modal-close {
         position: absolute;
         top: 1.5rem;
         right: 1.5rem;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #fff;
+        background: var(--surface-variant);
+        border: 1.5px solid var(--border-color);
+        color: var(--text);
         font-size: 1.2rem;
         width: 35px;
         height: 35px;
@@ -104,7 +153,7 @@
         transition: 0.3s;
     }
     .modal-close:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: var(--border-color);
         color: var(--primary);
     }
     .modal-grid-2 {
@@ -118,8 +167,8 @@
         height: 150px;
         border-radius: 12px;
         object-fit: cover;
-        background: #000;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: var(--surface-variant);
+        border: 1px solid var(--border-color);
     }
     @media (max-width: 600px) {
         .modal-grid-2 {
@@ -130,30 +179,51 @@
             padding: 1.2rem;
         }
     }
+ 
+    .view-detail-btn {
+        background: transparent !important;
+        color: var(--text) !important;
+        border: 1.5px solid var(--border-color) !important;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .view-detail-btn:hover {
+        background: var(--border-color) !important;
+        border-color: var(--text-secondary) !important;
+    }
 </style>
 
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
-
+<div class="controls-row">
     @if(!request('queue'))
-    <button onclick="openCreateModal()" style="background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+    <button onclick="openCreateModal()" class="btn-primary-custom">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Tambah Pesanan
     </button>
     @endif
+    
+    <form action="{{ route('admin.orders.index') }}" method="GET" class="filter-bar" style="flex-grow: 1; justify-content: flex-end;">
+        @if(request('delivery'))
+            <input type="hidden" name="delivery" value="1">
+        @endif
+        @if(request('queue'))
+            <input type="hidden" name="queue" value="1">
+        @endif
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, No. Order, No. Antrian..." class="filter-input" style="flex-grow: 1; max-width: 380px; min-width: 200px;">
+        <select name="status" class="filter-input" style="min-width: 160px;" onchange="this.form.submit()">
+            <option value="">Semua Status</option>
+            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
+            <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>Antri</option>
+            <option value="washing" {{ request('status') == 'washing' ? 'selected' : '' }}>Dicuci</option>
+            <option value="finishing" {{ request('status') == 'finishing' ? 'selected' : '' }}>Finishing</option>
+            <option value="ready" {{ request('status') == 'ready' ? 'selected' : '' }}>Selesai</option>
+            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Diambil</option>
+        </select>
+    </form>
 </div>
-
-<!-- Search & Filter Bar -->
-<form action="{{ route('admin.orders.index') }}" method="GET" class="filter-bar">
-    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, No. Order, No. Antrian..." class="filter-input" style="flex: 2; min-width: 250px;">
-    <select name="status" class="filter-input" style="flex: 1; min-width: 150px;" onchange="this.form.submit()">
-        <option value="">Semua Status</option>
-        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
-        <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>Proses</option>
-        <option value="finishing" {{ request('status') == 'finishing' ? 'selected' : '' }}>Finishing</option>
-        <option value="ready" {{ request('status') == 'ready' ? 'selected' : '' }}>Selesai</option>
-        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Diambil</option>
-    </select>
-</form>
 
 @if(session('success'))
     <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; padding: 12px; border-radius: 12px; margin-bottom: 20px; font-weight: 600;">
@@ -165,13 +235,13 @@
 <div class="order-table-desktop order-table-container">
     <table style="width: 100%; border-collapse: collapse; text-align: left;">
         <thead>
-            <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <th style="padding: 15px; font-size: 0.8rem; opacity: 0.5;">ANTRIAN</th>
-                <th style="padding: 15px; font-size: 0.8rem; opacity: 0.5;">PELANGGAN</th>
-                <th style="padding: 15px; font-size: 0.8rem; opacity: 0.5;">SEPATU</th>
-                <th style="padding: 15px; font-size: 0.8rem; opacity: 0.5;">LAYANAN</th>
-                <th style="padding: 15px; font-size: 0.8rem; opacity: 0.5;">STATUS</th>
-                <th style="padding: 15px; font-size: 0.8rem; opacity: 0.5;">AKSI</th>
+            <tr style="background: var(--surface-variant); border-bottom: 1.5px solid var(--border-color);">
+                <th style="padding: 15px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">ANTRIAN</th>
+                <th style="padding: 15px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">PELANGGAN</th>
+                <th style="padding: 15px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">SEPATU</th>
+                <th style="padding: 15px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">LAYANAN</th>
+                <th style="padding: 15px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">STATUS</th>
+                <th style="padding: 15px; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary);">AKSI</th>
             </tr>
         </thead>
         <tbody>
@@ -184,12 +254,9 @@
                 data-user="{{ json_encode($order->user) }}" 
                 data-service="{{ json_encode($order->service) }}"
                 data-services="{{ json_encode($group->map(fn($o) => ['name' => $o->service->name, 'price' => $o->total_price - $o->delivery_fee])) }}"
-                data-group-total="{{ $group->sum('total_price') }}"
-                style="border-bottom: 1px solid rgba(255,255,255,0.02); cursor: pointer; transition: background 0.2s;"
-                onmouseover="this.style.background='rgba(255,255,255,0.02)'"
-                onmouseout="this.style.background='transparent'">
+                data-group-total="{{ $group->sum('total_price') }}">
                 <td style="padding: 15px;">
-                    <div style="background: var(--primary); color: #000; padding: 2px 8px; border-radius: 6px; font-weight: 800; width: fit-content; margin-bottom: 3px; white-space: nowrap;">
+                    <div style="background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 6px; font-weight: 800; width: fit-content; margin-bottom: 3px; white-space: nowrap;">
                         @foreach($group->pluck('queue_number')->unique() as $qNum)
                             {{ $qNum }}{{ !$loop->last ? ',' : '' }}
                         @endforeach
@@ -203,10 +270,12 @@
                 </td>
                 <td style="padding: 15px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <img src="{{ asset('storage/' . $order->photo_before) }}" style="width: 45px; height: 45px; border-radius: 8px; object-fit: cover; background: #000;">
+                        <img src="{{ $order->photo_before ? asset('storage/' . $order->photo_before) : 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'3\' y=\'3\' width=\'18\' height=\'18\' rx=\'2\' ry=\'2\'></rect><circle cx=\'8.5\' cy=\'8.5\' r=\'1.5\'></circle><polyline points=\'21 15 16 10 5 21\'></polyline></svg>' }}" 
+                             onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'3\' y=\'3\' width=\'18\' height=\'18\' rx=\'2\' ry=\'2\'></rect><circle cx=\'8.5\' cy=\'8.5\' r=\'1.5\'></circle><polyline points=\'21 15 16 10 5 21\'></polyline></svg>'; this.style.padding='8px';" 
+                             style="width: 45px; height: 45px; border-radius: 8px; object-fit: cover; background: var(--surface-variant); border: 1px solid var(--border-color); {{ !$order->photo_before ? 'padding: 8px;' : '' }}">
                         <div>
-                            <div style="font-weight: 700; font-size: 0.85rem;">{{ $order->shoe_name }}</div>
-                            <div style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">Size: {{ $order->shoe_size }}</div>
+                            <div style="font-weight: 700; font-size: 0.85rem;">{{ trim($order->shoe_name) ?: 'Sepatu (Tanpa Nama)' }}</div>
+                            <div style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">Size: {{ trim($order->shoe_size) ?: '-' }}</div>
                         </div>
                     </div>
                 </td>
@@ -214,27 +283,29 @@
                     @foreach($group as $grpItem)
                         <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 2px;">{{ $grpItem->service->name }}</div>
                     @endforeach
-                    <div style="font-size: 0.75rem; opacity: 0.5; font-weight: bold; margin-top: 5px; color: var(--primary);">Rp {{ number_format($group->sum('total_price'), 0, ',', '.') }}</div>
+                    <div style="font-size: 0.75rem; font-weight: bold; margin-top: 5px; color: var(--primary);">Rp {{ number_format($group->sum('total_price'), 0, ',', '.') }}</div>
                 </td>
                 <td style="padding: 15px;">
                     @php
                         $statusLabels = [
-                            'pending' => 'MENUNGGU',
-                            'processing' => 'PROSES',
-                            'washing' => 'DICUCI',
-                            'drying' => 'DIKERINGKAN',
-                            'finishing' => 'FINISHING',
-                            'ready' => 'SIAP DIAMBIL',
-                            'completed' => 'DIAMBIL',
+                            'pending' => 'DITERIMA',
+                            'processing' => 'DALAM ANTRIAN',
+                            'washing' => ($order->service->category == 'cleaning' ? 'SEDANG DICUCI' : 'SEDANG DIKERJAKAN'),
+                            'finishing' => ($order->service->category == 'cleaning' ? 'DIJEMUR' : 'PROSES FINISHING'),
+                            'ready' => 'SIAP DIAMBIL/KIRIM',
+                            'dikirim' => 'SEDANG DIKIRIM',
+                            'uncollected' => 'BELUM DIAMBIL',
+                            'completed' => 'SELESAI',
                             'cancelled' => 'DIBATALKAN'
                         ];
                         $colors = [
                             'pending' => '#f59e0b',
-                            'processing' => '#3b82f6',
-                            'washing' => '#0ea5e9',
-                            'drying' => '#6366f1',
+                            'processing' => '#94a3b8',
+                            'washing' => '#3b82f6',
                             'finishing' => '#a855f7',
                             'ready' => '#10b981',
+                            'dikirim' => '#eab308',
+                            'uncollected' => '#64748b',
                             'completed' => '#2563eb',
                             'cancelled' => '#ef4444'
                         ];
@@ -274,20 +345,23 @@
                                 $btnColor = '#3b82f6';
 
                                 if ($order->service->category == 'cleaning') {
-                                    if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Cuci → Jemur'; }
-                                    elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Selesai Jemur → Siap'; }
+                                    if ($order->status == 'processing') { $nextStatus = 'washing'; $nextLabel = 'Mulai Cuci'; }
+                                    elseif ($order->status == 'washing') { $nextStatus = 'finishing'; $nextLabel = 'Ke Jemur'; }
+                                    elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Ke Siap'; }
                                     elseif ($order->status == 'ready') { 
-                                        if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
-                                        else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                                        if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Ke Kirim'; $btnColor = '#f59e0b'; }
+                                        else { $nextStatus = 'completed'; $nextLabel = 'Ke Selesai'; $btnColor = '#10b981'; }
                                     }
-                                    elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
+                                    elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Ke Selesai'; $btnColor = '#10b981'; }
                                 } else {
-                                    if ($order->status == 'processing') { $nextStatus = 'ready'; $nextLabel = 'Selesai Repaint/Reparasi → Siap'; }
+                                    if ($order->status == 'processing') { $nextStatus = 'washing'; $nextLabel = 'Mulai Kerja'; }
+                                    elseif ($order->status == 'washing') { $nextStatus = 'finishing'; $nextLabel = 'Ke Finishing'; }
+                                    elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Ke Siap'; }
                                     elseif ($order->status == 'ready') { 
-                                        if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
-                                        else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
+                                        if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Ke Kirim'; $btnColor = '#f59e0b'; }
+                                        else { $nextStatus = 'completed'; $nextLabel = 'Ke Selesai'; $btnColor = '#10b981'; }
                                     }
-                                    elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
+                                    elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Ke Selesai'; $btnColor = '#10b981'; }
                                 }
                             @endphp
                             
@@ -300,7 +374,7 @@
                                 </form>
                             @endif
                         @endif
-                        <button class="view-detail-btn" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">Detail</button>
+                        <button class="view-detail-btn">Detail</button>
                     </div>
                 </td>
             </tr>
@@ -343,13 +417,14 @@
             <div style="margin-top: 8px;">
                 @php
                     $labelIndo = [
-                        'pending' => 'MENUNGGU',
-                        'processing' => 'PROSES',
-                        'washing' => 'DICUCI',
-                        'drying' => 'DIKERINGKAN',
-                        'finishing' => 'FINISHING',
-                        'ready' => 'SIAP DIAMBIL',
-                        'completed' => 'DIAMBIL',
+                        'pending' => 'DITERIMA',
+                        'processing' => 'ANTRI',
+                        'washing' => ($order->service->category == 'cleaning' ? 'SEDANG DICUCI' : 'SEDANG DIKERJAKAN'),
+                        'finishing' => ($order->service->category == 'cleaning' ? 'DIJEMUR' : 'PROSES FINISHING'),
+                        'ready' => 'SIAP DIAMBIL/KIRIM',
+                        'dikirim' => 'SEDANG DIKIRIM',
+                        'uncollected' => 'BELUM DIAMBIL',
+                        'completed' => 'SELESAI',
                         'cancelled' => 'DIBATALKAN'
                     ][$order->status] ?? strtoupper($order->status);
                 @endphp
@@ -381,7 +456,8 @@
                 $btnColor = '#3b82f6';
 
                 if ($order->service->category == 'cleaning') {
-                    if ($order->status == 'processing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Cuci → Jemur'; }
+                    if ($order->status == 'processing') { $nextStatus = 'washing'; $nextLabel = 'Mulai Cuci → Dicuci'; }
+                    elseif ($order->status == 'washing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Cuci → Jemur'; }
                     elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Selesai Jemur → Siap'; }
                     elseif ($order->status == 'ready') { 
                         if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
@@ -389,7 +465,9 @@
                     }
                     elseif ($order->status == 'dikirim') { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diterima'; $btnColor = '#10b981'; }
                 } else {
-                    if ($order->status == 'processing') { $nextStatus = 'ready'; $nextLabel = 'Selesai Repaint/Reparasi → Siap'; }
+                    if ($order->status == 'processing') { $nextStatus = 'washing'; $nextLabel = 'Mulai Kerja → Dikerjakan'; }
+                    elseif ($order->status == 'washing') { $nextStatus = 'finishing'; $nextLabel = 'Selesai Kerja → Finishing'; }
+                    elseif ($order->status == 'finishing') { $nextStatus = 'ready'; $nextLabel = 'Finishing → Siap'; }
                     elseif ($order->status == 'ready') { 
                         if ($order->is_delivery) { $nextStatus = 'dikirim'; $nextLabel = 'Kirim ke Pelanggan'; $btnColor = '#f59e0b'; }
                         else { $nextStatus = 'completed'; $nextLabel = 'Selesai & Diambil'; $btnColor = '#10b981'; }
@@ -511,11 +589,11 @@
                 <div class="modal-grid-2" style="gap: 10px; margin-bottom: 0;">
                     <div>
                         <p style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 3px; text-align: center;">Sebelum</p>
-                        <img id="detail_photo_before" class="modal-photo" src="" alt="Sebelum">
+                        <img id="detail_photo_before" class="modal-photo" src="" alt="Sebelum" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'3\' y=\'3\' width=\'18\' height=\'18\' rx=\'2\' ry=\'2\'></rect><circle cx=\'8.5\' cy=\'8.5\' r=\'1.5\'></circle><polyline points=\'21 15 16 10 5 21\'></polyline></svg>'; this.style.padding='20px';">
                     </div>
                     <div>
                         <p style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 3px; text-align: center;">Sesudah</p>
-                        <img id="detail_photo_after" class="modal-photo" src="" alt="Sesudah">
+                        <img id="detail_photo_after" class="modal-photo" src="" alt="Sesudah" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\' stroke-width=\'1.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'3\' y=\'3\' width=\'18\' height=\'18\' rx=\'2\' ry=\'2\'></rect><circle cx=\'8.5\' cy=\'8.5\' r=\'1.5\'></circle><polyline points=\'21 15 16 10 5 21\'></polyline></svg>'; this.style.padding='20px';">
                     </div>
                 </div>
             </div>
@@ -529,12 +607,12 @@
                 @method('PATCH')
                 <select name="status" id="detail_status_select" class="filter-input" style="flex: 1; margin: 0; background: #1e1e24;">
                     <option value="pending">MENUNGGU (PENDING)</option>
-                    <option value="processing">PROSES (PROCESSING)</option>
-                    <option value="washing">DICUCI (WASHING)</option>
-                    <option value="drying">DIKERINGKAN (DRYING)</option>
+                    <option value="processing">ANTRI (QUEUE)</option>
+                    <option value="washing">DICUCI/DIKERJAKAN (WASHING)</option>
                     <option value="finishing">FINISHING</option>
                     <option value="ready">SIAP DIAMBIL (READY)</option>
                     <option value="completed">DIAMBIL (COMPLETED)</option>
+                    <option value="cancelled">DIBATALKAN (CANCELLED)</option>
                 </select>
                 <button type="submit" style="background: var(--primary); color: #000; border: none; padding: 0 20px; border-radius: 12px; font-weight: 800; cursor: pointer;">Perbarui</button>
             </form>
@@ -629,9 +707,8 @@
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Status Pesanan</label>
                     <select name="status" required class="filter-input" style="width: 100%; background: #1e1e24;">
                         <option value="pending">Menunggu (Pending)</option>
-                        <option value="processing">Proses (Processing)</option>
-                        <option value="washing">Dicuci (Washing)</option>
-                        <option value="drying">Dikeringkan (Drying)</option>
+                        <option value="processing">Dalam Antrian (Queue/Processing)</option>
+                        <option value="washing">Dicuci/Dikerjakan (Washing)</option>
                         <option value="finishing">Finishing</option>
                         <option value="ready">Siap Diambil (Ready)</option>
                         <option value="completed">Diambil (Completed)</option>
@@ -718,9 +795,8 @@
                     <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 5px; text-transform: uppercase;">Status Pesanan</label>
                     <select name="status" id="edit_status" required class="filter-input" style="width: 100%; background: #1e1e24;">
                         <option value="pending">Menunggu (Pending)</option>
-                        <option value="processing">Proses (Processing)</option>
-                        <option value="washing">Dicuci (Washing)</option>
-                        <option value="drying">Dikeringkan (Drying)</option>
+                        <option value="processing">Dalam Antrian (Queue/Processing)</option>
+                        <option value="washing">Dicuci/Dikerjakan (Washing)</option>
                         <option value="finishing">Finishing</option>
                         <option value="ready">Siap Diambil (Ready)</option>
                         <option value="completed">Diambil (Completed)</option>
@@ -863,10 +939,26 @@
             confirmPaymentForm.style.display = 'none';
         }
         
-        const svgPlaceholder = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100" style="background:%23222;"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23555" font-family="sans-serif" font-size="10">No Photo</text></svg>`;
+        const svgPlaceholder = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='18' height='18' rx='2' ry='2'></rect><circle cx='8.5' cy='8.5' r='1.5'></circle><polyline points='21 15 16 10 5 21'></polyline></svg>`;
         const storagePath = '/storage/';
-        document.getElementById('detail_photo_before').src = order.photo_before ? (storagePath + order.photo_before) : svgPlaceholder;
-        document.getElementById('detail_photo_after').src = order.photo_after ? (storagePath + order.photo_after) : svgPlaceholder;
+        
+        const imgBefore = document.getElementById('detail_photo_before');
+        if (order.photo_before) {
+            imgBefore.src = storagePath + order.photo_before;
+            imgBefore.style.padding = '0';
+        } else {
+            imgBefore.src = svgPlaceholder;
+            imgBefore.style.padding = '20px';
+        }
+        
+        const imgAfter = document.getElementById('detail_photo_after');
+        if (order.photo_after) {
+            imgAfter.src = storagePath + order.photo_after;
+            imgAfter.style.padding = '0';
+        } else {
+            imgAfter.src = svgPlaceholder;
+            imgAfter.style.padding = '20px';
+        }
         
         document.getElementById('detail_status_update_form').action = `/admin/orders/${order.id}/status`;
         document.getElementById('detail_status_select').value = order.status;

@@ -1,9 +1,19 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    @if(Auth::check() && in_array(Auth::user()->role, ['admin', 'employee']))
+    <script>
+        (function() {
+            const defaultTheme = 'dark';
+            const theme = localStorage.getItem('premium-theme') || defaultTheme;
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+    @endif
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('page_title', 'CleanUP Shoes')</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #f97316; /* Orange 500 */
@@ -22,6 +32,79 @@
             --radius-xl: 32px;
             --radius-lg: 24px;
             --radius-md: 16px;
+            --border-color: rgba(255, 255, 255, 0.1);
+            
+            /* Glow blobs variables */
+            --primary-glow: rgba(249, 115, 22, 0.10);
+            --primary-glow-subtle: rgba(249, 115, 22, 0.03);
+
+            /* Sidebar variables for default/customer view */
+            --sidebar-border: rgba(255, 255, 255, 0.1);
+            --sidebar-text: #94a3b8;
+            --sidebar-text-hover: #f8fafc;
+            --sidebar-text-active: #f97316;
+            --sidebar-logo-text: #ffffff;
+            --sidebar-active-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        [data-theme="light"] {
+            --bg: #edf1f8; /* Cool Blue-Gray Background */
+            --surface: #ffffff; /* White surface */
+            --surface-variant: #f1f5f9; /* Slate 100 */
+            --card-bg: #ffffff; /* White card */
+            --text: #0f172a; /* Slate 900 */
+            --text-secondary: #64748b; /* Slate 500 */
+            --border-color: #e2e8f0;
+            
+            /* Light mode sidebar variables (retains dark sidebar identity) */
+            --sidebar-bg: #111114;
+            --sidebar-border: rgba(255, 255, 255, 0.08);
+            --sidebar-text: #94a3b8;
+            --sidebar-text-hover: #ffffff;
+            --sidebar-text-active: #f97316;
+            --sidebar-logo-text: #ffffff;
+            --sidebar-active-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        [data-theme="dark"] {
+            --bg: #1a1b24; /* Dark Slate Navy Background */
+            --surface: #2b2e3c; /* Dark surface for header/navbar */
+            --surface-variant: #343a40; /* Dark slate 800 */
+            --card-bg: #343a40; /* Dark Card Background */
+            --text: #ffffff; /* White Text */
+            --text-secondary: #c2c7d0; /* Soft secondary text */
+            --border-color: rgba(255, 255, 255, 0.08);
+            
+            /* Dark mode sidebar variables (retains dark sidebar identity) */
+            --sidebar-bg: #111114;
+            --sidebar-border: rgba(255, 255, 255, 0.08);
+            --sidebar-text: #c2c7d0;
+            --sidebar-text-hover: #ffffff;
+            --sidebar-text-active: #f97316;
+            --sidebar-logo-text: #ffffff;
+            --sidebar-active-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Styling overrides that ONLY apply to theme-controlled states (Admin/Employee) */
+        [data-theme="light"] .header,
+        [data-theme="dark"] .header {
+            background: var(--surface);
+            padding: 0.85rem 1.5rem;
+            border-radius: 18px;
+            border: 1.5px solid var(--border-color);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        [data-theme="light"] .main-content,
+        [data-theme="dark"] .main-content {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 0% 0%, var(--primary-glow) 0%, transparent 70%);
+            background-size: auto;
+        }
+
+        [data-theme="light"] .header h1,
+        [data-theme="dark"] .header h1 {
+            color: var(--text) !important;
         }
 
         * {
@@ -43,11 +126,11 @@
         .sidebar {
             width: var(--sidebar-width);
             background-color: var(--sidebar-bg);
-            padding: 2rem;
+            padding: 2rem 1.5rem;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid var(--sidebar-border);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s, border-color 0.3s;
             position: fixed;
             height: 100vh;
             left: 0;
@@ -58,9 +141,10 @@
         .logo {
             font-size: 1.5rem;
             font-weight: 900;
-            margin-bottom: 3rem;
-            color: #fff;
+            margin-bottom: 2.5rem;
+            color: var(--sidebar-logo-text);
             letter-spacing: -1px;
+            transition: color 0.3s;
         }
 
         .logo span {
@@ -71,27 +155,66 @@
             list-style: none;
             flex-grow: 1;
             overflow-y: auto;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .nav-menu::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
         }
 
         .nav-item {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
             padding: 0.8rem 1.2rem;
-            color: var(--text);
+            color: var(--sidebar-text);
             text-decoration: none;
             border-radius: 12px;
-            transition: 0.3s;
-            opacity: 0.7;
+            transition: all 0.3s ease;
+            opacity: 0.85;
         }
 
-        .nav-link:hover, .nav-link.active {
-            background: var(--card-bg);
+        .nav-link:hover {
+            background: var(--sidebar-active-bg);
             opacity: 1;
-            color: var(--primary);
+            color: var(--sidebar-text-hover);
+        }
+
+        .nav-link.active {
+            background: var(--sidebar-active-bg);
+            opacity: 1;
+            color: var(--sidebar-text-active);
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.08);
+        }
+
+        /* Logout Button styling */
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1.2rem;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            opacity: 0.85;
+            width: 100%;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-align: left;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.08);
+            color: var(--danger);
+            opacity: 1;
         }
 
         /* Main Content */
@@ -132,13 +255,20 @@
         /* Mobile Menu Toggle */
         .menu-toggle {
             display: none;
-            background: var(--card-bg);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 0.6rem;
+            background: var(--surface-variant);
+            border: 1.5px solid var(--border-color);
+            color: var(--text);
+            padding: 0.55rem;
             border-radius: 10px;
             cursor: pointer;
             z-index: 1001;
+            flex-shrink: 0;
+            transition: background 0.2s, color 0.2s;
+        }
+        .menu-toggle:hover {
+            background: var(--primary-glow);
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         /* Backdrop */
@@ -229,16 +359,38 @@
                 align-items: center;
                 gap: 0.5rem;
                 margin-bottom: 1.2rem;
-                padding-bottom: 0.8rem;
-                border-bottom: 1px solid rgba(255,255,255,0.05);
+                padding: 0.75rem 1rem;
+                border-radius: 14px;
+                border-bottom: none;
             }
+            /* Hide user name on mobile but keep avatar */
             .user-info {
                 display: none;
             }
             .header h1 {
-                font-size: clamp(1rem, 4vw, 1.3rem) !important;
-                line-height: 1.25;
-                word-break: break-word;
+                font-size: clamp(0.9rem, 3.5vw, 1.15rem) !important;
+                font-weight: 800;
+                letter-spacing: -0.3px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            /* Compact right icon group gap on mobile */
+            .header > div:last-child {
+                gap: 0.4rem !important;
+            }
+            /* Compact avatar on mobile */
+            .avatar {
+                width: 34px;
+                height: 34px;
+                font-size: 0.85rem;
+            }
+            /* Compact notification bell on mobile */
+            .notification-bell {
+                padding: 0.3rem !important;
+            }
+            #theme-toggle {
+                padding: 0.3rem !important;
             }
             .glass-card {
                 padding: 1.1rem !important;
@@ -440,6 +592,26 @@
             }
         }
     </style>
+    @if(Auth::check() && in_array(Auth::user()->role, ['admin', 'employee']))
+    <style>
+        :root {
+            --primary: #0d6efd; /* Solid blue */
+            --secondary: #0ea5e9; /* Sky blue */
+            --sidebar-text-active: #ffffff;
+            --sidebar-active-bg: #0d6efd;
+            --primary-glow: rgba(13, 110, 253, 0.10);
+            --primary-glow-subtle: rgba(13, 110, 253, 0.03);
+        }
+        [data-theme="light"] {
+            --sidebar-text-active: #ffffff;
+            --sidebar-active-bg: #0d6efd;
+        }
+        [data-theme="dark"] {
+            --sidebar-text-active: #ffffff;
+            --sidebar-active-bg: #0d6efd;
+        }
+    </style>
+    @endif
     @if(false)
     <style>
         @media (max-width: 768px) {
@@ -466,7 +638,13 @@
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMenu()"></div>
     
     <div class="sidebar" id="sidebar">
-        <div class="logo">CleanUP<span>Shoes</span></div>
+        <div class="logo">
+            @if(Auth::check() && in_array(Auth::user()->role, ['admin', 'employee']))
+                CLEANUP<span style="color: #ffc107 !important;"> SHOES</span>
+            @else
+                CleanUP<span>Shoes</span>
+            @endif
+        </div>
         <ul class="nav-menu">
             @if(Auth::user()->role == 'employee')
                 <li class="nav-item">
@@ -697,7 +875,7 @@
         </ul>
         <form method="POST" action="{{ route('logout') }}" style="margin-top: auto;">
             @csrf
-            <button type="submit" class="btn-logout" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left; font-family: 'Outfit', sans-serif; font-size: 1rem;">
+            <button type="submit" class="btn-logout">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 Keluar
             </button>
@@ -706,20 +884,23 @@
 
     <div class="main-content">
         <div class="header">
-            <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 0;">
                 <button class="menu-toggle" onclick="toggleMenu()">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
-                <h1 style="font-size: clamp(1.2rem, 4vw, 2.2rem); font-weight: 800; letter-spacing: -1px; color: #fff; margin: 0;">@yield('page_title')</h1>
-                <div class="mobile-logo-container" style="display: none; align-items: center; gap: 0.4rem;">
-                    <span style="font-weight: 900; letter-spacing: -0.5px; font-size: 1.15rem; color: #fff;">CleanUP</span>
-                    <span style="background: var(--primary); color: #000; font-size: 0.65rem; font-weight: 800; padding: 0.15rem 0.45rem; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2;">
-                        @if(Auth::user()->role == 'employee') Staff @elseif(Auth::user()->role == 'admin') Admin @else Client @endif
-                    </span>
-                </div>
+                <h1 style="font-size: clamp(1.1rem, 4vw, 2rem); font-weight: 800; letter-spacing: -0.5px; color: var(--text); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@yield('page_title')</h1>
             </div>
             
             <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Theme Toggle Button -->
+                @if(Auth::check() && in_array(Auth::user()->role, ['admin', 'employee']))
+                <button id="theme-toggle" title="Ubah Tema" style="padding: 0.5rem; border-radius: 12px; transition: 0.3s; color: var(--text); background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='var(--surface-variant)'" onmouseout="this.style.background='transparent'">
+                    <svg id="theme-toggle-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <!-- Loaded dynamically via JavaScript -->
+                    </svg>
+                </button>
+                @endif
+
                 <!-- Notification Bell & Dropdown -->
                 <div class="notification-container" style="position: relative;">
                     <button id="notification-btn" class="notification-bell" style="position: relative; padding: 0.5rem; border-radius: 12px; transition: 0.3s; color: var(--text); background: transparent; border: none; cursor: pointer;">
@@ -1072,6 +1253,44 @@
             });
         });
     </script>
+
+    @if(Auth::check() && in_array(Auth::user()->role, ['admin', 'employee']))
+    <script>
+        // Premium Theme Toggle Script (Admin/Employee Only)
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleIcon = document.getElementById('theme-toggle-icon');
+            
+            if (!themeToggleBtn && !themeToggleIcon) return;
+            
+            const moonSvg = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
+            const sunSvg = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
+            
+            function updateThemeIcon(theme) {
+                if (themeToggleIcon) {
+                    themeToggleIcon.innerHTML = theme === 'dark' ? sunSvg : moonSvg;
+                }
+            }
+            
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            updateThemeIcon(currentTheme);
+            
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', function() {
+                    const activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+                    const newTheme = activeTheme === 'dark' ? 'light' : 'dark';
+                    
+                    document.documentElement.setAttribute('data-theme', newTheme);
+                    localStorage.setItem('premium-theme', newTheme);
+                    updateThemeIcon(newTheme);
+                    
+                    // Dispatch custom event so that components (like Chart.js in admin.blade.php) can redraw dynamically
+                    window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme: newTheme } }));
+                });
+            }
+        });
+    </script>
+    @endif
     @stack('scripts')
 </body>
 </html>

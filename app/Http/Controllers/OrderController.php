@@ -60,7 +60,7 @@ class OrderController extends Controller
         } elseif ($status_filter === 'pending') {
             $query->where(['status' => 'pending']);
         } elseif ($status_filter === 'processing') {
-            $query->whereIn('status', ['processing', 'finishing', 'ready', 'uncollected']);
+            $query->whereIn('status', ['processing', 'washing', 'drying', 'finishing', 'ready', 'uncollected']);
         } elseif ($status_filter === 'dikirim') {
             $query->where(['status' => 'dikirim']);
         } elseif ($status_filter === 'completed') {
@@ -575,7 +575,7 @@ class OrderController extends Controller
         $query = Order::with(['user', 'service'])->latest();
 
         if ($request->has('queue')) {
-            $query->whereNotIn('status', ['completed', 'cancelled']);
+            $query->whereNotIn('status', ['pending', 'completed', 'cancelled']);
             if ($request->filled('status')) {
                 $query->where(['status' => $request->status]);
             }
@@ -589,8 +589,8 @@ class OrderController extends Controller
             if ($request->filled('status')) {
                 $query->where(['status' => $request->status]);
             } elseif (!$request->has('status')) {
-                // Default to active orders when accessed from sidebar (no query params)
-                $query->whereNotIn('status', ['completed', 'cancelled']);
+                // Default to pending (unconfirmed) orders when accessed from sidebar (no query params)
+                $query->where(['status' => 'pending']);
             }
         }
 
@@ -1156,8 +1156,9 @@ class OrderController extends Controller
         try {
             $statusLabels = [
                 'pending' => 'Menunggu',
-                'processing' => 'Sedang Dikerjakan',
-                'finishing' => 'Finishing',
+                'processing' => 'Dalam Antrian',
+                'washing' => ($order->service->category == 'cleaning' ? 'Sedang Dicuci' : 'Sedang Dikerjakan'),
+                'finishing' => ($order->service->category == 'cleaning' ? 'Dijemur' : 'Proses Finishing'),
                 'ready' => 'Siap Diambil',
                 'dikirim' => 'Dikirim',
                 'completed' => 'Selesai',

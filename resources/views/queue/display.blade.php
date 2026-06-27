@@ -333,7 +333,7 @@
     // ─── Status Labels ───
     const STATUS_LABELS = {
         pending    : { text: 'MENUNGGU',  cls: 'status-pending' },
-        processing : { text: 'DIPROSES',  cls: 'status-processing' },
+        processing : { text: 'DALAM ANTRIAN',     cls: 'status-processing' },
         washing    : { text: 'DICUCI',    cls: 'status-washing' },
         drying     : { text: 'DIJEMUR',   cls: 'status-drying' },
         finishing  : { text: 'FINISHING', cls: 'status-finishing' },
@@ -343,6 +343,12 @@
     // ─── Build Queue Card ───
     function buildCard(item, type) {
         const label = STATUS_LABELS[item.status] ?? { text: item.status.toUpperCase(), cls: '' };
+        let statusText = label.text;
+        if (item.status === 'washing') {
+            statusText = item.category === 'cleaning' ? 'DICUCI' : 'DIKERJAKAN';
+        } else if (item.status === 'finishing') {
+            statusText = item.category === 'cleaning' ? 'DIJEMUR' : 'FINISHING';
+        }
         const badgeCls = `q-badge-${type}`;
         const category = item.category === 'cleaning' ? '🫧 Cuci' : '🔧 Reparasi';
         return `
@@ -352,7 +358,7 @@
                     <div class="q-name">${item.name}</div>
                     <div class="q-service">${category} · ${item.service}</div>
                 </div>
-                <div class="q-status ${label.cls}">${label.text}</div>
+                <div class="q-status ${label.cls}">${statusText}</div>
             </div>`;
     }
 

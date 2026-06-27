@@ -52,12 +52,11 @@ class DashboardController extends Controller
         $totalCustomers = User::where(['role' => 'customer'])->count();
         $totalEmployees = User::where(['role' => 'employee'])->count();
 
-        // Status Pekerjaan (Counts)
         $statusCounts = [
             'pending' => Order::where(['status' => 'pending'])->count(),
-            'processing' => Order::whereIn('status', ['washing', 'drying', 'finishing', 'ready'])->count(),
-            'uncollected' => Order::where(['status' => 'uncollected'])->count(),
-            'completed' => Order::where(['status' => 'picked_up'])->count(),
+            'processing' => Order::whereIn('status', ['processing', 'washing', 'drying', 'finishing'])->count(),
+            'ready' => Order::where(['status' => 'ready'])->count(),
+            'completed' => Order::whereIn('status', ['completed', 'picked_up'])->count(),
         ];
 
         // Grafik Pendapatan & Transaksi dengan Filter
@@ -153,8 +152,10 @@ class DashboardController extends Controller
 
         // Specific counts for Cleaning
         $cleaningCounts = [
-            'washing' => Order::whereHas('service', fn($q) => $q->where(['category' => 'cleaning']))
+            'queue' => Order::whereHas('service', fn($q) => $q->where(['category' => 'cleaning']))
                 ->where(['status' => 'processing'])->count(),
+            'washing' => Order::whereHas('service', fn($q) => $q->where(['category' => 'cleaning']))
+                ->where(['status' => 'washing'])->count(),
             'drying' => Order::whereHas('service', fn($q) => $q->where(['category' => 'cleaning']))
                 ->where(['status' => 'finishing'])->count(),
             'ready' => Order::whereHas('service', fn($q) => $q->where(['category' => 'cleaning']))
@@ -165,8 +166,10 @@ class DashboardController extends Controller
 
         // Specific counts for Repair
         $repairCounts = [
-            'processing' => Order::whereHas('service', fn($q) => $q->where(['category' => 'repair']))
+            'queue' => Order::whereHas('service', fn($q) => $q->where(['category' => 'repair']))
                 ->where(['status' => 'processing'])->count(),
+            'processing' => Order::whereHas('service', fn($q) => $q->where(['category' => 'repair']))
+                ->where(['status' => 'washing'])->count(),
             'finishing' => Order::whereHas('service', fn($q) => $q->where(['category' => 'repair']))
                 ->where(['status' => 'finishing'])->count(),
             'ready' => Order::whereHas('service', fn($q) => $q->where(['category' => 'repair']))
@@ -175,8 +178,17 @@ class DashboardController extends Controller
                 ->where(['status' => 'uncollected'])->count(),
         ];
 
+        $todayAttendance = \App\Models\Attendance::where([
+            'user_id' => auth()->id(),
+            'date' => now()->toDateString()
+        ])->first();
+
+        $isClockedIn = !is_null($todayAttendance);
+        $isClockedOut = $todayAttendance && !is_null($todayAttendance->clock_out);
+
         return view('dashboards.employee', compact(
-            'incomingOrders', 'tasks', 'pendingOrdersCount', 'weeklyCompletedCount', 'cleaningCounts', 'repairCounts'
+            'incomingOrders', 'tasks', 'pendingOrdersCount', 'weeklyCompletedCount', 'cleaningCounts', 'repairCounts',
+            'todayAttendance', 'isClockedIn', 'isClockedOut'
         ));
     }
 

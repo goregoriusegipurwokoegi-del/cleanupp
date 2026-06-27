@@ -98,7 +98,9 @@
                     $statusLabels = [
                         'pending' => 'Menunggu', 
                         'processing' => 'Proses Cuci', 
+                        'washing' => 'Proses Cuci',
                         'repairing' => 'Reparasi', 
+                        'drying' => 'Finishing',
                         'finishing' => 'Finishing', 
                         'ready' => 'Siap Diambil', 
                         'uncollected' => 'Siap Diambil', 
@@ -108,7 +110,9 @@
                     $statusColors = [
                         'pending' => '#f59e0b', 
                         'processing' => '#3b82f6', 
+                        'washing' => '#3b82f6',
                         'repairing' => '#6366f1', 
+                        'drying' => '#a855f7',
                         'finishing' => '#a855f7', 
                         'ready' => '#10b981', 
                         'uncollected' => '#10b981', 
@@ -157,10 +161,12 @@
                     $steps = ['pending', 'processing', 'finishing', 'ready'];
                     
                     $currentStatus = $order->status;
-                    if ($currentStatus === 'uncollected') {
+                    if ($currentStatus === 'uncollected' || $currentStatus === 'completed') {
                         $currentStatus = 'ready';
-                    } elseif ($currentStatus === 'repairing') {
+                    } elseif ($currentStatus === 'repairing' || $currentStatus === 'washing') {
                         $currentStatus = 'processing';
+                    } elseif ($currentStatus === 'drying') {
+                        $currentStatus = 'finishing';
                     }
                     
                     $currentIdx = array_search($currentStatus, $steps);

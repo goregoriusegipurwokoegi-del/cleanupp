@@ -7,7 +7,8 @@
 @php
     $statusColors = [
         'pending' => ['bg' => 'rgba(245, 158, 11, 0.08)', 'text' => '#f59e0b', 'border' => '#f59e0b'],
-        'processing' => ['bg' => 'rgba(59, 130, 246, 0.08)', 'text' => '#3b82f6', 'border' => '#3b82f6'],
+        'processing' => ['bg' => 'rgba(148, 163, 184, 0.08)', 'text' => '#94a3b8', 'border' => '#94a3b8'],
+        'washing' => ['bg' => 'rgba(59, 130, 246, 0.08)', 'text' => '#3b82f6', 'border' => '#3b82f6'],
         'finishing' => ['bg' => 'rgba(139, 92, 246, 0.08)', 'text' => '#8b5cf6', 'border' => '#8b5cf6'],
         'ready' => ['bg' => 'rgba(16, 185, 129, 0.08)', 'text' => '#10b981', 'border' => '#10b981'],
         'uncollected' => ['bg' => 'rgba(217, 119, 6, 0.08)', 'text' => '#d97706', 'border' => '#d97706'],

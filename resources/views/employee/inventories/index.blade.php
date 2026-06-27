@@ -1,158 +1,201 @@
-@extends('layouts.premium-dashboard')
+@extends('layouts.employee-dashboard')
 
-@section('page_title', 'Stok Barang')
-
-@section('nav_items')
-    <li class="nav-item"><a href="{{ route('employee.dashboard') }}" class="nav-link">Dashboard</a></li>
-    <li class="nav-item"><a href="{{ route('employee.orders.index') }}" class="nav-link">Orderan Masuk</a></li>
-    <li class="nav-item"><a href="{{ route('employee.inventories.index') }}" class="nav-link active">Stok Barang</a></li>
-@endsection
+@section('page_title', 'Stok Barang Karyawan')
 
 @section('content')
-<style>
-    .glass-card {
-        background: rgba(255,255,255,0.03);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 24px;
-        padding: 1.5rem;
-    }
-    .table-container {
-        width: 100%;
-        overflow-x: auto;
-        border-radius: 20px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.05);
-    }
-    table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px; }
-    th { padding: 1.5rem; font-size: 0.85rem; text-transform: uppercase; opacity: 0.6; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    td { padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.02); }
-    tr { transition: 0.3s; }
-    tr:hover { background: rgba(255,255,255,0.01); }
-</style>
-
-<div class="header-actions" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-
-    <button onclick="openModal()" style="background: var(--primary); color: #0f172a; border: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: 0.3s;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        Tambah Barang
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <p class="text-secondary mb-0">Kelola stok bahan baku dan persediaan operasional cuci/reparasi.</p>
+    </div>
+    <button onclick="openModal()" class="btn btn-primary fw-bold px-4 shadow-sm">
+        <i class="bi bi-plus-lg me-1"></i> Tambah Barang
     </button>
 </div>
 
 @if(session('success'))
-    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
+    <div class="alert alert-success shadow-sm mb-4">
         {{ session('success') }}
     </div>
 @endif
 
-<div class="table-container">
-    <table>
-        <thead>
-            <tr style="background: rgba(255,255,255,0.03);">
-                <th>Nama Barang</th>
-                <th>Sisa Stok</th>
-                <th>Satuan</th>
-                <th>Batas Minimum</th>
-                <th>Status</th>
-                <th style="text-align: center;">Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
+<!-- Inventory Card Table -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-0">
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="py-3 px-4 text-secondary text-uppercase fw-bold" style="font-size: 0.75rem;">Nama Barang</th>
+                        <th class="py-3 px-4 text-secondary text-uppercase fw-bold" style="font-size: 0.75rem;">Sisa Stok</th>
+                        <th class="py-3 px-4 text-secondary text-uppercase fw-bold" style="font-size: 0.75rem;">Satuan</th>
+                        <th class="py-3 px-4 text-secondary text-uppercase fw-bold" style="font-size: 0.75rem;">Batas Minimum</th>
+                        <th class="py-3 px-4 text-secondary text-uppercase fw-bold" style="font-size: 0.75rem;">Status</th>
+                        <th class="py-3 px-4 text-secondary text-uppercase fw-bold text-center" style="font-size: 0.75rem; width: 120px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($inventories as $inv)
+                    <tr>
+                        <td class="px-4 fw-bold text-dark">{{ $inv->name }}</td>
+                        <td class="px-4 fw-bold fs-5 text-dark">
+                            {{ rtrim(rtrim(number_format($inv->stock, 2, ',', '.'), '0'), ',') }}
+                        </td>
+                        <td class="px-4 text-secondary">{{ $inv->unit }}</td>
+                        <td class="px-4 text-secondary">{{ rtrim(rtrim(number_format($inv->min_stock, 2, ',', '.'), '0'), ',') }}</td>
+                        <td class="px-4">
+                            @if($inv->stock <= 0)
+                                <span class="badge bg-danger px-3 py-2 text-white fw-bold">HABIS</span>
+                            @elseif($inv->stock <= $inv->min_stock)
+                                <span class="badge bg-warning px-3 py-2 text-dark fw-bold">MENIPIS</span>
+                            @else
+                                <span class="badge bg-success px-3 py-2 text-white fw-bold">AMAN</span>
+                            @endif
+                        </td>
+                        <td class="px-4 text-center">
+                            <div class="d-flex justify-content-center gap-1">
+                                <button onclick="editModal({{ $inv->id }}, '{{ addslashes($inv->name) }}', {{ $inv->stock }}, '{{ addslashes($inv->unit) }}', {{ $inv->min_stock }})" class="btn btn-outline-secondary btn-sm" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form action="{{ route('employee.inventories.destroy', $inv->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus barang ini?');" style="margin: 0;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Card View Layout -->
+        <div class="p-3 d-md-none">
             @foreach($inventories as $inv)
-            <tr>
-                <td style="font-weight: 700;">{{ $inv->name }}</td>
-                <td style="font-weight: 800; font-size: 1.1rem; color: {{ $inv->stock <= $inv->min_stock ? '#f43f5e' : 'var(--text)' }};">
-                    {{ rtrim(rtrim(number_format($inv->stock, 2, ',', '.'), '0'), ',') }}
-                </td>
-                <td style="opacity: 0.8;">{{ $inv->unit }}</td>
-                <td style="opacity: 0.8;">{{ rtrim(rtrim(number_format($inv->min_stock, 2, ',', '.'), '0'), ',') }}</td>
-                <td>
-                    @if($inv->stock <= 0)
-                        <span style="background: rgba(244, 63, 94, 0.1); color: #f43f5e; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">HABIS</span>
-                    @elseif($inv->stock <= $inv->min_stock)
-                        <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">MENIPIS</span>
-                    @else
-                        <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">AMAN</span>
-                    @endif
-                </td>
-                <td style="text-align: center; display: flex; justify-content: center; gap: 0.5rem;">
-                    <button onclick="editModal({{ $inv->id }}, '{{ $inv->name }}', {{ $inv->stock }}, '{{ $inv->unit }}', {{ $inv->min_stock }})" style="background: rgba(255,255,255,0.05); border: none; color: var(--primary); padding: 0.5rem; border-radius: 8px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </button>
-                    <form action="{{ route('employee.inventories.destroy', $inv->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus barang ini?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" style="background: rgba(244,63,94,0.05); border: none; color: #f43f5e; padding: 0.5rem; border-radius: 8px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(244,63,94,0.1)'" onmouseout="this.style.background='rgba(244,63,94,0.05)'">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                <div class="card border shadow-sm mb-3">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="fw-bold text-dark mb-0 fs-6">{{ $inv->name }}</h5>
+                                <span class="text-secondary small">Satuan: {{ $inv->unit }}</span>
+                            </div>
+                            <div>
+                                @if($inv->stock <= 0)
+                                    <span class="badge bg-danger px-2.5 py-1.5 text-white fw-bold">HABIS</span>
+                                @elseif($inv->stock <= $inv->min_stock)
+                                    <span class="badge bg-warning px-2.5 py-1.5 text-dark fw-bold">MENIPIS</span>
+                                @else
+                                    <span class="badge bg-success px-2.5 py-1.5 text-white fw-bold">AMAN</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="row g-2 border-top pt-2 mt-2">
+                            <div class="col-6">
+                                <small class="text-secondary d-block">Sisa Stok</small>
+                                <strong class="fs-5 text-dark">{{ rtrim(rtrim(number_format($inv->stock, 2, ',', '.'), '0'), ',') }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-secondary d-block">Batas Minimum</small>
+                                <span class="text-secondary">{{ rtrim(rtrim(number_format($inv->min_stock, 2, ',', '.'), '0'), ',') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light d-flex justify-content-end gap-2 py-2 px-3">
+                        <button onclick="editModal({{ $inv->id }}, '{{ addslashes($inv->name) }}', {{ $inv->stock }}, '{{ addslashes($inv->unit) }}', {{ $inv->min_stock }})" class="btn btn-outline-secondary btn-sm fw-bold px-3">
+                            <i class="bi bi-pencil me-1"></i> Edit
                         </button>
-                    </form>
-                </td>
-            </tr>
+                        <form action="{{ route('employee.inventories.destroy', $inv->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus barang ini?');" style="margin: 0;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-outline-danger btn-sm fw-bold px-3">
+                                <i class="bi bi-trash me-1"></i> Hapus
+                            </button>
+                        </form>
+                    </div>
+                </div>
             @endforeach
-        </tbody>
-    </table>
-    @if($inventories->isEmpty())
-        <div style="padding: 4rem; text-align: center; opacity: 0.4;">
-            <p>Belum ada data barang.</p>
         </div>
-    @endif
-</div>
 
-<!-- Modal Tambah/Edit Barang -->
-<div id="inventory-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-    <div class="glass-card" style="width: 90%; max-width: 500px; padding: 2.5rem; border-radius: 24px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-            <h3 id="modal-title" style="font-size: 1.5rem;">Tambah Barang</h3>
-            <button onclick="closeModal()" style="background: transparent; border: none; color: #fff; cursor: pointer; opacity: 0.5;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-        </div>
-        
-        <form id="inventory-form" method="POST" action="{{ route('employee.inventories.store') }}">
-            @csrf
-            <input type="hidden" name="_method" id="form-method" value="POST">
-            
-            <div style="margin-bottom: 1.5rem;">
-                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Nama Barang</label>
-                <input type="text" name="name" id="input-name" required placeholder="Contoh: Sabun Cuci" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
+        @if($inventories->isEmpty())
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-box fs-1 d-block mb-2 opacity-50"></i>
+                <p class="mb-0">Belum ada data barang.</p>
             </div>
-
-            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
-                <div style="flex: 1;">
-                    <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Sisa Stok</label>
-                    <input type="number" step="any" name="stock" id="input-stock" required min="0" placeholder="0" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-                </div>
-                <div style="flex: 1;">
-                    <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Satuan</label>
-                    <input type="text" name="unit" id="input-unit" required placeholder="Pcs, Botol, Liter" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-                </div>
-            </div>
-
-            <div style="margin-bottom: 2rem;">
-                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; opacity: 0.7;">Batas Minimum Stok (Peringatan)</label>
-                <input type="number" step="any" name="min_stock" id="input-min-stock" required min="0" placeholder="0" style="width: 100%; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
-            </div>
-
-            <button type="submit" id="submit-button" style="width: 100%; background: var(--primary); color: #0f172a; border: none; padding: 1rem; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;">Simpan Barang</button>
-        </form>
+        @endif
     </div>
 </div>
 
+<!-- Modal Create / Edit Inventory -->
+<div class="modal fade" id="inventoryModal" tabindex="-1" aria-labelledby="inventoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modal-title">Tambah Barang</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="inventory-form" method="POST" action="{{ route('employee.inventories.store') }}">
+                @csrf
+                <input type="hidden" name="_method" id="form-method" value="POST">
+                
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary text-uppercase small">Nama Barang</label>
+                        <input type="text" name="name" id="input-name" required placeholder="Contoh: Sabun Cuci" class="form-control">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary text-uppercase small">Sisa Stok</label>
+                            <input type="number" step="any" name="stock" id="input-stock" required min="0" placeholder="0" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary text-uppercase small">Satuan</label>
+                            <input type="text" name="unit" id="input-unit" required placeholder="Pcs, Botol, Liter" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold text-secondary text-uppercase small">Batas Minimum Stok (Peringatan)</label>
+                        <input type="number" step="any" name="min_stock" id="input-min-stock" required min="0" placeholder="0" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" id="submit-button" class="btn btn-primary fw-bold">Simpan Barang</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
 <script>
+    let invModalObj = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        invModalObj = new bootstrap.Modal(document.getElementById('inventoryModal'));
+    });
+
     function openModal() {
-        document.getElementById('inventory-modal').style.display = 'flex';
         document.getElementById('modal-title').innerText = 'Tambah Barang';
         document.getElementById('submit-button').innerText = 'Simpan Barang';
         
         document.getElementById('form-method').value = 'POST';
-        document.getElementById('inventory-form').action = '{{ route("admin.inventories.store") }}';
+        document.getElementById('inventory-form').action = '{{ route("employee.inventories.store") }}';
         
         document.getElementById('input-name').value = '';
         document.getElementById('input-stock').value = '';
         document.getElementById('input-unit').value = '';
         document.getElementById('input-min-stock').value = '';
+        
+        invModalObj.show();
     }
     
     function editModal(id, name, stock, unit, minStock) {
-        document.getElementById('inventory-modal').style.display = 'flex';
         document.getElementById('modal-title').innerText = 'Edit Barang';
         document.getElementById('submit-button').innerText = 'Perbarui Barang';
         
@@ -163,10 +206,8 @@
         document.getElementById('input-stock').value = stock;
         document.getElementById('input-unit').value = unit;
         document.getElementById('input-min-stock').value = minStock;
-    }
-    
-    function closeModal() {
-        document.getElementById('inventory-modal').style.display = 'none';
+        
+        invModalObj.show();
     }
 </script>
-@endsection
+@endpush
