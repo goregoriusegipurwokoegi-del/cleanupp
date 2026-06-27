@@ -261,7 +261,7 @@
             padding: 0.55rem;
             border-radius: 10px;
             cursor: pointer;
-            z-index: 1001;
+            z-index: 998;
             flex-shrink: 0;
             transition: background 0.2s, color 0.2s;
         }

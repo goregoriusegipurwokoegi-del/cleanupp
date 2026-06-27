@@ -255,7 +255,14 @@
                 data-service="{{ json_encode($order->service) }}"
                 data-services="{{ json_encode($group->map(fn($o) => ['name' => $o->service->name, 'price' => $o->total_price - $o->delivery_fee])) }}"
                 data-group-total="{{ $group->sum('total_price') }}">
-                <td style="padding: 15px;">
+                <td style="padding: 1rem;">
+                    @if($loop->first && in_array($order->status, ['pending', 'processing', 'washing', 'finishing']))
+                        <div style="margin-bottom: 5px;">
+                            <span style="background: #ef4444; color: #fff; font-size: 0.65rem; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; font-weight: 800; text-transform: uppercase;">
+                                🔥 Kerjakan Sekarang
+                            </span>
+                        </div>
+                    @endif
                     <div style="background: var(--primary); color: #fff; padding: 2px 8px; border-radius: 6px; font-weight: 800; width: fit-content; margin-bottom: 3px; white-space: nowrap;">
                         @foreach($group->pluck('queue_number')->unique() as $qNum)
                             {{ $qNum }}{{ !$loop->last ? ',' : '' }}
@@ -320,6 +327,9 @@
                             <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.3); white-space: nowrap;">LUNAS</span>
                         @else
                             <span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 2px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.3); white-space: nowrap;">BELUM BAYAR</span>
+                        @endif
+                        @if($order->payment_proof)
+                            <a href="{{ asset('storage/' . $order->payment_proof) }}" target="_blank" style="display: inline-block; margin-top: 4px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 2px 6px; border-radius: 6px; font-size: 0.65rem; font-weight: 800; border: 1px solid rgba(59, 130, 246, 0.3); white-space: nowrap; text-decoration: none;">📝 Bukti Transfer</a>
                         @endif
                     </div>
                 </td>
@@ -397,7 +407,12 @@
          data-group-total="{{ $group->sum('total_price') }}"
          style="margin-bottom: 20px; cursor: pointer;">
         <div class="card-header-mobile">
-            <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                @if($loop->first && in_array($order->status, ['pending', 'processing', 'washing', 'finishing']))
+                    <span style="background: #ef4444; color: #fff; font-size: 0.65rem; padding: 4px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; font-weight: 800; text-transform: uppercase;">
+                        🔥 Kerjakan Sekarang
+                    </span>
+                @endif
                 <div style="background: var(--primary); color: #000; padding: 2px 8px; border-radius: 6px; font-weight: 900; white-space: nowrap;">
                     @foreach($group->pluck('queue_number')->unique() as $qNum)
                         {{ $qNum }}{{ !$loop->last ? ',' : '' }}
@@ -432,6 +447,9 @@
                 <span style="font-size: 0.7rem; margin-left: 5px; {{ $order->payment_status == 'paid' ? 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);' : 'background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3);' }} padding: 3px 8px; border-radius: 6px; font-weight: 800;">
                     {{ $order->payment_status == 'paid' ? 'LUNAS' : 'BELUM BAYAR' }}
                 </span>
+                @if($order->payment_proof)
+                    <a href="{{ asset('storage/' . $order->payment_proof) }}" target="_blank" style="font-size: 0.7rem; margin-left: 5px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; padding: 3px 8px; border-radius: 6px; font-weight: 800; border: 1px solid rgba(59, 130, 246, 0.3); text-decoration: none; display: inline-block; margin-top: 5px;">📝 Bukti Transfer</a>
+                @endif
             </div>
         </div>
         @if($order->status == 'pending')
@@ -566,7 +584,8 @@
                 <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 15px;">
                     <p id="detail_customer_name" style="font-weight: 700; font-size: 0.95rem; margin-bottom: 3px;">-</p>
                     <p id="detail_customer_phone" style="font-size: 0.8rem; opacity: 0.6; margin-bottom: 5px;">-</p>
-                    <p id="detail_delivery_address" style="font-size: 0.75rem; opacity: 0.5; display: none; line-height: 1.3;"></p>
+                    <p id="detail_delivery_address" style="font-size: 0.75rem; opacity: 0.5; display: none; margin-bottom: 5px; line-height: 1.3;"></p>
+                    <a id="detail_delivery_location_btn" href="#" target="_blank" style="display: none; font-size: 0.75rem; color: #fff; background: var(--primary); padding: 4px 8px; border-radius: 6px; text-decoration: none; width: fit-content; margin-bottom: 5px;">📍 Lihat Lokasi</a>
                 </div>
 
                 <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">💳 Status Pembayaran</h4>
@@ -901,11 +920,19 @@
         document.getElementById('detail_customer_phone').innerText = user.phone || 'Tidak ada no WhatsApp';
         
         const deliveryAddressEl = document.getElementById('detail_delivery_address');
+        const deliveryLocationBtn = document.getElementById('detail_delivery_location_btn');
         if (order.is_delivery == 1 && order.delivery_address) {
             deliveryAddressEl.innerText = '📍 Alamat Kirim: ' + order.delivery_address;
             deliveryAddressEl.style.display = 'block';
+            if (order.latitude && order.longitude) {
+                deliveryLocationBtn.href = `https://www.google.com/maps?q=${order.latitude},${order.longitude}`;
+                deliveryLocationBtn.style.display = 'inline-block';
+            } else {
+                deliveryLocationBtn.style.display = 'none';
+            }
         } else {
             deliveryAddressEl.style.display = 'none';
+            if (deliveryLocationBtn) deliveryLocationBtn.style.display = 'none';
         }
         
         document.getElementById('detail_payment_method').innerText = order.payment_method;

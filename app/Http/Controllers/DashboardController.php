@@ -149,6 +149,10 @@ class DashboardController extends Controller
         $weeklyCompletedCount = Order::where(['status' => 'completed'])
             ->whereBetween('updated_at', [now()->startOfWeek(), now()->endOfWeek()])
             ->count();
+            
+        $deliveryOrdersCount = Order::where(['is_delivery' => true])
+            ->whereNotIn('status', ['completed', 'cancelled'])
+            ->count();
 
         // Specific counts for Cleaning
         $cleaningCounts = [
@@ -187,7 +191,7 @@ class DashboardController extends Controller
         $isClockedOut = $todayAttendance && !is_null($todayAttendance->clock_out);
 
         return view('dashboards.employee', compact(
-            'incomingOrders', 'tasks', 'pendingOrdersCount', 'weeklyCompletedCount', 'cleaningCounts', 'repairCounts',
+            'incomingOrders', 'tasks', 'pendingOrdersCount', 'weeklyCompletedCount', 'deliveryOrdersCount', 'cleaningCounts', 'repairCounts',
             'todayAttendance', 'isClockedIn', 'isClockedOut'
         ));
     }

@@ -266,9 +266,12 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $maxClockIn = \App\Models\Setting::where('key', 'employee_clock_in_time')->value('value') ?? '09:00';
+                        @endphp
                         @forelse($attendances as $att)
                         @php
-                            $status = ($att->clock_in && \Carbon\Carbon::parse($att->clock_in)->format('H:i') > '09:00') ? 'Terlambat' : 'Tepat Waktu';
+                            $status = ($att->clock_in && \Carbon\Carbon::parse($att->clock_in)->format('H:i') > $maxClockIn) ? 'Terlambat' : 'Tepat Waktu';
                             $badgeClass = $status == 'Tepat Waktu' ? 'bg-success' : 'bg-danger';
                         @endphp
                         <tr>
@@ -293,9 +296,12 @@
 
             <!-- Mobile Card View Layout -->
             <div class="p-3 d-md-none">
+                @php
+                    $maxClockInMobile = \App\Models\Setting::where('key', 'employee_clock_in_time')->value('value') ?? '09:00';
+                @endphp
                 @forelse($attendances as $att)
                 @php
-                    $status = ($att->clock_in && \Carbon\Carbon::parse($att->clock_in)->format('H:i') > '09:00') ? 'Terlambat' : 'Tepat Waktu';
+                    $status = ($att->clock_in && \Carbon\Carbon::parse($att->clock_in)->format('H:i') > $maxClockInMobile) ? 'Terlambat' : 'Tepat Waktu';
                     $badgeClass = $status == 'Tepat Waktu' ? 'bg-success' : 'bg-danger';
                 @endphp
                 <div class="card border shadow-sm mb-3">

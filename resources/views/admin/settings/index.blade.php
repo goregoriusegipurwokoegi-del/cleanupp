@@ -150,6 +150,11 @@
             <label class="setting-label">Jam Operasional</label>
             <input type="text" name="store_hours" class="setting-input" value="{{ $settings['store_hours'] ?? 'Senin - Minggu: 09:00 - 20:00' }}">
         </div>
+        <div class="setting-group">
+            <label class="setting-label">Batas Jam Masuk Karyawan (Tepat Waktu)</label>
+            <input type="time" name="employee_clock_in_time" class="setting-input" value="{{ $settings['employee_clock_in_time'] ?? '09:00' }}">
+            <small style="opacity: 0.5;">Karyawan yang absen di atas jam ini akan ditandai sebagai "Terlambat".</small>
+        </div>
         <div style="text-align: right; margin-top: 2rem;">
             <button type="submit" class="save-btn">Simpan Perubahan</button>
         </div>

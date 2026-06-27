@@ -58,6 +58,13 @@
                         @endphp
                         <tr>
                             <td class="px-4">
+                                @if($loop->first && in_array($order->status, ['pending', 'processing', 'washing', 'finishing']))
+                                    <div class="mb-2">
+                                        <span class="badge shadow-sm" style="background-color: #dc3545; color: #fff; font-size: 0.65rem; padding: 4px 8px;">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i> PRIORITAS UTAMA
+                                        </span>
+                                    </div>
+                                @endif
                                 <span class="badge bg-primary fs-6 px-3 py-1 font-monospace shadow-sm">
                                     @foreach($group->pluck('queue_number')->unique() as $qNum)
                                         {{ $qNum }}{{ !$loop->last ? ',' : '' }}
@@ -70,6 +77,11 @@
                                 </div>
                                 @if($order->is_delivery)
                                     <span class="badge bg-warning text-dark" style="font-size: 0.65rem;"><i class="bi bi-truck me-1"></i> Antar Jemput</span>
+                                    @if($order->latitude && $order->longitude)
+                                        <div class="mt-1">
+                                            <a href="https://www.google.com/maps?q={{ $order->latitude }},{{ $order->longitude }}" target="_blank" class="badge bg-primary text-white text-decoration-none" style="font-size: 0.65rem;"><i class="bi bi-geo-alt-fill me-1"></i> Lihat Lokasi</a>
+                                        </div>
+                                    @endif
                                 @endif
                             </td>
                             <td class="px-4">
@@ -128,6 +140,11 @@
                                         <span class="badge badge-success" style="font-size: 0.68rem; padding: 3px 8px;">LUNAS</span>
                                     @else
                                         <span class="badge badge-warning" style="font-size: 0.68rem; padding: 3px 8px;">BELUM BAYAR</span>
+                                    @endif
+                                    @if($order->payment_proof)
+                                        <div class="mt-1">
+                                            <a href="{{ asset('storage/' . $order->payment_proof) }}" target="_blank" class="badge bg-primary text-white text-decoration-none" style="font-size: 0.65rem; padding: 3px 8px;"><i class="bi bi-file-earmark-image me-1"></i>Bukti Transfer</a>
+                                        </div>
                                     @endif
                                 </div>
                             </td>
@@ -244,6 +261,9 @@
                             </span>
                             @if($order->is_delivery)
                                 <span class="badge bg-warning text-dark"><i class="bi bi-truck me-1"></i> Delivery</span>
+                                @if($order->latitude && $order->longitude)
+                                    <a href="https://www.google.com/maps?q={{ $order->latitude }},{{ $order->longitude }}" target="_blank" class="badge bg-primary text-white text-decoration-none ms-1"><i class="bi bi-geo-alt-fill me-1"></i> Lokasi</a>
+                                @endif
                             @endif
                         </div>
                         <small class="text-secondary fw-semibold">{{ $order->created_at->format('d/m/Y H:i') }}</small>
@@ -279,11 +299,16 @@
                             @endforeach
                         </div>
 
-                        <div class="border-top pt-2 d-flex justify-content-between align-items-center">
+                        <div class="border-top pt-2 d-flex flex-column gap-2">
                             <div>
                                 <span class="badge fs-7 px-3 py-2 text-white" style="background-color: {{ $currentColor }};">{{ $currentLabel }}</span>
                                 <span class="badge {{ $order->payment_status == 'paid' ? 'bg-success' : 'bg-warning text-dark' }} border ms-1 py-2 px-3">{{ $order->payment_status == 'paid' ? 'LUNAS' : 'BELUM BAYAR' }}</span>
                             </div>
+                            @if($order->payment_proof)
+                                <div>
+                                    <a href="{{ asset('storage/' . $order->payment_proof) }}" target="_blank" class="badge bg-primary text-white text-decoration-none border py-2 px-3"><i class="bi bi-file-earmark-image me-1"></i>Bukti Transfer</a>
+                                </div>
+                            @endif
                         </div>
                     </div>
                     

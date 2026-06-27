@@ -48,6 +48,9 @@
             </tr>
         </thead>
         <tbody>
+            @php
+                $maxClockIn = \App\Models\Setting::where('key', 'employee_clock_in_time')->value('value') ?? '09:00';
+            @endphp
             @forelse($attendances as $att)
                 @php
                     $duration = '-';
@@ -58,7 +61,7 @@
                         $duration = $diff->format('%h Jam %i Menit');
                     }
                     $status = 'Tepat Waktu';
-                    if ($att->clock_in && \Carbon\Carbon::parse($att->clock_in)->format('H:i') > '09:00') {
+                    if ($att->clock_in && \Carbon\Carbon::parse($att->clock_in)->format('H:i') > $maxClockIn) {
                         $status = 'Terlambat';
                     }
                 @endphp

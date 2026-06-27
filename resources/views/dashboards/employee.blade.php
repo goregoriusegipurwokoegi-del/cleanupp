@@ -3,10 +3,19 @@
 @section('page_title', 'Dashboard Karyawan')
 
 @section('content')
+<style>
+    @media (max-width: 767.98px) {
+        .mobile-full-width {
+            flex: 0 0 100% !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+    }
+</style>
 <!-- Dashboard Stats Cards Grid (Android App Style) -->
-<div class="row g-3">
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
     <!-- Blue Box: Butuh Validasi -->
-    <div class="col-6 col-md-3">
+    <div class="col">
         <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #0d6efd, #0a58ca); border-radius: 16px;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -20,7 +29,7 @@
         </div>
     </div>
     <!-- Green Box: Selesai Minggu Ini -->
-    <div class="col-6 col-md-3">
+    <div class="col">
         <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #198754, #146c43); border-radius: 16px;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -34,7 +43,7 @@
         </div>
     </div>
     <!-- Yellow Box: Antrian Cuci -->
-    <div class="col-6 col-md-3">
+    <div class="col">
         <div class="card border-0 shadow-sm text-dark h-100" style="background: linear-gradient(135deg, #ffc107, #e0a800); border-radius: 16px;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -48,7 +57,7 @@
         </div>
     </div>
     <!-- Red Box: Antrian Reparasi -->
-    <div class="col-6 col-md-3">
+    <div class="col">
         <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #dc3545, #b02a37); border-radius: 16px;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -58,6 +67,20 @@
                     <strong class="fs-4">{{ $repairCounts['queue'] }}</strong>
                 </div>
                 <div class="small fw-semibold text-white-50" style="font-size: 0.78rem; line-height: 1.2;">Antrian Reparasi</div>
+            </div>
+        </div>
+    </div>
+    <!-- Purple Box: Antar Jemput -->
+    <div class="col mobile-full-width">
+        <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 16px;">
+            <div class="card-body p-3 d-flex flex-column justify-content-between">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-truck fs-6"></i>
+                    </span>
+                    <strong class="fs-4">{{ $deliveryOrdersCount }}</strong>
+                </div>
+                <div class="small fw-semibold text-white-50" style="font-size: 0.78rem; line-height: 1.2;">Antar Jemput</div>
             </div>
         </div>
     </div>

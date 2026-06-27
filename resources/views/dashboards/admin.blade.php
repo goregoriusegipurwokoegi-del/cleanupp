@@ -420,7 +420,18 @@
         font-size: 1.4rem !important;
     }
     .desktop-orders-table { display: none; }
-    .mobile-order-cards { display: block; }
+    .mobile-order-cards { 
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    .mobile-order-card {
+        margin-bottom: 0 !important;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--surface-variant);
+    }
     /* Chart height cap on mobile */
     .recap-chart-container {
         height: 180px !important;
@@ -429,9 +440,17 @@
     .status-donut-container {
         height: 150px !important;
     }
-    /* Progress bars: compact spacing */
+    /* Target Bulanan Stats grid on mobile */
+    .target-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
     .progress-group-v2 {
-        margin-bottom: 10px;
+        margin-bottom: 0;
+        background: rgba(255,255,255,0.05);
+        padding: 10px;
+        border-radius: 8px;
     }
     .goal-title-v2 {
         margin-bottom: 12px;
@@ -577,35 +596,37 @@
                             $custPct = min(100, round(($totalCustomers / $targetCust) * 100));
                             $presencePct = $totalEmployees > 0 ? round(($activeStaff->count() / $totalEmployees) * 100) : 0;
                         @endphp
-                        <div class="progress-group-v2">
-                            <div class="progress-header-v2">
-                                <span>💰 Pendapatan</span>
-                                <span class="progress-val-v2">{{ $revPct }}%</span>
+                        <div class="target-stats-grid">
+                            <div class="progress-group-v2">
+                                <div class="progress-header-v2">
+                                    <span>💰 Pendapatan</span>
+                                    <span class="progress-val-v2">{{ $revPct }}%</span>
+                                </div>
+                                <div class="progress-track-v2">
+                                    <div class="progress-fill-v2" style="width:0%; background:#17a2b8;" data-w="{{ $revPct }}"></div>
+                                </div>
+                                <div style="font-size:0.65rem; color: var(--text-secondary); margin-top:4px;">Rp {{ number_format($monthlyRevenue,0,',','.') }} / 50jt</div>
                             </div>
-                            <div class="progress-track-v2">
-                                <div class="progress-fill-v2" style="width:0%; background:#17a2b8;" data-w="{{ $revPct }}"></div>
+                            <div class="progress-group-v2">
+                                <div class="progress-header-v2">
+                                    <span>👥 Plg. Baru</span>
+                                    <span class="progress-val-v2">{{ $custPct }}%</span>
+                                </div>
+                                <div class="progress-track-v2">
+                                    <div class="progress-fill-v2" style="width:0%; background:#28a745;" data-w="{{ $custPct }}"></div>
+                                </div>
+                                <div style="font-size:0.65rem; color: var(--text-secondary); margin-top:4px;">{{ $totalCustomers }} / {{ $targetCust }} org</div>
                             </div>
-                            <div style="font-size:0.7rem; color: var(--text-secondary); margin-top:4px;">Rp {{ number_format($monthlyRevenue,0,',','.') }} / 50jt</div>
-                        </div>
-                        <div class="progress-group-v2">
-                            <div class="progress-header-v2">
-                                <span>👥 Pelanggan Baru</span>
-                                <span class="progress-val-v2">{{ $custPct }}%</span>
+                            <div class="progress-group-v2" style="grid-column: span 2;">
+                                <div class="progress-header-v2">
+                                    <span>🛡️ Staf Hadir</span>
+                                    <span class="progress-val-v2">{{ $presencePct }}%</span>
+                                </div>
+                                <div class="progress-track-v2">
+                                    <div class="progress-fill-v2" style="width:0%; background:#dc3545;" data-w="{{ $presencePct }}"></div>
+                                </div>
+                                <div style="font-size:0.65rem; color: var(--text-secondary); margin-top:4px;">{{ $activeStaff->count() }} / {{ $totalEmployees }} staf</div>
                             </div>
-                            <div class="progress-track-v2">
-                                <div class="progress-fill-v2" style="width:0%; background:#28a745;" data-w="{{ $custPct }}"></div>
-                            </div>
-                            <div style="font-size:0.7rem; color: var(--text-secondary); margin-top:4px;">{{ $totalCustomers }} / {{ $targetCust }} pelanggan</div>
-                        </div>
-                        <div class="progress-group-v2">
-                            <div class="progress-header-v2">
-                                <span>🛡️ Staf Hadir</span>
-                                <span class="progress-val-v2">{{ $presencePct }}%</span>
-                            </div>
-                            <div class="progress-track-v2">
-                                <div class="progress-fill-v2" style="width:0%; background:#dc3545;" data-w="{{ $presencePct }}"></div>
-                            </div>
-                            <div style="font-size:0.7rem; color: var(--text-secondary); margin-top:4px;">{{ $activeStaff->count() }} / {{ $totalEmployees }} staf</div>
                         </div>
                     </div>
                 </div>
@@ -668,14 +689,14 @@
                 <div class="mobile-order-cards p-3">
                     @forelse($recentOrders as $order)
                     <div class="mobile-order-card">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                        <div style="display:flex; flex-direction:column; justify-content:space-between; align-items:flex-start; gap:4px; height: 100%;">
                             <div>
-                                <span style="font-weight:700; color:#17a2b8; font-size:0.85rem;">#{{ $order->order_number }}</span>
-                                <div style="font-weight:600; color: var(--text); margin:3px 0;">{{ Str::limit($order->user->name,20) }}</div>
-                                <div style="font-size:0.75rem; color: var(--text-secondary);">{{ Str::limit($order->service->name,24) }}</div>
+                                <span style="font-weight:700; color:#17a2b8; font-size:0.75rem;">#{{ $order->order_number }}</span>
+                                <div style="font-weight:600; color: var(--text); margin:2px 0; font-size:0.8rem;">{{ Str::limit($order->user->name,15) }}</div>
+                                <div style="font-size:0.65rem; color: var(--text-secondary);">{{ Str::limit($order->service->name,18) }}</div>
                             </div>
-                            <div style="text-align:right; flex-shrink:0;">
-                                <div style="font-weight:700; font-size:0.85rem; color: var(--text);">Rp {{ number_format($order->total_price,0,',','.') }}</div>
+                            <div style="text-align:left; margin-top: auto; padding-top: 6px; border-top: 1px solid var(--border-color); width: 100%;">
+                                <div style="font-weight:700; font-size:0.75rem; color: var(--text);">Rp {{ number_format($order->total_price,0,',','.') }}</div>
                             </div>
                         </div>
                     </div>

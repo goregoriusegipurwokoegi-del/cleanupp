@@ -250,15 +250,31 @@
                             </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a href="{{ route('employee.orders.index') }}" class="nav-link {{ request()->routeIs('employee.orders.*') && !request('delivery') && !request('queue') && !request()->routeIs('employee.orders.scan') ? 'active text-white bg-primary' : 'text-light' }}">
-                                <i class="nav-icon bi bi-file-earmark-plus"></i>
-                                <p class="ms-2">Orderan Masuk</p>
+                            <a href="{{ route('employee.orders.index') }}" class="nav-link {{ request()->routeIs('employee.orders.*') && !request('delivery') && !request('queue') && !request()->routeIs('employee.orders.scan') ? 'active text-white bg-primary' : 'text-light' }} d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <i class="nav-icon bi bi-file-earmark-plus"></i>
+                                    <p class="ms-2 mb-0">Orderan Masuk</p>
+                                </div>
+                                @php
+                                    $pendingOrdersSidebarCount = \App\Models\Order::where('status', 'pending')->count();
+                                @endphp
+                                @if($pendingOrdersSidebarCount > 0)
+                                    <span class="badge bg-danger rounded-pill">{{ $pendingOrdersSidebarCount }}</span>
+                                @endif
                             </a>
                         </li>
                         <li class="nav-item mb-1">
-                            <a href="{{ route('employee.orders.index', ['delivery' => 1]) }}" class="nav-link {{ request('delivery') == '1' ? 'active text-white bg-primary' : 'text-light' }}">
-                                <i class="nav-icon bi bi-truck"></i>
-                                <p class="ms-2">Antar Jemput</p>
+                            <a href="{{ route('employee.orders.index', ['delivery' => 1]) }}" class="nav-link {{ request('delivery') == '1' ? 'active text-white bg-primary' : 'text-light' }} d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <i class="nav-icon bi bi-truck"></i>
+                                    <p class="ms-2 mb-0">Antar Jemput</p>
+                                </div>
+                                @php
+                                    $deliverySidebarCount = \App\Models\Order::where('is_delivery', true)->whereNotIn('status', ['completed', 'cancelled'])->count();
+                                @endphp
+                                @if($deliverySidebarCount > 0)
+                                    <span class="badge bg-warning text-dark rounded-pill">{{ $deliverySidebarCount }}</span>
+                                @endif
                             </a>
                         </li>
                         <li class="nav-item mb-1">

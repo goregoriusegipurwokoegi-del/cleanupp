@@ -572,7 +572,7 @@ class OrderController extends Controller
      */
     public function adminIndex(Request $request)
     {
-        $query = Order::with(['user', 'service'])->latest();
+        $query = Order::with(['user', 'service'])->oldest();
 
         if ($request->has('queue')) {
             $query->whereNotIn('status', ['pending', 'completed', 'cancelled']);
@@ -902,7 +902,7 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->latest()->get()->groupBy(function (Order $order) {
+        $orders = $query->oldest()->get()->groupBy(function (Order $order) {
             return $order->group_id ?: 'single_' . $order->id;
         });
         $customers = User::query()->where(['role' => 'customer'])->get();
