@@ -834,7 +834,6 @@
                         <div class="modal-segmented-toggle" style="display: flex; background: var(--surface-variant); padding: 4px; border-radius: 12px; gap: 4px; margin-bottom: 18px; border: 1px solid var(--border-color); width: 100%;">
                             <button type="button" id="customer-type-existing-btn" onclick="setCustomerType('existing')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s; background: var(--surface); color: var(--primary); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">Pelanggan Terdaftar</button>
                             <button type="button" id="customer-type-new-btn" onclick="setCustomerType('new')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s; background: transparent; color: var(--text-secondary);">Registrasi Baru</button>
-                        </div>xt-secondary);">➕ Registrasi Baru</button>
                         </div>
                         <div style="display: none;">
                             <input type="radio" name="customer_type" id="customer_type_existing_radio" value="existing" checked onchange="toggleCustomerType()">
