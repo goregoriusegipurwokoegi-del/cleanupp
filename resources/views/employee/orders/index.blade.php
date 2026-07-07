@@ -486,7 +486,7 @@
                         {{-- COLUMN 1: POS Catalog --}}
                         <div class="col-lg-4" style="max-height: 75vh; overflow-y: auto;">
                             <div class="border rounded-4 p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 16px; background: #fff;">
-                                <div class="fw-bold text-primary text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.8px;">🛍️ Katalog Layanan</div>
+                                <div class="fw-bold text-primary text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.8px;">Katalog Layanan</div>
                                 
                                 <!-- Search Bar -->
                                 <div style="position: relative;">
@@ -496,8 +496,8 @@
                                 <!-- Category Tabs -->
                                 <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                                     <button type="button" class="btn btn-sm active-cat-btn btn-primary" onclick="empFilterCatalogCategory('all', this)" style="border-radius: 8px; font-size: 0.72rem; font-weight: 700; transition: 0.2s;">Semua</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="empFilterCatalogCategory('cleaning', this)" style="border-radius: 8px; font-size: 0.72rem; font-weight: 700; transition: 0.2s;">🧼 Cuci</button>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="empFilterCatalogCategory('repair', this)" style="border-radius: 8px; font-size: 0.72rem; font-weight: 700; transition: 0.2s;">🔧 Reparasi</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="empFilterCatalogCategory('cleaning', this)" style="border-radius: 8px; font-size: 0.72rem; font-weight: 700; transition: 0.2s;">Cuci</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="empFilterCatalogCategory('repair', this)" style="border-radius: 8px; font-size: 0.72rem; font-weight: 700; transition: 0.2s;">Reparasi</button>
                                 </div>
                                 
                                 <!-- Services List -->
@@ -507,7 +507,7 @@
                                             <div style="flex-grow: 1;">
                                                 <div class="fw-bold text-dark" style="font-size: 0.85rem; line-height: 1.3;">{{ $service->name }}</div>
                                                 <div class="fw-bold text-primary small mt-1">Rp {{ number_format($service->price, 0, ',', '.') }}</div>
-                                                <div class="text-muted mt-1" style="font-size: 0.65rem;">⏱️ {{ $service->estimated_time ?: '2-3 Hari' }}</div>
+                                                <div class="text-muted mt-1" style="font-size: 0.65rem;">Estimasi: {{ $service->estimated_time ?: '2-3 Hari' }}</div>
                                             </div>
                                             <div class="d-flex align-items-center gap-2 flex-shrink-0">
                                                 <div class="input-group" style="width: 80px; height: 32px; overflow: hidden; border-radius: 6px;">
@@ -515,8 +515,8 @@
                                                     <input type="number" class="form-control form-control-sm text-center emp-catalog-qty-input p-0" value="1" min="1" style="font-weight: 700; font-size: 0.8rem; -moz-appearance: textfield; appearance: textfield; outline: none; border-left: none; border-right: none;">
                                                     <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="empIncreaseCatalogQty(this)" style="font-weight: bold; font-size: 0.8rem;">+</button>
                                                 </div>
-                                                <button type="button" onclick="empAddServiceToOrder({{ $service->id }}, this)" class="btn btn-sm btn-primary py-1 px-2" style="font-size: 0.72rem; border-radius: 6px; margin: 0;">
-                                                    ➕
+                                                <button type="button" onclick="empAddServiceToOrder({{ $service->id }}, this)" class="btn btn-sm btn-primary py-1 px-3 fw-bold" style="font-size: 0.72rem; border-radius: 6px; margin: 0;">
+                                                    Pilih
                                                 </button>
                                             </div>
                                         </div>
@@ -530,7 +530,7 @@
 
                             {{-- Section 1: Pelanggan --}}
                             <div class="border rounded-4 p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-                                <div class="fw-bold text-primary text-uppercase mb-3" style="font-size: 0.75rem; letter-spacing: 0.8px;">👤 Data Pelanggan</div>
+                                <div class="fw-bold text-primary text-uppercase mb-3" style="font-size: 0.75rem; letter-spacing: 0.8px;">Data Pelanggan</div>
 
                                 {{-- Info Invoice --}}
                                 <div class="modal-invoice-info-box d-flex justify-content-between align-items-center p-3 rounded-3 mb-4" style="background: rgba(13,110,253,0.03); font-size: 0.78rem; border: 1px dashed rgba(13,110,253,0.15);">
@@ -546,8 +546,8 @@
 
                                 {{-- Segmented Toggle --}}
                                 <div class="modal-segmented-toggle d-flex bg-light p-1 rounded-3 mb-4 border">
-                                    <button type="button" id="emp-customer-type-existing-btn" onclick="empSetCustomerType('existing')" class="btn btn-sm py-2 fw-bold flex-fill text-primary bg-white shadow-sm" style="border-radius: 8px; font-size: 0.8rem; border: none;">👥 Pelanggan Terdaftar</button>
-                                    <button type="button" id="emp-customer-type-new-btn" onclick="empSetCustomerType('new')" class="btn btn-sm py-2 fw-bold flex-fill text-muted" style="border-radius: 8px; font-size: 0.8rem; border: none; background: transparent;">➕ Registrasi Baru</button>
+                                    <button type="button" id="emp-customer-type-existing-btn" onclick="empSetCustomerType('existing')" class="btn btn-sm py-2 fw-bold flex-fill text-primary bg-white shadow-sm" style="border-radius: 8px; font-size: 0.8rem; border: none;">Pelanggan Terdaftar</button>
+                                    <button type="button" id="emp-customer-type-new-btn" onclick="empSetCustomerType('new')" class="btn btn-sm py-2 fw-bold flex-fill text-muted" style="border-radius: 8px; font-size: 0.8rem; border: none; background: transparent;">Registrasi Baru</button>
                                 </div>
                                 <div style="display: none;">
                                     <input type="radio" name="customer_type" id="emp_customer_type_existing_radio" value="existing" checked onchange="empToggleCustomerType()">
@@ -590,12 +590,12 @@
 
                             {{-- Section 2: Sepatu --}}
                             <div class="border rounded-4 p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-                                <div class="fw-bold text-primary text-uppercase mb-3" style="font-size: 0.75rem; letter-spacing: 0.8px;">👟 Item Sepatu & Layanan</div>
+                                <div class="fw-bold text-primary text-uppercase mb-3" style="font-size: 0.75rem; letter-spacing: 0.8px;">Item Sepatu & Layanan</div>
 
                                 <div id="emp-shoe-items-container"></div>
 
                                 <button type="button" onclick="empAddNewShoeRow()" class="btn fw-bold w-100 py-2 mb-4" style="background: #f8f9fa; color: #0d6efd; border: 1.5px dashed #0d6efd; border-radius: 12px; font-size: 0.85rem;">
-                                    ➕ Tambah Item Sepatu Baru
+                                    Tambah Item Sepatu Baru
                                 </button>
 
 
@@ -608,7 +608,7 @@
 
                             {{-- Section 3: Pengiriman & Pembayaran --}}
                             <div class="border rounded-4 p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-                                <div class="fw-bold text-primary text-uppercase mb-4" style="font-size: 0.75rem; letter-spacing: 0.8px;">💳 Pengiriman & Pembayaran</div>
+                                <div class="fw-bold text-primary text-uppercase mb-4" style="font-size: 0.75rem; letter-spacing: 0.8px;">Pengiriman & Pembayaran</div>
 
                                 <div class="row g-3 mb-3">
                                     <div class="col-12">
@@ -660,7 +660,7 @@
 
                             {{-- Section 4: Rincian Biaya & Submit --}}
                             <div class="rounded-4 p-4" style="background: #f8f9fa; border: 1.5px solid #dee2e6;">
-                                <div class="fw-bold text-secondary text-uppercase mb-3" style="font-size: 0.72rem; letter-spacing: 0.8px;">🧾 RINCIAN PEMBAYARAN & BIAYA</div>
+                                <div class="fw-bold text-secondary text-uppercase mb-3" style="font-size: 0.72rem; letter-spacing: 0.8px;">RINCIAN PEMBAYARAN & BIAYA</div>
 
                                 <div class="p-3 rounded-3 mb-4 font-monospace" style="border: 1px dashed #dee2e6; background: #fff; font-size: 0.75rem;">
                                     <div class="text-center border-bottom border-dashed pb-2 mb-2 fw-bold">*** PREVIEW NOTA PEMESANAN ***</div>
@@ -703,7 +703,7 @@
                                 </div>
 
                                 <div class="mt-3 border-top pt-3">
-                                    <button type="submit" class="btn btn-primary fw-bold w-100 py-3" style="border-radius: 12px; font-weight: 800; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(13,110,253,0.2);">🚀 Checkout</button>
+                                    <button type="submit" class="btn btn-primary fw-bold w-100 py-3" style="border-radius: 12px; font-weight: 800; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(13,110,253,0.2);">Checkout</button>
                                 </div>
                             </div>
 
@@ -1099,21 +1099,21 @@
         row.id = 'emp-shoe-item-row-' + empShoeRowIndex;
         row.style.cssText = 'border: 1.5px solid var(--bs-border-color); border-radius: 18px; padding: 20px; margin-bottom: 20px; background: var(--bs-body-bg); position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: 0.2s;';
         
-        const deleteBtnHtml = `<button type="button" onclick="empRemoveShoeRow(${empShoeRowIndex})" class="btn-emp-remove-shoe text-danger" style="position: absolute; top: 16px; right: 16px; background: rgba(239, 68, 68, 0.05); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; transition: 0.2s;"><i class="bi bi-trash"></i></button>`;
+        const deleteBtnHtml = `<button type="button" onclick="empRemoveShoeRow(${empShoeRowIndex})" class="btn-emp-remove-shoe text-danger" style="position: absolute; top: 16px; right: 16px; background: rgba(239, 68, 68, 0.08); border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; transition: 0.2s;">Hapus</button>`;
         
         const service = preselectedServiceId ? empServiceData.find(s => s.id == preselectedServiceId) : null;
         const serviceName = service ? service.name : '';
         const badgeHtml = preselectedServiceId ? `
             <div class="alert alert-primary py-2 px-3 mb-3 d-flex justify-content-between align-items-center" style="border-radius: 12px; font-weight: 700; font-size: 0.8rem;">
-                <span>📋 Layanan: ${serviceName}</span>
+                <span>Layanan: ${serviceName}</span>
                 <span>Jumlah: ${qty} Pasang</span>
             </div>
         ` : '';
-
+ 
         row.innerHTML = `
             ${deleteBtnHtml}
             <div style="font-size: 0.72rem; font-weight: 900; color: var(--bs-primary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 4px;">
-                <span>👟</span> ITEM SEPATU #<span class="emp-item-index-label">${container.children.length + 1}</span>
+                ITEM SEPATU #<span class="emp-item-index-label">${container.children.length + 1}</span>
             </div>
             
             ${badgeHtml}

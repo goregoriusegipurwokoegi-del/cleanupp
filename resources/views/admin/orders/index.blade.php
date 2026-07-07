@@ -623,7 +623,7 @@
         <div class="modal-grid-2">
             <!-- Left: Shoe & Service -->
             <div>
-                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">👟 Detail Sepatu</h4>
+                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">Detail Sepatu</h4>
                 <div style="background: var(--surface-variant); padding: 12px; border-radius: 12px; border: 1.5px solid var(--border-color); margin-bottom: 15px;">
                     <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 3px;">Nama Sepatu</p>
                     <p id="detail_shoe_name" style="font-weight: 700; font-size: 0.95rem; margin-bottom: 10px;">-</p>
@@ -638,14 +638,14 @@
                             <p id="detail_shoe_quantity" style="font-weight: 700; font-size: 0.9rem;">-</p>
                         </div>
                     </div>
-
+ 
                     <div style="margin-top: 10px;">
                         <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 3px;">Lokasi Penyimpanan</p>
                         <p id="detail_storage_location" style="font-weight: 700; font-size: 0.9rem; color: var(--warning);">-</p>
                     </div>
                 </div>
-
-                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">💼 Layanan & Biaya</h4>
+ 
+                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">Layanan & Biaya</h4>
                 <div style="background: var(--surface-variant); padding: 12px; border-radius: 12px; border: 1.5px solid var(--border-color);">
                     <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 5px;">Daftar Layanan</p>
                     <div id="detail_services_container" style="margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
@@ -667,18 +667,18 @@
                     </div>
                 </div>
             </div>
-
+ 
             <!-- Right: Photo & Payment / Customer -->
             <div>
-                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">👤 Pelanggan</h4>
+                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">Pelanggan</h4>
                 <div style="background: var(--surface-variant); padding: 12px; border-radius: 12px; border: 1.5px solid var(--border-color); margin-bottom: 15px;">
                     <p id="detail_customer_name" style="font-weight: 700; font-size: 0.95rem; margin-bottom: 3px;">-</p>
                     <p id="detail_customer_phone" style="font-size: 0.8rem; opacity: 0.6; margin-bottom: 5px;">-</p>
                     <p id="detail_delivery_address" style="font-size: 0.75rem; opacity: 0.5; display: none; margin-bottom: 5px; line-height: 1.3;"></p>
-                    <a id="detail_delivery_location_btn" href="#" target="_blank" style="display: none; font-size: 0.75rem; color: #fff; background: var(--primary); padding: 4px 8px; border-radius: 6px; text-decoration: none; width: fit-content; margin-bottom: 5px;">📍 Lihat Lokasi</a>
+                    <a id="detail_delivery_location_btn" href="#" target="_blank" style="display: none; font-size: 0.75rem; color: #fff; background: var(--primary); padding: 4px 8px; border-radius: 6px; text-decoration: none; width: fit-content; margin-bottom: 5px;">Lihat Lokasi</a>
                 </div>
-
-                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">💳 Status Pembayaran</h4>
+ 
+                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">Status Pembayaran</h4>
                 <div style="background: var(--surface-variant); padding: 12px; border-radius: 12px; border: 1.5px solid var(--border-color); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <p id="detail_payment_method" style="font-weight: 800; font-size: 0.9rem; margin-bottom: 3px; text-transform: uppercase;">-</p>
@@ -693,8 +693,8 @@
                         <button type="submit" style="background: #10b981; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">Konfirmasi Lunas</button>
                     </form>
                 </div>
-
-                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">📸 Foto Sepatu</h4>
+ 
+                <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--primary); font-weight: 800; margin-bottom: 10px; letter-spacing: 0.5px;">Foto Sepatu</h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 0;">
                     <div>
                         <p style="font-size: 0.7rem; opacity: 0.5; margin-bottom: 3px; text-align: center;">Samping</p>
@@ -711,10 +711,10 @@
                 </div>
             </div>
         </div>
-
+ 
         <!-- Ubah Status Section -->
         <div style="background: var(--surface-variant); border: 1.5px solid var(--border-color); padding: 15px; border-radius: 16px; margin-bottom: 20px;">
-            <label style="display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">⚙️ Ubah Status Pesanan</label>
+            <label style="display: block; font-size: 0.8rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Ubah Status Pesanan</label>
             <form id="detail_status_update_form" method="POST" style="display: flex; gap: 10px;">
                 @csrf
                 @method('PATCH')
@@ -770,7 +770,7 @@
                 {{-- COLUMN 1: POS Catalog --}}
                 <div class="pos-catalog-container" style="background: var(--surface); border: 1px solid var(--border-color); padding: 20px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; flex-direction: column; gap: 16px; max-height: 75vh; overflow-y: auto;">
                     <div style="font-size: 0.75rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 6px;">
-                        <span>🛍️</span> Katalog Layanan
+                        Katalog Layanan
                     </div>
                     
                     <!-- Search Bar -->
@@ -781,8 +781,8 @@
                     <!-- Category Tabs -->
                     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button type="button" class="btn btn-sm active-cat-btn" onclick="filterCatalogCategory('all', this)" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid var(--border-color); background: var(--primary); color: #fff; cursor: pointer; transition: 0.2s;">Semua</button>
-                        <button type="button" class="btn btn-sm" onclick="filterCatalogCategory('cleaning', this)" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">🧼 Cuci</button>
-                        <button type="button" class="btn btn-sm" onclick="filterCatalogCategory('repair', this)" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">🔧 Reparasi</button>
+                        <button type="button" class="btn btn-sm" onclick="filterCatalogCategory('cleaning', this)" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">Cuci</button>
+                        <button type="button" class="btn btn-sm" onclick="filterCatalogCategory('repair', this)" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">Reparasi</button>
                     </div>
                     
                     <!-- Services List -->
@@ -792,7 +792,7 @@
                                 <div style="flex-grow: 1;">
                                     <div style="font-weight: 800; font-size: 0.85rem; color: var(--text); line-height: 1.3;">{{ $service->name }}</div>
                                     <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-top: 2px;">Rp {{ number_format($service->price, 0, ',', '.') }}</div>
-                                    <div style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 1px;">⏱️ {{ $service->estimated_time ?: '2-3 Hari' }}</div>
+                                    <div style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 1px;">Estimasi: {{ $service->estimated_time ?: '2-3 Hari' }}</div>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                                     <div class="catalog-stepper" style="display: flex; align-items: center; background: var(--surface-variant); border: 1.5px solid var(--border-color); border-radius: 8px; overflow: hidden; height: 32px; width: 80px;">
@@ -800,8 +800,8 @@
                                         <input type="number" class="catalog-qty-input" value="1" min="1" style="width: 30px; text-align: center; border: none; background: transparent; color: var(--text); padding: 0; margin: 0; font-weight: 700; font-size: 0.8rem; -moz-appearance: textfield; appearance: textfield; outline: none;">
                                         <button type="button" onclick="increaseCatalogQty(this)" style="background: transparent; border: none; color: var(--text); width: 25px; height: 100%; cursor: pointer; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: 0.2s;">+</button>
                                     </div>
-                                    <button type="button" onclick="addServiceToOrder({{ $service->id }}, this)" class="btn-primary-custom" style="padding: 6px 10px; font-size: 0.72rem; border-radius: 8px; display: flex; align-items: center; gap: 4px; box-shadow: none; margin: 0;">
-                                        ➕
+                                    <button type="button" onclick="addServiceToOrder({{ $service->id }}, this)" class="btn-primary-custom" style="padding: 6px 14px; font-size: 0.75rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; box-shadow: none; margin: 0; font-weight: bold;">
+                                        Pilih
                                     </button>
                                 </div>
                             </div>
@@ -815,7 +815,7 @@
                     {{-- Section 1: Pelanggan --}}
                     <div style="background: var(--surface); border: 1px solid var(--border-color); padding: 20px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
                         <div style="font-size: 0.75rem; font-weight: 900; color: var(--primary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 6px;">
-                            <span>👤</span> Data Pelanggan
+                            Data Pelanggan
                         </div>
 
                         <!-- Info Invoice -->
@@ -832,8 +832,9 @@
 
                         <!-- Premium Segmented Toggle Control -->
                         <div class="modal-segmented-toggle" style="display: flex; background: var(--surface-variant); padding: 4px; border-radius: 12px; gap: 4px; margin-bottom: 18px; border: 1px solid var(--border-color); width: 100%;">
-                            <button type="button" id="customer-type-existing-btn" onclick="setCustomerType('existing')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s; background: var(--surface); color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.04);">👥 Pelanggan Terdaftar</button>
-                            <button type="button" id="customer-type-new-btn" onclick="setCustomerType('new')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s; background: transparent; color: var(--text-secondary);">➕ Registrasi Baru</button>
+                            <button type="button" id="customer-type-existing-btn" onclick="setCustomerType('existing')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s; background: var(--surface); color: var(--primary); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">Pelanggan Terdaftar</button>
+                            <button type="button" id="customer-type-new-btn" onclick="setCustomerType('new')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.2s; background: transparent; color: var(--text-secondary);">Registrasi Baru</button>
+                        </div>xt-secondary);">➕ Registrasi Baru</button>
                         </div>
                         <div style="display: none;">
                             <input type="radio" name="customer_type" id="customer_type_existing_radio" value="existing" checked onchange="toggleCustomerType()">
@@ -876,7 +877,7 @@
                     {{-- Section 2: Sepatu --}}
                     <div style="background: var(--surface); border: 1px solid var(--border-color); padding: 20px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
                         <div style="font-size: 0.75rem; font-weight: 900; color: var(--primary); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 6px;">
-                            <span>👟</span> Item Sepatu & Layanan
+                            Item Sepatu & Layanan
                         </div>
 
                         <!-- Shoes rows container -->
@@ -884,7 +885,7 @@
 
                         <!-- Add item button -->
                         <button type="button" onclick="addNewShoeRow()" class="btn" style="background: var(--surface-variant); color: var(--primary); border: 1.5px dashed var(--primary); padding: 10px; border-radius: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: 0.2s; font-size: 0.85rem; margin-bottom: 18px;">
-                            ➕ Tambah Item Sepatu Baru
+                            Tambah Item Sepatu Baru
                         </button>
 
 
@@ -898,7 +899,7 @@
                     {{-- Section 3: Pengantaran & Pembayaran --}}
                     <div style="background: var(--surface); border: 1px solid var(--border-color); padding: 20px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
                         <div style="font-size: 0.75rem; font-weight: 900; color: var(--primary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 6px;">
-                            <span>💳</span> Pengiriman & Pembayaran
+                            Pengiriman & Pembayaran
                         </div>
 
                         <div class="new-cust-grid">
@@ -952,13 +953,13 @@
                     {{-- Section 4: Receipt Billing & Submit --}}
                     <div style="background: var(--surface-variant); border: 1.5px solid var(--border-color); border-radius: 18px; padding: 20px; position: relative;">
                         <div style="font-size: 0.72rem; font-weight: 900; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-                            <span>🧾</span> RINCIAN PEMBAYARAN & BIAYA
+                            RINCIAN PEMBAYARAN & BIAYA
                         </div>
                         
                         <!-- Live Receipt Preview Panel -->
                         <div class="live-receipt-preview" style="border: 1px dashed var(--border-color); border-radius: 12px; padding: 14px; background: var(--surface); margin-bottom: 14px; font-size: 0.75rem; font-family: monospace; color: var(--text);">
                             <div style="text-align: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; margin-bottom: 8px; font-weight: 700;">
-                                *** PREVIEW NOTA PEMESANAN ***
+                                PREVIEW NOTA PEMESANAN
                             </div>
                             
                             <!-- Customer info -->
@@ -1001,7 +1002,7 @@
                         </div>
 
                         <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 16px; display: flex; justify-content: flex-end;">
-                            <button type="submit" class="btn-primary-custom" style="width: 100%; justify-content: center; padding: 12px 28px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(13,110,253,0.2);">🚀 Checkout</button>
+                            <button type="submit" class="btn-primary-custom" style="width: 100%; justify-content: center; padding: 12px 28px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; box-shadow: 0 4px 15px rgba(13,110,253,0.2);">Checkout</button>
                         </div>
                     </div>
 
@@ -1208,13 +1209,13 @@ function addNewShoeRow(preselectedServiceId = null, qty = 1) {
     row.id = 'shoe-item-row-' + shoeRowIndex;
     row.style.cssText = 'border: 1.5px solid var(--border-color); border-radius: 18px; padding: 20px; margin-bottom: 20px; background: var(--surface); position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.02); transition: 0.2s;';
     
-    const deleteBtnHtml = `<button type="button" onclick="removeShoeRow(${shoeRowIndex})" class="btn-remove-shoe" style="position: absolute; top: 16px; right: 16px; background: rgba(239, 68, 68, 0.05); border: none; color: #ef4444; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; transition: 0.2s;"><i class="bi bi-trash"></i></button>`;
+    const deleteBtnHtml = `<button type="button" onclick="removeShoeRow(${shoeRowIndex})" class="btn-remove-shoe" style="position: absolute; top: 16px; right: 16px; background: rgba(239, 68, 68, 0.08); border: none; color: #ef4444; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.75rem; font-weight: 800; transition: 0.2s;">Hapus</button>`;
     
     const service = preselectedServiceId ? serviceData.find(s => s.id == preselectedServiceId) : null;
     const serviceName = service ? service.name : '';
     const badgeHtml = preselectedServiceId ? `
         <div style="background: rgba(13,110,253,0.05); padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 0.8rem; font-weight: 800; color: var(--primary); display: flex; justify-content: space-between; align-items: center; border: 1.5px solid rgba(13,110,253,0.15);">
-            <span>📋 Layanan: ${serviceName}</span>
+            <span>Layanan: ${serviceName}</span>
             <span>Jumlah: ${qty} Pasang</span>
         </div>
     ` : '';
@@ -1222,7 +1223,7 @@ function addNewShoeRow(preselectedServiceId = null, qty = 1) {
     row.innerHTML = `
         ${deleteBtnHtml}
         <div style="font-size: 0.72rem; font-weight: 900; color: var(--primary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 4px;">
-            <span>👟</span> ITEM SEPATU #<span class="item-index-label">${container.children.length + 1}</span>
+            ITEM SEPATU #<span class="item-index-label">${container.children.length + 1}</span>
         </div>
         
         ${badgeHtml}
