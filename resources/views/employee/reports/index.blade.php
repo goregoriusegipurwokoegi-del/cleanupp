@@ -9,22 +9,15 @@
         <div class="card shadow-sm border-0">
             <div class="card-body py-3">
                 <form action="{{ route('employee.reports.index') }}" method="GET" class="row g-3 align-items-end">
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-4">
                         <label class="form-label text-secondary text-uppercase fw-bold small">Tanggal Mulai</label>
                         <input type="date" name="start_date" value="{{ $startDate }}" class="form-control">
                     </div>
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-4">
                         <label class="form-label text-secondary text-uppercase fw-bold small">Tanggal Selesai</label>
                         <input type="date" name="end_date" value="{{ $endDate }}" class="form-control">
                     </div>
                     <div class="col-12 col-md-4">
-                        <label class="form-label text-secondary text-uppercase fw-bold small">Pencarian Pesanan</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light text-secondary"><i class="bi bi-search"></i></span>
-                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari ID Pesanan..." class="form-control">
-                        </div>
-                    </div>
-                    <div class="col-12 col-md-2">
                         <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">Terapkan</button>
                     </div>
                 </form>

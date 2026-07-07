@@ -26,10 +26,14 @@
 @section('content')
 @php
     $backUrl = route('orders.my-orders');
-    if (Auth::user()->role == 'employee') {
-        $backUrl = route('employee.orders.index');
-    } elseif (Auth::user()->role == 'admin') {
-        $backUrl = route('admin.orders.index');
+    if (Auth::check()) {
+        if (Auth::user()->role == 'employee') {
+            $backUrl = route('employee.orders.index');
+        } elseif (Auth::user()->role == 'admin') {
+            $backUrl = route('admin.orders.index');
+        }
+    } else {
+        $backUrl = '/';
     }
 @endphp
 
@@ -352,7 +356,7 @@
 
 
                     
-                    @if($order->payment_method == 'transfer')
+                    @if($order->payment_status == 'unpaid')
                         <div style="background: rgba(249, 115, 22, 0.05); border: 1px solid rgba(249, 115, 22, 0.2); padding: 1.5rem; border-radius: 20px; margin-bottom: 20px;">
                             <div style="display: flex; gap: 16px; align-items: start; margin-bottom: 16px;">
                                 <div style="width: 48px; height: 48px; background: rgba(249, 115, 22, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); flex-shrink: 0;">
@@ -402,7 +406,7 @@
                         </div>
                     @endif
                     
-                    @if($order->payment_method == 'transfer')
+                    @if($order->payment_status == 'unpaid')
                         <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); padding: 1.5rem; border-radius: 20px; margin-bottom: 20px;">
                             <h5 style="color: #60a5fa; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; margin-top: 0; margin-bottom: 12px;">Konfirmasi Pembayaran</h5>
                             
@@ -442,9 +446,6 @@
                             </button>
                         </form>
                     @endif
-                        <a href="{{ route('orders.receipt', $order->id) }}" target="_blank" style="flex: 1; min-width: 150px; background: #fff; color: #000; text-decoration: none; text-align: center; height: 50px; border-radius: 16px; font-weight: 900; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            CETAK STRUK
-                        </a>
                     <a href="https://wa.me/6281234567890?text=Halo Admin CleanUP Shoes, saya mau tanya status pesanan aktif saya #{{ $order->order_number }}" target="_blank" style="flex: 1; min-width: 150px; background: transparent; color: #9ca3af; text-decoration: none; text-align: center; height: 50px; border-radius: 16px; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(255,255,255,0.05);">
                         TANYA ADMIN
                     </a>

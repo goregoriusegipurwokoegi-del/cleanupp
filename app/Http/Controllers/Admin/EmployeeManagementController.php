@@ -82,6 +82,21 @@ class EmployeeManagementController extends Controller
         return view('admin.employees.attendance', compact('attendances', 'employees', 'startDate', 'endDate'));
     }
 
+    public function exportAttendancePdf(Request $request)
+    {
+        $startDate = $request->input('start_date', now()->startOfMonth()->toDateString());
+        $endDate = $request->input('end_date', now()->toDateString());
+
+        $attendances = \App\Models\Attendance::with('user')
+            ->whereBetween('date', [$startDate, $endDate])
+            ->orderBy('date', 'desc')
+            ->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.employees.attendance_pdf', compact('attendances', 'startDate', 'endDate'));
+        
+        return $pdf->download('Rekap_Absensi_Karyawan_' . $startDate . '_sd_' . $endDate . '.pdf');
+    }
+
     public function destroy(User $employee)
     {
         if ($employee->role !== 'employee') {

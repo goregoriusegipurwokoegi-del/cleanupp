@@ -26,6 +26,17 @@
     </div>
 </div>
 
+@if($errors->any())
+    <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 1rem; border-radius: 12px; margin-bottom: 2rem;">
+        <strong style="display: block; margin-bottom: 5px;">⚠️ Gagal Menyimpan Data Karyawan:</strong>
+        <ul style="margin: 0; padding-left: 20px; font-size: 0.85rem;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 @if(session('success'))
     <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981; padding: 1rem; border-radius: 12px; margin-bottom: 2rem;">
         {{ session('success') }}

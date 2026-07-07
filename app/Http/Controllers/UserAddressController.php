@@ -42,14 +42,14 @@ class UserAddressController extends Controller
 
     public function edit(UserAddress $address)
     {
-        if ($address->user_id !== Auth::id()) abort(403);
+        if ((int)$address->user_id !== (int)Auth::id()) abort(403);
         
         return view('profile.addresses.form', compact('address'));
     }
 
     public function update(Request $request, UserAddress $address)
     {
-        if ($address->user_id !== Auth::id()) abort(403);
+        if ((int)$address->user_id !== (int)Auth::id()) abort(403);
         
         $validated = $this->validateAddress($request);
 
@@ -74,7 +74,7 @@ class UserAddressController extends Controller
 
     public function destroy(UserAddress $address)
     {
-        if ($address->user_id !== Auth::id()) abort(403);
+        if ((int)$address->user_id !== (int)Auth::id()) abort(403);
         
         $wasMain = $address->is_main_address;
         $address->delete();

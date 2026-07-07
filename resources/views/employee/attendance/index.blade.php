@@ -33,7 +33,7 @@
                     </h5>
 
                     @if($isClockedIn && !$isClockedOut)
-                        <div class="fs-1 fw-bold text-success font-monospace" id="work-timer" data-clockin="{{ $todayAttendance->clock_in }}">00:00:00</div>
+                        <div class="fs-1 fw-bold text-success font-monospace" id="work-timer" data-clockin="{{ \Carbon\Carbon::parse($todayAttendance->date . ' ' . $todayAttendance->clock_in)->format('Y-m-d\TH:i:s') }}">00:00:00</div>
                     @elseif($isClockedOut)
                         @php
                             $dur = \Carbon\Carbon::parse($todayAttendance->clock_in)->diff(\Carbon\Carbon::parse($todayAttendance->clock_out));

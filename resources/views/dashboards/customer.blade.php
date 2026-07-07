@@ -126,10 +126,10 @@
             $isReady = in_array($order->status, ['ready', 'dikirim', 'uncollected', 'completed']);
             
             $steps = [
-                ['label' => 'Menunggu', 'active' => $isPending],
+                ['label' => $order->is_delivery ? 'Sedang Dalam Penjemputan' : 'Dalam Antrian', 'active' => $isPending],
                 ['label' => ($order->service->category == 'cleaning' ? 'Dicuci' : 'Dikerjakan'), 'active' => $isProcessing],
                 ['label' => ($order->service->category == 'cleaning' ? 'Pengeringan' : 'Finishing'), 'active' => $isFinishing],
-                ['label' => $order->is_delivery ? 'Dikirim/Selesai' : 'Siap Ambil', 'active' => $isReady],
+                ['label' => $order->is_delivery ? 'Sedang Di Antar' : 'Siap Ambil', 'active' => $isReady],
             ];
         @endphp
         

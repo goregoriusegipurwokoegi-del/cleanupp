@@ -13,10 +13,10 @@
     }
 </style>
 <!-- Dashboard Stats Cards Grid (Android App Style) -->
-<div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4">
     <!-- Blue Box: Butuh Validasi -->
     <div class="col">
-        <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #0d6efd, #0a58ca); border-radius: 16px;">
+        <a href="{{ route('employee.orders.index') }}" class="card border-0 shadow-sm text-white h-100 stats-card-link" style="background: linear-gradient(135deg, #0d6efd, #0a58ca); border-radius: 16px;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
@@ -26,11 +26,11 @@
                 </div>
                 <div class="small fw-semibold text-white-50" style="font-size: 0.78rem; line-height: 1.2;">Butuh Validasi</div>
             </div>
-        </div>
+        </a>
     </div>
     <!-- Green Box: Selesai Minggu Ini -->
     <div class="col">
-        <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #198754, #146c43); border-radius: 16px;">
+        <a href="{{ route('employee.reports.index') }}#riwayat" class="card border-0 shadow-sm text-white h-100 stats-card-link" style="background: linear-gradient(135deg, #198754, #146c43); border-radius: 16px;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
@@ -40,11 +40,11 @@
                 </div>
                 <div class="small fw-semibold text-white-50" style="font-size: 0.78rem; line-height: 1.2;">Selesai Minggu Ini</div>
             </div>
-        </div>
+        </a>
     </div>
     <!-- Yellow Box: Antrian Cuci -->
     <div class="col">
-        <div class="card border-0 shadow-sm text-dark h-100" style="background: linear-gradient(135deg, #ffc107, #e0a800); border-radius: 16px;">
+        <a href="{{ route('employee.orders.index', ['queue' => 1, 'category' => 'cleaning']) }}" class="card border-0 shadow-sm text-dark h-100 stats-card-link" style="background: linear-gradient(135deg, #ffc107, #e0a800); border-radius: 16px;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="bg-dark bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
@@ -54,11 +54,11 @@
                 </div>
                 <div class="small fw-semibold text-dark-50" style="font-size: 0.78rem; line-height: 1.2; color: rgba(0,0,0,0.6) !important;">Antrian Cuci</div>
             </div>
-        </div>
+        </a>
     </div>
     <!-- Red Box: Antrian Reparasi -->
     <div class="col">
-        <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #dc3545, #b02a37); border-radius: 16px;">
+        <a href="{{ route('employee.orders.index', ['queue' => 1, 'category' => 'repair']) }}" class="card border-0 shadow-sm text-white h-100 stats-card-link" style="background: linear-gradient(135deg, #dc3545, #b02a37); border-radius: 16px;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
@@ -68,11 +68,11 @@
                 </div>
                 <div class="small fw-semibold text-white-50" style="font-size: 0.78rem; line-height: 1.2;">Antrian Reparasi</div>
             </div>
-        </div>
+        </a>
     </div>
     <!-- Purple Box: Antar Jemput -->
-    <div class="col mobile-full-width">
-        <div class="card border-0 shadow-sm text-white h-100" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 16px;">
+    <div class="col">
+        <a href="{{ route('employee.orders.index', ['delivery' => 1]) }}" class="card border-0 shadow-sm text-white h-100 stats-card-link" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 16px;">
             <div class="card-body p-3 d-flex flex-column justify-content-between">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
@@ -82,13 +82,27 @@
                 </div>
                 <div class="small fw-semibold text-white-50" style="font-size: 0.78rem; line-height: 1.2;">Antar Jemput</div>
             </div>
-        </div>
+        </a>
+    </div>
+    <!-- Cyan Box: Tambah Pesanan -->
+    <div class="col">
+        <a href="{{ route('employee.orders.index', ['create' => 1]) }}" class="card border-0 shadow-sm text-white h-100 stats-card-link" style="background: linear-gradient(135deg, #06b6d4, #0891b2); border-radius: 16px;">
+            <div class="card-body p-3 d-flex flex-column justify-content-between">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="bi bi-plus-lg fs-6"></i>
+                    </span>
+                    <strong class="fs-4">+</strong>
+                </div>
+                <div class="small fw-semibold text-white-50" style="font-size: 0.78rem; line-height: 1.2;">Tambah Pesanan</div>
+            </div>
+        </a>
     </div>
 </div>
 
 <!-- Incoming Orders Alert Banner -->
 @if($incomingOrders->isNotEmpty())
-<div class="alert alert-info border-0 shadow-sm d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between my-4 p-3 gap-3 alert-recent-order" style="border-radius: 16px;">
+<div class="alert alert-info border-0 shadow-sm d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between mb-4 p-3 gap-3 alert-recent-order" style="border-radius: 16px;">
     <div class="d-flex align-items-start gap-2">
         <i class="bi bi-info-circle-fill fs-4 text-primary mt-0.5"></i>
         <div>
@@ -101,7 +115,7 @@
 @endif
 
 <!-- Monitoring Pipelines -->
-<div class="row g-2">
+<div class="row g-4">
     <!-- Cleaning -->
     <div class="col-6 mb-3">
         <div class="card shadow-sm pipeline-card">
@@ -169,6 +183,15 @@
 
 @push('styles')
 <style>
+    .stats-card-link {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        text-decoration: none !important;
+    }
+    .stats-card-link:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.18) !important;
+    }
+
     /* Adaptive colors for the original alert banner */
     .alert-recent-order {
         background-color: #e0f2fe;

@@ -31,7 +31,13 @@
             <label style="display: block; font-size: 0.8rem; opacity: 0.6; margin-bottom: 0.5rem;">Sampai Tanggal</label>
             <input type="date" name="end_date" value="{{ $endDate }}" style="width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; outline: none;">
         </div>
-        <button type="submit" style="background: var(--primary); color: #0f172a; border: none; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 700; cursor: pointer;">Tampilkan</button>
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" style="background: var(--primary); color: #0f172a; border: none; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 700; cursor: pointer;">Tampilkan</button>
+            <button type="submit" formaction="{{ route('admin.employees.attendance.pdf') }}" formtarget="_blank" style="background: #ef4444; color: #fff; border: none; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Ekspor PDF
+            </button>
+        </div>
     </form>
 </div>
 

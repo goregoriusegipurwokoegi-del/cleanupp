@@ -48,6 +48,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         Route::get('/employees', [App\Http\Controllers\Admin\EmployeeManagementController::class, 'index'])->name('admin.employees.index');
         Route::get('/employees/attendance', [App\Http\Controllers\Admin\EmployeeManagementController::class, 'attendance'])->name('admin.employees.attendance');
+        Route::get('/employees/attendance/pdf', [App\Http\Controllers\Admin\EmployeeManagementController::class, 'exportAttendancePdf'])->name('admin.employees.attendance.pdf');
         Route::post('/employees', [App\Http\Controllers\Admin\EmployeeManagementController::class, 'store'])->name('admin.employees.store');
         Route::put('/employees/{employee}', [App\Http\Controllers\Admin\EmployeeManagementController::class, 'update'])->name('admin.employees.update');
         Route::delete('/employees/{employee}', [App\Http\Controllers\Admin\EmployeeManagementController::class, 'destroy'])->name('admin.employees.destroy');
@@ -90,6 +91,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders', [App\Http\Controllers\OrderController::class, 'employeeStore'])->name('employee.orders.store');
         Route::put('/orders/{order}', [App\Http\Controllers\OrderController::class, 'adminUpdate'])->name('employee.orders.update');
         Route::patch('/orders/{order}', [App\Http\Controllers\OrderController::class, 'updateStatus'])->name('orders.status.update');
+        Route::post('/orders/{order}/photo-after', [App\Http\Controllers\OrderController::class, 'uploadPhotoAfter'])->name('orders.photo_after.update');
         
         Route::post('/attendance/clock-in', [App\Http\Controllers\AttendanceController::class, 'clockIn'])->name('employee.attendance.clock-in');
         Route::post('/attendance/clock-out', [App\Http\Controllers\AttendanceController::class, 'clockOut'])->name('employee.attendance.clock-out');
@@ -154,10 +156,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
 
     });
-    Route::get('/customer/orders/{order}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
-    Route::get('/customer/orders/{order}/receipt', [App\Http\Controllers\OrderController::class, 'receipt'])->name('orders.receipt');
-    Route::post('/customer/orders/{order}/upload-payment-proof', [App\Http\Controllers\OrderController::class, 'uploadPaymentProof'])->name('orders.upload_payment_proof');
 });
+
+// Public access routes for customer orders (scan receipt/track progress without login)
+Route::get('/customer/orders/{order}', [App\Http\Controllers\OrderController::class, 'show'])->name('orders.show');
+Route::get('/customer/orders/{order}/receipt', [App\Http\Controllers\OrderController::class, 'receipt'])->name('orders.receipt');
+Route::post('/customer/orders/{order}/upload-payment-proof', [App\Http\Controllers\OrderController::class, 'uploadPaymentProof'])->name('orders.upload_payment_proof');
 
 
 Route::middleware('auth')->group(function () {

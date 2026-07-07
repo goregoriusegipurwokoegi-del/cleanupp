@@ -280,7 +280,7 @@
                         <li class="nav-item mb-1">
                             <a href="{{ route('employee.orders.scan') }}" class="nav-link {{ request()->routeIs('employee.orders.scan') ? 'active text-white bg-primary' : 'text-light' }}">
                                 <i class="nav-icon bi bi-qr-code-scan"></i>
-                                <p class="ms-2">Scan QR / Cari</p>
+                                <p class="ms-2">Cari Data Pesanan Pelanggan</p>
                             </a>
                         </li>
                         <li class="nav-item {{ request('queue') == '1' ? 'menu-open' : '' }} mb-1">
@@ -527,6 +527,47 @@
                     });
                 }
             });
+
+            // 2. Intercept buttons with inline confirm onclick
+            document.querySelectorAll('button[onclick*="confirm("], input[type="submit"][onclick*="confirm("]').forEach(btn => {
+                const onclickAttr = btn.getAttribute('onclick');
+                if (onclickAttr && onclickAttr.includes('confirm(')) {
+                    let match = onclickAttr.match(/confirm\(['"](.*?)['"]\)/);
+                    let message = match ? match[1] : 'Apakah Anda yakin?';
+                    
+                    btn.removeAttribute('onclick');
+                    
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const form = btn.closest('form');
+                        
+                        Swal.fire({
+                            title: 'Konfirmasi Tindakan',
+                            text: message,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#0d6efd',
+                            cancelButtonColor: '#6c757d',
+                            confirmButtonText: 'Ya, Lanjutkan',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                if (form) {
+                                    form.dataset.swalConfirmed = 'true';
+                                    if (btn.name) {
+                                        const hiddenInput = document.createElement('input');
+                                        hiddenInput.type = 'hidden';
+                                        hiddenInput.name = btn.name;
+                                        hiddenInput.value = btn.value;
+                                        form.appendChild(hiddenInput);
+                                    }
+                                    form.submit();
+                                }
+                            }
+                        });
+                    });
+                }
+            });
         });
 
         // Theme Toggle Script
@@ -558,6 +599,35 @@
             }
         });
     </script>
+    
+    @if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '{{ session('success') }}',
+                timer: 3000,
+                showConfirmButton: false,
+                confirmButtonColor: '#0d6efd'
+            });
+        });
+    </script>
+    @endif
+
+    @if(session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: '{{ session('error') }}',
+                confirmButtonColor: '#0d6efd'
+            });
+        });
+    </script>
+    @endif
+    
     @stack('scripts')
 </body>
 </html>

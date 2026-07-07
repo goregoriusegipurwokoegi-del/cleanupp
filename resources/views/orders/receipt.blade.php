@@ -9,7 +9,7 @@
         $phone = '62' . substr($phone, 1);
     }
     
-    $waText = "🧾 *Struk Pembayaran CleanUP Shoes*\n";
+    $waText = "🧾 *Struk Pembayaran RSP (Reparasi Sepatu Pontianak)*\n";
     $waText .= "--------------------------------\n";
     $waText .= "Pembeli: " . $order->user->name . "\n";
     $waText .= "Tanggal: " . $order->created_at->format('d/m/Y H:i') . "\n";
@@ -24,6 +24,23 @@
     $waText .= "Status: " . ($order->payment_status == 'paid' ? 'LUNAS' : 'BELUM BAYAR') . "\n";
     $waText .= "--------------------------------\n";
     $waText .= "Terima kasih telah mempercayakan sepatu Anda pada kami! ✨";
+
+    // Subtotal and discount math
+    $subtotalBeforeDiscount = 0;
+    foreach($groupOrders as $grpOrder) {
+        $itemSub = ($grpOrder->service->price + ($grpOrder->processing_speed == 'express' ? 25000 : 0)) * $grpOrder->shoe_quantity;
+        if ($grpOrder->additional_services) {
+            $extras = \App\Models\Service::whereIn('id', $grpOrder->additional_services)->get();
+            foreach($extras as $extra) {
+                $itemSub += $extra->price * $grpOrder->shoe_quantity;
+            }
+        }
+        $subtotalBeforeDiscount += $itemSub;
+    }
+    $totalDeliveryFee = $groupOrders->sum('delivery_fee');
+    $grandSubtotal = $subtotalBeforeDiscount + $totalDeliveryFee;
+    $actualTotal = $groupTotal;
+    $discountAmount = max(0, $grandSubtotal - $actualTotal);
 @endphp
 
 <div style="max-width: 450px; margin: 0 auto; padding-bottom: 4rem;">
@@ -47,19 +64,19 @@
     <div class="thermal-receipt" style="background: #fff; color: #000; font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif; padding: 24px; width: 340px; margin: 0 auto; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.4);">
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 15px;">
-            <h2 style="margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.5px;">CleanUP Shoes</h2>
-            <p style="margin: 2px 0 0 0; font-size: 13px; opacity: 0.8; font-weight: 600;">Premium Shoe Care</p>
-            <p style="margin: 1px 0 0 0; font-size: 11px; opacity: 0.6;">Outlet Pusat</p>
+            <h1 style="margin: 0; font-size: 32px; font-weight: 900; letter-spacing: 2px; line-height: 1; color: #000;">RSP</h1>
+            <div style="border-bottom: 2px solid #000; width: 85%; margin: 6px auto 8px;"></div>
+            <p style="margin: 0; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #000;">Reparasi Sepatu Pontianak</p>
+            <p style="margin: 2px 0 0 0; font-size: 9px; font-weight: 700; opacity: 0.8; color: #000;">By Captain Philips</p>
             <div style="margin-top: 8px; font-size: 10px; font-weight: 900; padding: 4px 10px; border-radius: 6px; display: inline-block; text-transform: uppercase; letter-spacing: 0.5px; {{ $order->payment_status == 'paid' ? 'background: rgba(16, 185, 129, 0.15); color: #10b981;' : 'background: rgba(245, 158, 11, 0.15); color: #f59e0b;' }}">
                 {{ $order->payment_status == 'paid' ? 'LUNAS' : 'BELUM BAYAR' }}
             </div>
         </div>
         
         <div style="border-bottom: 1px dashed rgba(0,0,0,0.15); margin-bottom: 12px;"></div>
-        
-        <!-- Info Grid -->
+            <!-- Info Grid -->
         <div style="display: grid; grid-template-columns: 85px 10px 1fr; row-gap: 5px; font-size: 11px; margin-bottom: 12px; line-height: 1.4;">
-            <div style="color: #666;">No. Struk</div>
+            <div style="color: #666;">No. Pesanan</div>
             <div style="color: #666;">:</div>
             <div style="font-weight: 800;">{{ $order->group_id ?: $order->order_number }}</div>
 
@@ -67,131 +84,126 @@
             <div style="color: #666;">:</div>
             <div>{{ $order->created_at->format('d M Y, H:i') }}</div>
 
-            <div style="color: #666;">Pelanggan</div>
-            <div style="color: #666;">:</div>
-            <div style="font-weight: 700;">{{ $order->user->name }}</div>
-
-            @if($order->user->phone)
-            <div style="color: #666;">No. HP</div>
-            <div style="color: #666;">:</div>
-            <div>{{ $order->user->phone }}</div>
-            @endif
-
-            <div style="color: #666;">Pembayaran</div>
-            <div style="color: #666;">:</div>
-            <div style="text-transform: uppercase;">{{ $order->payment_method }}</div>
-
             <div style="color: #666;">Kasir</div>
             <div style="color: #666;">:</div>
             <div>Sistem</div>
         </div>
         
-        <div style="border-bottom: 1px dashed rgba(0,0,0,0.15); margin-bottom: 12px;"></div>
+        <!-- Pelanggan Section -->
+        <div style="border-top: 1px dashed rgba(0,0,0,0.15); border-bottom: 1px dashed rgba(0,0,0,0.15); padding: 8px 0; margin-bottom: 12px;">
+            <div style="font-weight: 800; text-transform: uppercase; font-size: 11px; margin-bottom: 5px; letter-spacing: 0.3px;">Pelanggan</div>
+            <div style="display: grid; grid-template-columns: 85px 10px 1fr; row-gap: 3px; font-size: 11px; line-height: 1.4;">
+                <div style="color: #666;">Nama</div>
+                <div style="color: #666;">:</div>
+                <div style="font-weight: 700;">{{ $order->user->name }}</div>
+                
+                @if($order->user->phone)
+                <div style="color: #666;">No. HP</div>
+                <div style="color: #666;">:</div>
+                <div>{{ $order->user->phone }}</div>
+                @endif
+            </div>
+        </div>
         
-        <!-- Items -->
+        <!-- Detail Layanan Section -->
         <div style="font-size: 11px; margin-bottom: 12px;">
+            <div style="font-weight: 800; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.3px;">Detail Layanan</div>
+            
             @php $itemIndex = 1; @endphp
             @foreach($groupOrders as $grpOrder)
-            <!-- Main Service -->
-            <div style="margin-bottom: 10px;">
-                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 12px; margin-bottom: 2px;">
-                    <span>{{ $itemIndex++ }}. {{ $grpOrder->service->name }}</span>
-                    <span>Rp{{ number_format(($grpOrder->service->price + ($grpOrder->processing_speed == 'express' ? 25000 : 0)) * $grpOrder->shoe_quantity, 0, ',', '.') }}</span>
+            <!-- Service Item -->
+            <div style="margin-bottom: 10px; line-height: 1.4;">
+                <div style="font-weight: 800; font-size: 11px;">
+                    {{ $itemIndex++ }}. {{ $grpOrder->service->name }}
+                </div>
+                <!-- Shoe Name & Size -->
+                <div style="padding-left: 12px; color: #444; font-weight: 600;">
+                    {{ $grpOrder->shoe_name ?: 'Sepatu' }} (Size: {{ $grpOrder->shoe_size ?? '-' }})
                 </div>
                 @php $mainPrice = $grpOrder->service->price + ($grpOrder->processing_speed == 'express' ? 25000 : 0); @endphp
-                <div style="color: #666; font-size: 10px; display: flex; justify-content: space-between;">
-                    <span>Tipe: {{ $grpOrder->processing_speed == 'express' ? 'Express' : 'Reguler' }}</span>
-                    <span>{{ $grpOrder->shoe_quantity }} x Rp{{ number_format($mainPrice, 0, ',', '.') }}</span>
+                
+                <!-- Additional Services if any -->
+                @if($grpOrder->additional_services)
+                    @php
+                        $extras = \App\Models\Service::whereIn('id', $grpOrder->additional_services)->get();
+                    @endphp
+                    @foreach($extras as $extra)
+                    <div style="padding-left: 12px; color: #666; font-size: 10px;">
+                        + {{ $extra->name }} (+Rp{{ number_format($extra->price, 0, ',', '.') }})
+                    </div>
+                    @php $mainPrice += $extra->price; @endphp
+                    @endforeach
+                @endif
+                
+                <!-- Qty and price line -->
+                <div style="padding-left: 12px; color: #555; font-size: 10.5px; display: flex; justify-content: space-between;">
+                    <span>Qty : {{ $grpOrder->shoe_quantity }} x Rp{{ number_format($mainPrice, 0, ',', '.') }}</span>
+                    <span>= Rp{{ number_format($mainPrice * $grpOrder->shoe_quantity, 0, ',', '.') }}</span>
                 </div>
             </div>
-            
-            <!-- Additional Services -->
-            @if($grpOrder->additional_services)
-                @php
-                    $extras = \App\Models\Service::whereIn('id', $grpOrder->additional_services)->get();
-                @endphp
-                @foreach($extras as $extra)
-                <div style="margin-bottom: 8px; padding-left: 10px;">
-                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
-                        <span>+ {{ $extra->name }}</span>
-                        <span>Rp{{ number_format($extra->price * $grpOrder->shoe_quantity, 0, ',', '.') }}</span>
-                    </div>
-                    <div style="color: #666; font-size: 10px; display: flex; justify-content: space-between;">
-                        <span>Layanan Tambahan</span>
-                        <span>{{ $grpOrder->shoe_quantity }} x Rp{{ number_format($extra->price, 0, ',', '.') }}</span>
-                    </div>
-                </div>
-                @endforeach
-            @endif
             @endforeach
             
             <!-- Delivery Fee -->
-            @php
-                $totalDeliveryFee = $groupOrders->sum('delivery_fee');
-            @endphp
             @if($totalDeliveryFee > 0)
-            <div style="margin-bottom: 10px;">
-                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 12px; margin-bottom: 2px;">
-                    <span>🚚 Antar Jemput</span>
-                    <span>Rp{{ number_format($totalDeliveryFee, 0, ',', '.') }}</span>
-                </div>
-                <div style="color: #666; font-size: 10px; display: flex; justify-content: space-between;">
-                    <span>Biaya Ongkir</span>
-                    <span>1 x Rp{{ number_format($totalDeliveryFee, 0, ',', '.') }}</span>
+            <div style="margin-bottom: 10px; line-height: 1.4; padding-left: 12px;">
+                <div style="font-weight: 800;">🚚 Antar Jemput</div>
+                <div style="color: #666; font-size: 11px; display: flex; justify-content: space-between;">
+                    <span>Ongkos Kirim</span>
+                    <span>= Rp{{ number_format($totalDeliveryFee, 0, ',', '.') }}</span>
                 </div>
             </div>
             @endif
         </div>
         
+        <div style="border-top: 1px dashed rgba(0,0,0,0.15); padding-top: 8px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; font-size: 11px; line-height: 1.4;">
+            <div style="display: flex; justify-content: space-between;">
+                <span>Subtotal</span>
+                <span>Rp{{ number_format($grandSubtotal, 0, ',', '.') }}</span>
+            </div>
+            @if($discountAmount > 0)
+            <div style="display: flex; justify-content: space-between; color: #dc3545;">
+                <span>Diskon</span>
+                <span>-Rp{{ number_format($discountAmount, 0, ',', '.') }}</span>
+            </div>
+            @endif
+            <div style="border-bottom: 1px dashed rgba(0,0,0,0.15); margin: 4px 0;"></div>
+            <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 13px;">
+                <span>TOTAL</span>
+                <span>Rp{{ number_format($actualTotal, 0, ',', '.') }}</span>
+            </div>
+        </div>
+        
         <div style="border-bottom: 1px dashed rgba(0,0,0,0.15); margin-bottom: 12px;"></div>
         
-        <!-- Totals Grid -->
-        <div style="font-size: 11px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; line-height: 1.4;">
-            <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 13px;">
-                <span>TOTAL {{ $groupOrders->sum('shoe_quantity') }} SEPATU</span>
-                <span>Rp{{ number_format($groupTotal, 0, ',', '.') }}</span>
-            </div>
+        <!-- Payment details -->
+        <div style="font-size: 11px; display: grid; grid-template-columns: 85px 10px 1fr; row-gap: 5px; line-height: 1.4; margin-bottom: 12px;">
+            <div style="color: #666;">Metode Bayar</div>
+            <div style="color: #666;">:</div>
+            <div style="text-transform: capitalize;">{{ $order->payment_method == 'cash' ? 'Tunai' : ($order->payment_method == 'qris' ? 'QRIS' : ($order->payment_method == 'transfer' ? 'Transfer Bank' : 'Belum Bayar')) }}</div>
+
+            <div style="color: #666;">Jumlah Bayar</div>
+            <div style="color: #666;">:</div>
+            <div>Rp{{ number_format($order->payment_method == 'cash' ? ($order->cash_amount ?: $actualTotal) : $actualTotal, 0, ',', '.') }}</div>
+
             @if($order->payment_method == 'cash')
-                <div style="display: flex; justify-content: space-between; font-weight: 900; color: #000; font-size: 16px; border-top: 1px dashed rgba(0,0,0,0.15); padding-top: 6px; margin-top: 4px;">
-                    <span>Jumlah Bayar</span>
-                    <span>Rp{{ number_format($order->cash_amount ?: $groupTotal, 0, ',', '.') }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; color: #555; font-size: 11px;">
-                    <span>Kembalian</span>
-                    <span>Rp{{ number_format($order->change_amount ?: 0, 0, ',', '.') }}</span>
-                </div>
-            @else
-                <div style="display: flex; justify-content: space-between; font-weight: 900; color: #000; font-size: 16px; border-top: 1px dashed rgba(0,0,0,0.15); padding-top: 6px; margin-top: 4px;">
-                    <span>Jumlah Bayar</span>
-                    <span>Rp{{ number_format($groupTotal, 0, ',', '.') }}</span>
-                </div>
+            <div style="color: #666;">Kembalian</div>
+            <div style="color: #666;">:</div>
+            <div>Rp{{ number_format($order->change_amount ?: 0, 0, ',', '.') }}</div>
             @endif
-        </div>
-        
-        <div style="border-bottom: 1px dashed rgba(0,0,0,0.15); margin-bottom: 12px;"></div>
-        
-        <!-- Details & Notes -->
-        <div style="font-size: 11px; line-height: 1.4; color: #333;">
-            <div style="font-weight: 800; color: #000; margin-bottom: 4px;">Detail Sepatu:</div>
-            @php $processedShoes = []; @endphp
-            @foreach($groupOrders as $grpOrder)
-                @php
-                    $shoeKey = ($grpOrder->shoe_name ?: 'Sepatu') . ' (Size ' . ($grpOrder->shoe_size ?? '-') . ')';
-                @endphp
-                @if(!in_array($shoeKey, $processedShoes))
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                        <span>• {{ $grpOrder->shoe_name ?: 'Sepatu' }}</span>
-                        <span style="color: #666; font-weight: 600;">Size: {{ $grpOrder->shoe_size ?? '-' }}</span>
-                    </div>
-                    @php $processedShoes[] = $shoeKey; @endphp
-                @endif
-            @endforeach
-            @if($order->notes)
-            <div style="border-top: 1px solid rgba(0,0,0,0.05); margin-top: 6px; padding-top: 6px;">
-                <strong>Catatan:</strong> {{ $order->notes }}
+
+            <div style="color: #666;">Status</div>
+            <div style="color: #666;">:</div>
+            <div style="font-weight: 800; color: {{ $order->payment_status == 'paid' ? '#10b981' : '#f59e0b' }};">
+                {{ $order->payment_status == 'paid' ? 'Lunas' : 'Belum Bayar' }}
             </div>
-            @endif
         </div>
+        
+        <!-- Notes if exists -->
+        @if($order->notes)
+        <div style="font-size: 11px; line-height: 1.4; color: #333; margin-bottom: 12px;">
+            <strong>Catatan:</strong> {{ $order->notes }}
+        </div>
+        @endif
         
         <div style="border-bottom: 1px dashed rgba(0,0,0,0.15); margin-top: 12px; margin-bottom: 12px;"></div>
         

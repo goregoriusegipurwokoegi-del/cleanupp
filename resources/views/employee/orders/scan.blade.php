@@ -1,6 +1,6 @@
 @extends('layouts.employee-dashboard')
 
-@section('page_title', 'Scan / Cari Pesanan')
+@section('page_title', 'Cari Data Pesanan Pelanggan')
 
 @section('content')
 <div class="card shadow-sm border-0 mx-auto" style="max-width: 600px;">

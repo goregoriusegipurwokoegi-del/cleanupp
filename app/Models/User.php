@@ -50,6 +50,8 @@ class User extends Authenticatable
         'password_plain',
         'role',
         'google_id',
+        'work_start',
+        'work_end',
     ];
 
     /**

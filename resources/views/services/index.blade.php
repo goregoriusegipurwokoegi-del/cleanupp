@@ -455,7 +455,7 @@
 
             <div style="margin-bottom:1rem;">
                 <label style="display:block;font-size:0.8rem;font-weight:700;color:#94a3b8;margin-bottom:5px;">
-                    Nama Sepatu <span style="color:#ef4444;">*</span>
+                    Merek Sepatu <span style="color:#ef4444;">*</span>
                 </label>
                 <input type="text" name="shoe_name" required placeholder="Cth: Nike Air Force 1" value="{{ $lastCartItem['shoe_name'] ?? '' }}"
                        style="width:100%;padding:12px;border-radius:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.1);color:#fff;">
