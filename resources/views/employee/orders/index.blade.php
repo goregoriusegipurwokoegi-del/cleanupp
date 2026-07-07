@@ -1119,26 +1119,13 @@
             ${badgeHtml}
             
             <div class="row g-3 mb-3">
-                <div class="col-md-8">
+                <div class="col-md-5">
                     <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size: 0.72rem; letter-spacing: 0.3px;">Merek / Nama Sepatu</label>
                     <input type="text" name="items[${empShoeRowIndex}][shoe_name]" placeholder="Contoh: Nike Air Jordan" required class="form-control" style="border-radius: 10px; padding: 10px;" oninput="empUpdateReceiptPreview()">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size: 0.72rem; letter-spacing: 0.3px;">Ukuran</label>
                     <input type="text" name="items[${empShoeRowIndex}][shoe_size]" placeholder="Contoh: 42" required class="form-control" style="border-radius: 10px; padding: 10px;" oninput="empUpdateReceiptPreview()">
-                </div>
-            </div>
-            
-            <div class="row g-3 mb-3" style="${preselectedServiceId ? 'display: none !important;' : ''}">
-                <div class="col-md-5">
-                    <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size: 0.72rem; letter-spacing: 0.3px;">Jenis Layanan Utama</label>
-                    <select name="items[${empShoeRowIndex}][service_id]" required class="form-select emp-service-select-item" style="border-radius: 10px; padding: 10px;" onchange="empUpdateAdditionalServicesVisibility(${empShoeRowIndex}); empCalculateTotals();">
-                        <option value="">-- Pilih Layanan Utama --</option>
-                        ${empServiceData.map(s => {
-                            const selected = (preselectedServiceId && s.id == preselectedServiceId) ? 'selected' : '';
-                            return `<option value="${s.id}" data-price="${s.price}" ${selected}>${s.name} (Rp ${s.price.toLocaleString('id-ID')})</option>`;
-                        }).join('')}
-                    </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size: 0.72rem; letter-spacing: 0.3px;">Kecepatan</label>
@@ -1147,7 +1134,20 @@
                         <option value="express">Express (+ Rp 25.000 / pasang)</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+            </div>
+            
+            <div class="row g-3 mb-3 emp-service-qty-row" style="${preselectedServiceId ? 'display: none !important;' : ''}">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size: 0.72rem; letter-spacing: 0.3px;">Jenis Layanan Utama</label>
+                    <select name="items[${empShoeRowIndex}][service_id]" ${preselectedServiceId ? '' : 'required'} class="form-select emp-service-select-item" style="border-radius: 10px; padding: 10px;" onchange="empUpdateAdditionalServicesVisibility(${empShoeRowIndex}); empCalculateTotals();">
+                        <option value="">-- Pilih Layanan Utama --</option>
+                        ${empServiceData.map(s => {
+                            const selected = (preselectedServiceId && s.id == preselectedServiceId) ? 'selected' : '';
+                            return `<option value="${s.id}" data-price="${s.price}" ${selected}>${s.name} (Rp ${s.price.toLocaleString('id-ID')})</option>`;
+                        }).join('')}
+                    </select>
+                </div>
+                <div class="col-md-4">
                     <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size: 0.72rem; letter-spacing: 0.3px;">Jumlah</label>
                     <div class="input-group" style="border-radius: 10px; overflow: hidden;">
                         <button class="btn btn-outline-secondary px-3" type="button" onclick="empDecreaseQty(this)" style="font-weight: bold; font-size: 1.1rem; border-color: #dee2e6;">-</button>
@@ -1646,14 +1646,14 @@
                 const qtyInput = row.querySelector('.emp-qty-input-item');
                 if (qtyInput) qtyInput.value = qty;
                 
-                const grid2 = svcSelect.closest('.row');
+                const grid2 = row.querySelector('.emp-service-qty-row') || svcSelect.closest('.row');
                 if (grid2) grid2.style.setProperty('display', 'none', 'important');
                 
                 const service = empServiceData.find(s => s.id == serviceId);
                 const serviceName = service ? service.name : '';
                 const badgeHtml = `
                     <div class="alert alert-primary py-2 px-3 mb-3 d-flex justify-content-between align-items-center" style="border-radius: 12px; font-weight: 700; font-size: 0.8rem;">
-                        <span>📋 Layanan: ${serviceName}</span>
+                        <span>Layanan: ${serviceName}</span>
                         <span>Jumlah: ${qty} Pasang</span>
                     </div>
                 `;

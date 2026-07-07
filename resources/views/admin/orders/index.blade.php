@@ -1062,13 +1062,13 @@
 }
 .shoe-row-grid-1 {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 2fr 1fr 1.5fr;
     gap: 14px;
     margin-bottom: 14px;
 }
 .shoe-row-grid-2 {
     display: grid;
-    grid-template-columns: 1.5fr 1.2fr 130px;
+    grid-template-columns: 2fr 1fr;
     gap: 14px;
     margin-bottom: 14px;
 }
@@ -1236,24 +1236,24 @@ function addNewShoeRow(preselectedServiceId = null, qty = 1) {
                 <label style="display: block; font-size: 0.72rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase;">Ukuran</label>
                 <input type="text" name="items[${shoeRowIndex}][shoe_size]" placeholder="Contoh: 42" required class="filter-input" style="width: 100%; padding: 11px; border-radius: 10px;" oninput="updateReceiptPreview()">
             </div>
-        </div>
-        
-        <div class="shoe-row-grid-2" style="${preselectedServiceId ? 'display: none;' : ''}">
-            <div>
-                <label style="display: block; font-size: 0.72rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase;">Jenis Layanan Utama</label>
-                <select name="items[${shoeRowIndex}][service_id]" required class="filter-input service-select-item" style="width: 100%; padding: 11px; border-radius: 10px;" onchange="updateAdditionalServicesVisibility(${shoeRowIndex}); calculatePriceAndItemTotals();">
-                    <option value="">-- Pilih Layanan Utama --</option>
-                    ${serviceData.map(s => {
-                        const selected = (preselectedServiceId && s.id == preselectedServiceId) ? 'selected' : '';
-                        return `<option value="${s.id}" data-price="${s.price}" ${selected}>${s.name} (Rp ${s.price.toLocaleString('id-ID')})</option>`;
-                    }).join('')}
-                </select>
-            </div>
             <div>
                 <label style="display: block; font-size: 0.72rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase;">Kecepatan</label>
                 <select name="items[${shoeRowIndex}][processing_speed]" required class="filter-input speed-select-item" style="width: 100%; padding: 11px; border-radius: 10px;" onchange="calculatePriceAndItemTotals()">
                     <option value="regular">Regular (+ Rp 0)</option>
                     <option value="express">Express (+ Rp 25.000 / pasang)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="shoe-row-grid-2" style="${preselectedServiceId ? 'display: none !important;' : ''}">
+            <div>
+                <label style="display: block; font-size: 0.72rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase;">Jenis Layanan Utama</label>
+                <select name="items[${shoeRowIndex}][service_id]" ${preselectedServiceId ? '' : 'required'} class="filter-input service-select-item" style="width: 100%; padding: 11px; border-radius: 10px;" onchange="updateAdditionalServicesVisibility(${shoeRowIndex}); calculatePriceAndItemTotals();">
+                    <option value="">-- Pilih Layanan Utama --</option>
+                    ${serviceData.map(s => {
+                        const selected = (preselectedServiceId && s.id == preselectedServiceId) ? 'selected' : '';
+                        return `<option value="${s.id}" data-price="${s.price}" ${selected}>${s.name} (Rp ${s.price.toLocaleString('id-ID')})</option>`;
+                    }).join('')}
                 </select>
             </div>
             <div>
@@ -1942,13 +1942,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (qtyInput) qtyInput.value = qty;
                 
                 const grid2 = row.querySelector('.shoe-row-grid-2');
-                if (grid2) grid2.style.display = 'none';
+                if (grid2) grid2.style.setProperty('display', 'none', 'important');
                 
                 const service = serviceData.find(s => s.id == serviceId);
                 const serviceName = service ? service.name : '';
                 const badgeHtml = `
                     <div style="background: rgba(13,110,253,0.05); padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 0.8rem; font-weight: 800; color: var(--primary); display: flex; justify-content: space-between; align-items: center; border: 1.5px solid rgba(13,110,253,0.15);">
-                        <span>📋 Layanan: ${serviceName}</span>
+                        <span>Layanan: ${serviceName}</span>
                         <span>Jumlah: ${qty} Pasang</span>
                     </div>
                 `;
