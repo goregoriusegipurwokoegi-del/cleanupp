@@ -315,6 +315,14 @@
         .modal-img-container { height: 180px; }
         .modal-title { font-size: 1.2rem; }
     }
+    .qty-input-stepper::-webkit-outer-spin-button,
+    .qty-input-stepper::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .qty-input-stepper[type=number] {
+      -moz-appearance: textfield;
+    }
 </style>
 
 <div style="margin-bottom: 30px;">
@@ -471,8 +479,12 @@
                     <label style="display:block;font-size:0.8rem;font-weight:700;color:#94a3b8;margin-bottom:5px;">
                         Jumlah <span style="color:#ef4444;">*</span>
                     </label>
-                    <input type="number" name="shoe_quantity" value="1" min="1" required
-                           style="width:100%;padding:12px;border-radius:12px;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.1);color:#fff;">
+                    <div style="display: flex; align-items: center; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; width: 100%; height: 46px;">
+                        <button type="button" onclick="decreaseCartModalQty(this)" style="background: transparent; border: none; color: #fff; width: 40px; height: 100%; cursor: pointer; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: 0.2s;">-</button>
+                        <input type="number" name="shoe_quantity" value="1" min="1" required class="qty-input-stepper"
+                               style="width: calc(100% - 80px); text-align: center; border: none; background: transparent; color: #fff; font-size: 1rem; font-weight: 700; height: 100%; padding: 0; outline: none;">
+                        <button type="button" onclick="increaseCartModalQty(this)" style="background: transparent; border: none; color: #fff; width: 40px; height: 100%; cursor: pointer; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: 0.2s;">+</button>
+                    </div>
                 </div>
             </div>
 
@@ -569,6 +581,18 @@
             closeModal('addToCartModal');
         }
     });
+
+    function decreaseCartModalQty(btn) {
+        const input = btn.parentElement.querySelector('input[name="shoe_quantity"]');
+        let val = parseInt(input.value) || 1;
+        if (val > 1) input.value = val - 1;
+    }
+
+    function increaseCartModalQty(btn) {
+        const input = btn.parentElement.querySelector('input[name="shoe_quantity"]');
+        let val = parseInt(input.value) || 1;
+        input.value = val + 1;
+    }
 </script>
 
 @endsection

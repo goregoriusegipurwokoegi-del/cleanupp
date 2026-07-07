@@ -750,7 +750,7 @@
 
 <!-- Modal Tambah Pesanan (Wizard) -->
 <div id="createOrderModal" class="modal-backdrop" onclick="closeModal('createOrderModal')">
-    <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 1080px; width: 95%; padding: 0; border-radius: 24px; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.15); background: var(--surface);">
+    <div class="modal-box" onclick="event.stopPropagation()" style="max-width: 1350px; width: 95%; padding: 0; border-radius: 24px; border: 1px solid var(--border-color); box-shadow: 0 20px 50px rgba(0,0,0,0.15); background: var(--surface);">
 
         {{-- Header Redesign --}}
         <div style="background: var(--surface-variant); padding: 24px 28px; border-bottom: 1.5px solid var(--border-color); border-top-left-radius: 23px; border-top-right-radius: 23px;">
@@ -767,7 +767,49 @@
             @csrf
 
             <div class="modal-grid-container">
-                {{-- LEFT COLUMN: Pelanggan & Sepatu --}}
+                {{-- COLUMN 1: POS Catalog --}}
+                <div class="pos-catalog-container" style="background: var(--surface); border: 1px solid var(--border-color); padding: 20px; border-radius: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.01); display: flex; flex-direction: column; gap: 16px; max-height: 75vh; overflow-y: auto;">
+                    <div style="font-size: 0.75rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 6px;">
+                        <span>🛍️</span> Katalog Layanan
+                    </div>
+                    
+                    <!-- Search Bar -->
+                    <div style="position: relative;">
+                        <input type="text" id="catalog-search" oninput="filterCatalog()" placeholder="Cari layanan..." class="filter-input" style="width: 100%; padding: 10px 12px; border-radius: 10px; font-size: 0.85rem;">
+                    </div>
+                    
+                    <!-- Category Tabs -->
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn btn-sm active-cat-btn" onclick="filterCatalogCategory('all', this)" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid var(--border-color); background: var(--primary); color: #fff; cursor: pointer; transition: 0.2s;">Semua</button>
+                        <button type="button" class="btn btn-sm" onclick="filterCatalogCategory('cleaning', this)" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">🧼 Cuci</button>
+                        <button type="button" class="btn btn-sm" onclick="filterCatalogCategory('repair', this)" style="padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer; transition: 0.2s;">🔧 Reparasi</button>
+                    </div>
+                    
+                    <!-- Services List -->
+                    <div id="catalog-services-list" style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding-right: 4px;">
+                        @foreach($services as $service)
+                            <div class="pos-service-card" data-id="{{ $service->id }}" data-name="{{ strtolower($service->name) }}" data-category="{{ $service->category }}">
+                                <div style="flex-grow: 1;">
+                                    <div style="font-weight: 800; font-size: 0.85rem; color: var(--text); line-height: 1.3;">{{ $service->name }}</div>
+                                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-top: 2px;">Rp {{ number_format($service->price, 0, ',', '.') }}</div>
+                                    <div style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 1px;">⏱️ {{ $service->estimated_time ?: '2-3 Hari' }}</div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                                    <div class="catalog-stepper" style="display: flex; align-items: center; background: var(--surface-variant); border: 1.5px solid var(--border-color); border-radius: 8px; overflow: hidden; height: 32px; width: 80px;">
+                                        <button type="button" onclick="decreaseCatalogQty(this)" style="background: transparent; border: none; color: var(--text); width: 25px; height: 100%; cursor: pointer; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: 0.2s;">-</button>
+                                        <input type="number" class="catalog-qty-input" value="1" min="1" style="width: 30px; text-align: center; border: none; background: transparent; color: var(--text); padding: 0; margin: 0; font-weight: 700; font-size: 0.8rem; -moz-appearance: textfield; appearance: textfield; outline: none;">
+                                        <button type="button" onclick="increaseCatalogQty(this)" style="background: transparent; border: none; color: var(--text); width: 25px; height: 100%; cursor: pointer; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: 0.2s;">+</button>
+                                    </div>
+                                    <button type="button" onclick="addServiceToOrder({{ $service->id }}, this)" class="btn-primary-custom" style="padding: 6px 10px; font-size: 0.72rem; border-radius: 8px; display: flex; align-items: center; gap: 4px; box-shadow: none; margin: 0;">
+                                        ➕
+                                    </button>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- COLUMN 2: Pelanggan & Sepatu --}}
                 <div style="display: flex; flex-direction: column; gap: 24px;">
                     
                     {{-- Section 1: Pelanggan --}}
@@ -973,14 +1015,50 @@
 <style>
 .modal-grid-container {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 32px;
+    grid-template-columns: 1fr 1.1fr 0.9fr;
+    gap: 20px;
+}
+@media (max-width: 1100px) {
+    .modal-grid-container {
+        grid-template-columns: 1.1fr 1fr;
+        gap: 20px;
+    }
 }
 @media (max-width: 768px) {
     .modal-grid-container {
         grid-template-columns: 1fr;
-        gap: 24px;
+        gap: 20px;
     }
+}
+.pos-service-card {
+    background: var(--surface-variant);
+    border: 1.5px solid var(--border-color);
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: all 0.2s ease;
+}
+.pos-service-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+}
+.catalog-qty-input::-webkit-outer-spin-button,
+.catalog-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.catalog-qty-input[type=number] {
+  -moz-appearance: textfield;
+}
+.catalog-stepper button:hover {
+  background: rgba(255,255,255,0.08) !important;
+}
+.catalog-stepper button:active {
+  background: rgba(255,255,255,0.15) !important;
 }
 .shoe-row-grid-1 {
     display: grid;
@@ -990,7 +1068,7 @@
 }
 .shoe-row-grid-2 {
     display: grid;
-    grid-template-columns: 1.5fr 1.2fr 80px;
+    grid-template-columns: 1.5fr 1.2fr 130px;
     gap: 14px;
     margin-bottom: 14px;
 }
@@ -1017,6 +1095,20 @@
 #tab-step-1, #tab-step-2, #tab-step-3 { font-family: inherit; }
 .shoe-item-card input, .shoe-item-card select {
     box-sizing: border-box;
+}
+.qty-input-item::-webkit-outer-spin-button,
+.qty-input-item::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.qty-input-item[type=number] {
+  -moz-appearance: textfield;
+}
+.quantity-stepper button:hover {
+  background: rgba(255,255,255,0.06) !important;
+}
+.quantity-stepper button:active {
+  background: rgba(255,255,255,0.12) !important;
 }
 </style>
 
@@ -1109,7 +1201,7 @@ function togglePaymentStatusSection() {
     calculatePriceAndItemTotals();
 }
 
-function addNewShoeRow() {
+function addNewShoeRow(preselectedServiceId = null, qty = 1) {
     const container = document.getElementById('shoe-items-container');
     const row = document.createElement('div');
     row.className = 'shoe-item-card';
@@ -1118,11 +1210,22 @@ function addNewShoeRow() {
     
     const deleteBtnHtml = `<button type="button" onclick="removeShoeRow(${shoeRowIndex})" class="btn-remove-shoe" style="position: absolute; top: 16px; right: 16px; background: rgba(239, 68, 68, 0.05); border: none; color: #ef4444; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; transition: 0.2s;"><i class="bi bi-trash"></i></button>`;
     
+    const service = preselectedServiceId ? serviceData.find(s => s.id == preselectedServiceId) : null;
+    const serviceName = service ? service.name : '';
+    const badgeHtml = preselectedServiceId ? `
+        <div style="background: rgba(13,110,253,0.05); padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 0.8rem; font-weight: 800; color: var(--primary); display: flex; justify-content: space-between; align-items: center; border: 1.5px solid rgba(13,110,253,0.15);">
+            <span>📋 Layanan: ${serviceName}</span>
+            <span>Jumlah: ${qty} Pasang</span>
+        </div>
+    ` : '';
+    
     row.innerHTML = `
         ${deleteBtnHtml}
         <div style="font-size: 0.72rem; font-weight: 900; color: var(--primary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 4px;">
             <span>👟</span> ITEM SEPATU #<span class="item-index-label">${container.children.length + 1}</span>
         </div>
+        
+        ${badgeHtml}
         
         <div class="shoe-row-grid-1">
             <div>
@@ -1135,12 +1238,15 @@ function addNewShoeRow() {
             </div>
         </div>
         
-        <div class="shoe-row-grid-2">
+        <div class="shoe-row-grid-2" style="${preselectedServiceId ? 'display: none;' : ''}">
             <div>
                 <label style="display: block; font-size: 0.72rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase;">Jenis Layanan Utama</label>
                 <select name="items[${shoeRowIndex}][service_id]" required class="filter-input service-select-item" style="width: 100%; padding: 11px; border-radius: 10px;" onchange="updateAdditionalServicesVisibility(${shoeRowIndex}); calculatePriceAndItemTotals();">
                     <option value="">-- Pilih Layanan Utama --</option>
-                    ${serviceData.map(s => `<option value="${s.id}" data-price="${s.price}">${s.name} (Rp ${s.price.toLocaleString('id-ID')})</option>`).join('')}
+                    ${serviceData.map(s => {
+                        const selected = (preselectedServiceId && s.id == preselectedServiceId) ? 'selected' : '';
+                        return `<option value="${s.id}" data-price="${s.price}" ${selected}>${s.name} (Rp ${s.price.toLocaleString('id-ID')})</option>`;
+                    }).join('')}
                 </select>
             </div>
             <div>
@@ -1152,7 +1258,11 @@ function addNewShoeRow() {
             </div>
             <div>
                 <label style="display: block; font-size: 0.72rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase;">Jumlah</label>
-                <input type="number" name="items[${shoeRowIndex}][shoe_quantity]" value="1" min="1" required class="filter-input qty-input-item" style="width: 100%; padding: 11px; border-radius: 10px;" onchange="calculatePriceAndItemTotals()" oninput="calculatePriceAndItemTotals()">
+                <div class="quantity-stepper" style="display: flex; align-items: center; background: rgba(0, 0, 0, 0.15); border: 1.5px solid var(--border-color); border-radius: 10px; overflow: hidden; width: 100%; height: 42px;">
+                    <button type="button" onclick="decreaseQty(this)" style="background: transparent; border: none; color: var(--text); width: 38px; height: 100%; cursor: pointer; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: 0.2s;">-</button>
+                    <input type="number" name="items[${shoeRowIndex}][shoe_quantity]" value="${qty}" min="1" required class="filter-input qty-input-item" style="width: calc(100% - 76px); text-align: center; border: none; background: transparent; color: var(--text); padding: 0; margin: 0; font-weight: 700; height: 100%; outline: none;" onchange="calculatePriceAndItemTotals()" oninput="calculatePriceAndItemTotals()">
+                    <button type="button" onclick="increaseQty(this)" style="background: transparent; border: none; color: var(--text); width: 38px; height: 100%; cursor: pointer; font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: 0.2s;">+</button>
+                </div>
             </div>
         </div>
 
@@ -1202,6 +1312,24 @@ function removeShoeRow(index) {
         updateDeleteButtonsVisibility();
         calculatePriceAndItemTotals();
     }
+}
+
+function decreaseQty(btn) {
+    const input = btn.parentElement.querySelector('.qty-input-item');
+    let val = parseInt(input.value) || 1;
+    if (val > 1) {
+        input.value = val - 1;
+        const event = new Event('change', { bubbles: true });
+        input.dispatchEvent(event);
+    }
+}
+
+function increaseQty(btn) {
+    const input = btn.parentElement.querySelector('.qty-input-item');
+    let val = parseInt(input.value) || 1;
+    input.value = val + 1;
+    const event = new Event('change', { bubbles: true });
+    input.dispatchEvent(event);
 }
 
 function updateLabelsAndIndexes() {
@@ -1582,6 +1710,12 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
     // Modal operations
     function openCreateModal() {
+        // Reset shoe items container agar tidak duplikat saat modal dibuka ulang
+        const container = document.getElementById('shoe-items-container');
+        container.innerHTML = '';
+        shoeRowIndex = 0;
+        // Auto-tambah 1 item sepatu pertama
+        addNewShoeRow();
         document.getElementById('createOrderModal').classList.add('active');
     }
 
@@ -1774,6 +1908,122 @@ document.addEventListener('DOMContentLoaded', function() {
             e.stopPropagation();
         });
     });
+
+    function decreaseCatalogQty(btn) {
+        const input = btn.parentElement.querySelector('.catalog-qty-input');
+        let val = parseInt(input.value) || 1;
+        if (val > 1) {
+            input.value = val - 1;
+        }
+    }
+
+    function increaseCatalogQty(btn) {
+        const input = btn.parentElement.querySelector('.catalog-qty-input');
+        let val = parseInt(input.value) || 1;
+        input.value = val + 1;
+    }
+
+    function addServiceToOrder(serviceId, btn) {
+        const stepper = btn.parentElement.querySelector('.catalog-qty-input');
+        const qty = parseInt(stepper.value) || 1;
+        
+        const container = document.getElementById('shoe-items-container');
+        const rows = container.querySelectorAll('.shoe-item-card');
+        let reused = false;
+        
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const svcSelect = row.querySelector('.service-select-item');
+            const shoeNameInput = row.querySelector('input[name*="[shoe_name]"]');
+            
+            if (svcSelect && !svcSelect.value && shoeNameInput && !shoeNameInput.value) {
+                svcSelect.value = serviceId;
+                const qtyInput = row.querySelector('.qty-input-item');
+                if (qtyInput) qtyInput.value = qty;
+                
+                const grid2 = row.querySelector('.shoe-row-grid-2');
+                if (grid2) grid2.style.display = 'none';
+                
+                const service = serviceData.find(s => s.id == serviceId);
+                const serviceName = service ? service.name : '';
+                const badgeHtml = `
+                    <div style="background: rgba(13,110,253,0.05); padding: 12px 16px; border-radius: 12px; margin-bottom: 16px; font-size: 0.8rem; font-weight: 800; color: var(--primary); display: flex; justify-content: space-between; align-items: center; border: 1.5px solid rgba(13,110,253,0.15);">
+                        <span>📋 Layanan: ${serviceName}</span>
+                        <span>Jumlah: ${qty} Pasang</span>
+                    </div>
+                `;
+                
+                const indexLabel = row.querySelector('.item-index-label');
+                if (indexLabel) {
+                    const headerDiv = indexLabel.parentElement;
+                    headerDiv.insertAdjacentHTML('afterend', badgeHtml);
+                }
+                
+                const event = new Event('change', { bubbles: true });
+                svcSelect.dispatchEvent(event);
+                
+                reused = true;
+                break;
+            }
+        }
+        
+        if (!reused) {
+            addNewShoeRow(serviceId, qty);
+        }
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Layanan ditambahkan',
+                showConfirmButton: false,
+                timer: 1000,
+                background: '#1e293b',
+                color: '#fff'
+            });
+        }
+        
+        stepper.value = 1;
+    }
+
+    let activeCategory = 'all';
+
+    function filterCatalog() {
+        const searchVal = document.getElementById('catalog-search').value.toLowerCase();
+        const cards = document.querySelectorAll('.pos-service-card');
+        
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name');
+            const cat = card.getAttribute('data-category');
+            
+            const matchesSearch = name.includes(searchVal);
+            const matchesCat = (activeCategory === 'all' || cat === activeCategory);
+            
+            if (matchesSearch && matchesCat) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    function filterCatalogCategory(category, btn) {
+        activeCategory = category;
+        
+        const buttons = btn.parentElement.querySelectorAll('button');
+        buttons.forEach(b => {
+            b.style.background = 'transparent';
+            b.style.color = 'var(--text-secondary)';
+            b.classList.remove('active-cat-btn');
+        });
+        
+        btn.style.background = 'var(--primary)';
+        btn.style.color = '#fff';
+        btn.classList.add('active-cat-btn');
+        
+        filterCatalog();
+    }
 </script>
 
 @if(session('success_order_id'))

@@ -61,6 +61,14 @@
             min-height: 100vh !important;
         }
     }
+    .emp-qty-input-item::-webkit-outer-spin-button,
+    .emp-qty-input-item::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .emp-qty-input-item[type=number] {
+      -moz-appearance: textfield;
+    }
 </style>
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
@@ -457,7 +465,7 @@
 
 <!-- Modal Tambah Pesanan (Layout 2 Kolom - Sama Seperti Admin) -->
 <div class="modal fade" id="createOrderModal" tabindex="-1" aria-labelledby="createOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 1080px; width: 95%;">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 1350px; width: 95%;">
         <form action="{{ route('employee.orders.store') }}" method="POST" enctype="multipart/form-data" id="empCreateOrderForm" class="modal-content border-0 overflow-hidden" style="border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); margin: 0;">
             @csrf
 
@@ -475,8 +483,50 @@
             <div class="modal-body p-4">
                     <div class="row g-4">
 
-                        {{-- LEFT COLUMN: Pelanggan & Sepatu --}}
-                        <div class="col-lg-7 d-flex flex-column gap-4">
+                        {{-- COLUMN 1: POS Catalog --}}
+                        <div class="col-lg-4" style="max-height: 75vh; overflow-y: auto;">
+                            <div class="border rounded-4 p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 16px; background: #fff;">
+                                <div class="fw-bold text-primary text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.8px;">🛍️ Katalog Layanan</div>
+                                
+                                <!-- Search Bar -->
+                                <div style="position: relative;">
+                                    <input type="text" id="emp-catalog-search" oninput="empFilterCatalog()" placeholder="Cari layanan..." class="form-control" style="border-radius: 10px; font-size: 0.85rem; padding: 10px 12px;">
+                                </div>
+                                
+                                <!-- Category Tabs -->
+                                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                    <button type="button" class="btn btn-sm active-cat-btn btn-primary" onclick="empFilterCatalogCategory('all', this)" style="border-radius: 8px; font-size: 0.72rem; font-weight: 700; transition: 0.2s;">Semua</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="empFilterCatalogCategory('cleaning', this)" style="border-radius: 8px; font-size: 0.72rem; font-weight: 700; transition: 0.2s;">🧼 Cuci</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="empFilterCatalogCategory('repair', this)" style="border-radius: 8px; font-size: 0.72rem; font-weight: 700; transition: 0.2s;">🔧 Reparasi</button>
+                                </div>
+                                
+                                <!-- Services List -->
+                                <div id="emp-catalog-services-list" style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding-right: 4px;">
+                                    @foreach($services as $service)
+                                        <div class="emp-pos-service-card border rounded-3 p-3 bg-light d-flex align-items-center justify-content-between gap-2" data-id="{{ $service->id }}" data-name="{{ strtolower($service->name) }}" data-category="{{ $service->category }}" style="transition: all 0.2s ease;">
+                                            <div style="flex-grow: 1;">
+                                                <div class="fw-bold text-dark" style="font-size: 0.85rem; line-height: 1.3;">{{ $service->name }}</div>
+                                                <div class="fw-bold text-primary small mt-1">Rp {{ number_format($service->price, 0, ',', '.') }}</div>
+                                                <div class="text-muted mt-1" style="font-size: 0.65rem;">⏱️ {{ $service->estimated_time ?: '2-3 Hari' }}</div>
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                                <div class="input-group" style="width: 80px; height: 32px; overflow: hidden; border-radius: 6px;">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="empDecreaseCatalogQty(this)" style="font-weight: bold; font-size: 0.8rem;">-</button>
+                                                    <input type="number" class="form-control form-control-sm text-center emp-catalog-qty-input p-0" value="1" min="1" style="font-weight: 700; font-size: 0.8rem; -moz-appearance: textfield; appearance: textfield; outline: none; border-left: none; border-right: none;">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-0" onclick="empIncreaseCatalogQty(this)" style="font-weight: bold; font-size: 0.8rem;">+</button>
+                                                </div>
+                                                <button type="button" onclick="empAddServiceToOrder({{ $service->id }}, this)" class="btn btn-sm btn-primary py-1 px-2" style="font-size: 0.72rem; border-radius: 6px; margin: 0;">
+                                                    ➕
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- COLUMN 2: Pelanggan & Sepatu --}}
+                        <div class="col-lg-4 d-flex flex-column gap-4">
 
                             {{-- Section 1: Pelanggan --}}
                             <div class="border rounded-4 p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
@@ -554,7 +604,7 @@
                         </div>
 
                         {{-- RIGHT COLUMN: Pengiriman, Pembayaran & Total --}}
-                        <div class="col-lg-5 d-flex flex-column gap-4">
+                        <div class="col-lg-4 d-flex flex-column gap-4">
 
                             {{-- Section 3: Pengiriman & Pembayaran --}}
                             <div class="border rounded-4 p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
@@ -889,6 +939,12 @@
     });
 
     function openCreateModal() {
+        // Reset shoe items container agar tidak duplikat saat modal dibuka ulang
+        const empContainer = document.getElementById('emp-shoe-items-container');
+        empContainer.innerHTML = '';
+        empShoeRowIndex = 0;
+        // Auto-tambah 1 item sepatu pertama
+        empAddNewShoeRow();
         empToggleCustomerType();
         empToggleDeliverySection();
         empTogglePaymentStatusSection();
@@ -1036,7 +1092,7 @@
         empCalculateTotals();
     }
 
-    function empAddNewShoeRow() {
+    function empAddNewShoeRow(preselectedServiceId = null, qty = 1) {
         const container = document.getElementById('emp-shoe-items-container');
         const row = document.createElement('div');
         row.className = 'emp-shoe-row';
@@ -1045,11 +1101,22 @@
         
         const deleteBtnHtml = `<button type="button" onclick="empRemoveShoeRow(${empShoeRowIndex})" class="btn-emp-remove-shoe text-danger" style="position: absolute; top: 16px; right: 16px; background: rgba(239, 68, 68, 0.05); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; transition: 0.2s;"><i class="bi bi-trash"></i></button>`;
         
+        const service = preselectedServiceId ? empServiceData.find(s => s.id == preselectedServiceId) : null;
+        const serviceName = service ? service.name : '';
+        const badgeHtml = preselectedServiceId ? `
+            <div class="alert alert-primary py-2 px-3 mb-3 d-flex justify-content-between align-items-center" style="border-radius: 12px; font-weight: 700; font-size: 0.8rem;">
+                <span>📋 Layanan: ${serviceName}</span>
+                <span>Jumlah: ${qty} Pasang</span>
+            </div>
+        ` : '';
+
         row.innerHTML = `
             ${deleteBtnHtml}
             <div style="font-size: 0.72rem; font-weight: 900; color: var(--bs-primary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 4px;">
                 <span>👟</span> ITEM SEPATU #<span class="emp-item-index-label">${container.children.length + 1}</span>
             </div>
+            
+            ${badgeHtml}
             
             <div class="row g-3 mb-3">
                 <div class="col-md-8">
@@ -1062,12 +1129,15 @@
                 </div>
             </div>
             
-            <div class="row g-3 mb-3">
+            <div class="row g-3 mb-3" style="${preselectedServiceId ? 'display: none !important;' : ''}">
                 <div class="col-md-5">
                     <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size: 0.72rem; letter-spacing: 0.3px;">Jenis Layanan Utama</label>
                     <select name="items[${empShoeRowIndex}][service_id]" required class="form-select emp-service-select-item" style="border-radius: 10px; padding: 10px;" onchange="empUpdateAdditionalServicesVisibility(${empShoeRowIndex}); empCalculateTotals();">
                         <option value="">-- Pilih Layanan Utama --</option>
-                        ${empServiceData.map(s => `<option value="${s.id}" data-price="${s.price}">${s.name} (Rp ${s.price.toLocaleString('id-ID')})</option>`).join('')}
+                        ${empServiceData.map(s => {
+                            const selected = (preselectedServiceId && s.id == preselectedServiceId) ? 'selected' : '';
+                            return `<option value="${s.id}" data-price="${s.price}" ${selected}>${s.name} (Rp ${s.price.toLocaleString('id-ID')})</option>`;
+                        }).join('')}
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -1079,7 +1149,11 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-bold text-secondary text-uppercase small" style="font-size: 0.72rem; letter-spacing: 0.3px;">Jumlah</label>
-                    <input type="number" name="items[${empShoeRowIndex}][shoe_quantity]" value="1" min="1" required class="form-control emp-qty-input-item" style="border-radius: 10px; padding: 10px;" onchange="empCalculateTotals()" oninput="empCalculateTotals()">
+                    <div class="input-group" style="border-radius: 10px; overflow: hidden;">
+                        <button class="btn btn-outline-secondary px-3" type="button" onclick="empDecreaseQty(this)" style="font-weight: bold; font-size: 1.1rem; border-color: #dee2e6;">-</button>
+                        <input type="number" name="items[${empShoeRowIndex}][shoe_quantity]" value="${qty}" min="1" required class="form-control text-center emp-qty-input-item" style="padding: 10px; border-color: #dee2e6; border-left: none; border-right: none; font-weight: 700; -moz-appearance: textfield; appearance: textfield;" onchange="empCalculateTotals()" oninput="empCalculateTotals()">
+                        <button class="btn btn-outline-secondary px-3" type="button" onclick="empIncreaseQty(this)" style="font-weight: bold; font-size: 1.1rem; border-color: #dee2e6;">+</button>
+                    </div>
                 </div>
             </div>
 
@@ -1129,6 +1203,24 @@
             empUpdateDeleteButtons();
             empCalculateTotals();
         }
+    }
+
+    function empDecreaseQty(btn) {
+        const input = btn.parentElement.querySelector('.emp-qty-input-item');
+        let val = parseInt(input.value) || 1;
+        if (val > 1) {
+            input.value = val - 1;
+            const event = new Event('change', { bubbles: true });
+            input.dispatchEvent(event);
+        }
+    }
+
+    function empIncreaseQty(btn) {
+        const input = btn.parentElement.querySelector('.emp-qty-input-item');
+        let val = parseInt(input.value) || 1;
+        input.value = val + 1;
+        const event = new Event('change', { bubbles: true });
+        input.dispatchEvent(event);
     }
 
     function empUpdateLabelsAndIndexes() {
@@ -1520,6 +1612,120 @@
         }
         
         uploadPhotoModalObj.show();
+    }
+
+    function empDecreaseCatalogQty(btn) {
+        const input = btn.parentElement.querySelector('.emp-catalog-qty-input');
+        let val = parseInt(input.value) || 1;
+        if (val > 1) {
+            input.value = val - 1;
+        }
+    }
+
+    function empIncreaseCatalogQty(btn) {
+        const input = btn.parentElement.querySelector('.emp-catalog-qty-input');
+        let val = parseInt(input.value) || 1;
+        input.value = val + 1;
+    }
+
+    function empAddServiceToOrder(serviceId, btn) {
+        const stepper = btn.parentElement.querySelector('.emp-catalog-qty-input');
+        const qty = parseInt(stepper.value) || 1;
+        
+        const container = document.getElementById('emp-shoe-items-container');
+        const rows = container.querySelectorAll('.emp-shoe-row');
+        let reused = false;
+        
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const svcSelect = row.querySelector('.emp-service-select-item');
+            const shoeNameInput = row.querySelector('input[name*="[shoe_name]"]');
+            
+            if (svcSelect && !svcSelect.value && shoeNameInput && !shoeNameInput.value) {
+                svcSelect.value = serviceId;
+                const qtyInput = row.querySelector('.emp-qty-input-item');
+                if (qtyInput) qtyInput.value = qty;
+                
+                const grid2 = svcSelect.closest('.row');
+                if (grid2) grid2.style.setProperty('display', 'none', 'important');
+                
+                const service = empServiceData.find(s => s.id == serviceId);
+                const serviceName = service ? service.name : '';
+                const badgeHtml = `
+                    <div class="alert alert-primary py-2 px-3 mb-3 d-flex justify-content-between align-items-center" style="border-radius: 12px; font-weight: 700; font-size: 0.8rem;">
+                        <span>📋 Layanan: ${serviceName}</span>
+                        <span>Jumlah: ${qty} Pasang</span>
+                    </div>
+                `;
+                
+                const indexLabel = row.querySelector('.emp-item-index-label');
+                if (indexLabel) {
+                    const headerDiv = indexLabel.parentElement;
+                    headerDiv.insertAdjacentHTML('afterend', badgeHtml);
+                }
+                
+                const event = new Event('change', { bubbles: true });
+                svcSelect.dispatchEvent(event);
+                
+                reused = true;
+                break;
+            }
+        }
+        
+        if (!reused) {
+            empAddNewShoeRow(serviceId, qty);
+        }
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Layanan ditambahkan',
+                showConfirmButton: false,
+                timer: 1000,
+                background: '#1e293b',
+                color: '#fff'
+            });
+        }
+        
+        stepper.value = 1;
+    }
+
+    let empActiveCategory = 'all';
+
+    function empFilterCatalog() {
+        const searchVal = document.getElementById('emp-catalog-search').value.toLowerCase();
+        const cards = document.querySelectorAll('.emp-pos-service-card');
+        
+        cards.forEach(card => {
+            const name = card.getAttribute('data-name');
+            const cat = card.getAttribute('data-category');
+            
+            const matchesSearch = name.includes(searchVal);
+            const matchesCat = (empActiveCategory === 'all' || cat === empActiveCategory);
+            
+            if (matchesSearch && matchesCat) {
+                card.style.setProperty('display', 'flex', 'important');
+            } else {
+                card.style.setProperty('display', 'none', 'important');
+            }
+        });
+    }
+
+    function empFilterCatalogCategory(category, btn) {
+        empActiveCategory = category;
+        
+        const buttons = btn.parentElement.querySelectorAll('button');
+        buttons.forEach(b => {
+            b.classList.remove('btn-primary', 'active-cat-btn');
+            b.classList.add('btn-outline-secondary');
+        });
+        
+        btn.classList.add('btn-primary', 'active-cat-btn');
+        btn.classList.remove('btn-outline-secondary');
+        
+        empFilterCatalog();
     }
 </script>
 @endpush

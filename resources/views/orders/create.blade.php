@@ -40,6 +40,14 @@
         background: rgba(249, 115, 22, 0.05) !important;
         border: 2px solid var(--primary) !important;
     }
+    .qty-input-stepper::-webkit-outer-spin-button,
+    .qty-input-stepper::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .qty-input-stepper[type=number] {
+      -moz-appearance: textfield;
+    }
 </style>
 
 <div style="max-width: 1100px; margin: 0 auto; padding-top: 1rem;" class="form-container">
@@ -220,7 +228,11 @@
 
                         <div>
                             <label style="display: block; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">Jumlah Sepatu</label>
-                            <input type="number" name="shoe_quantity" id="shoe_quantity" value="1" min="1" style="width: 100%; padding: 1rem 1.2rem; border-radius: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1rem; outline: none; transition: 0.3s;" onchange="updatePriceFromQuantity()">
+                            <div style="display: flex; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; overflow: hidden; width: 100%; max-width: 150px; height: 50px;">
+                                <button type="button" onclick="decreaseCheckoutQty()" style="background: transparent; border: none; color: #fff; width: 45px; height: 100%; cursor: pointer; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">-</button>
+                                <input type="number" name="shoe_quantity" id="shoe_quantity" value="1" min="1" class="qty-input-stepper" style="width: calc(100% - 90px); text-align: center; border: none; background: transparent; color: #fff; font-size: 1.1rem; font-weight: 700; height: 100%; padding: 0; outline: none;" onchange="updatePriceFromQuantity()">
+                                <button type="button" onclick="increaseCheckoutQty()" style="background: transparent; border: none; color: #fff; width: 45px; height: 100%; cursor: pointer; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">+</button>
+                            </div>
                         </div>
                     </div>
                     @else
@@ -767,6 +779,22 @@
         btn.style.opacity = '0.7';
         btn.style.cursor = 'not-allowed';
         return true;
+    }
+
+    function decreaseCheckoutQty() {
+        const input = document.getElementById('shoe_quantity');
+        let val = parseInt(input.value) || 1;
+        if (val > 1) {
+            input.value = val - 1;
+            updatePriceFromQuantity();
+        }
+    }
+
+    function increaseCheckoutQty() {
+        const input = document.getElementById('shoe_quantity');
+        let val = parseInt(input.value) || 1;
+        input.value = val + 1;
+        updatePriceFromQuantity();
     }
 
     // Initialize price on load
