@@ -1015,7 +1015,7 @@
 <style>
 .modal-grid-container {
     display: grid;
-    grid-template-columns: 1fr 1.1fr 0.9fr;
+    grid-template-columns: 0.8fr 1.3fr 0.9fr;
     gap: 20px;
 }
 @media (max-width: 1100px) {

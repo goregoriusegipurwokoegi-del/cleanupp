@@ -465,7 +465,7 @@
 
 <!-- Modal Tambah Pesanan (Layout 2 Kolom - Sama Seperti Admin) -->
 <div class="modal fade" id="createOrderModal" tabindex="-1" aria-labelledby="createOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 1350px; width: 95%;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 1350px; width: 95%;">
         <form action="{{ route('employee.orders.store') }}" method="POST" enctype="multipart/form-data" id="empCreateOrderForm" class="modal-content border-0 overflow-hidden" style="border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); margin: 0;">
             @csrf
 
@@ -484,7 +484,7 @@
                     <div class="row g-4">
 
                         {{-- COLUMN 1: POS Catalog --}}
-                        <div class="col-lg-4" style="max-height: 75vh; overflow-y: auto;">
+                        <div class="col-xl-3 col-lg-4" style="max-height: 75vh; overflow-y: auto;">
                             <div class="border rounded-4 p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 16px; background: #fff;">
                                 <div class="fw-bold text-primary text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.8px;">Katalog Layanan</div>
                                 
@@ -526,7 +526,7 @@
                         </div>
 
                         {{-- COLUMN 2: Pelanggan & Sepatu --}}
-                        <div class="col-lg-4 d-flex flex-column gap-4">
+                        <div class="col-xl-5 col-lg-4 d-flex flex-column gap-4">
 
                             {{-- Section 1: Pelanggan --}}
                             <div class="border rounded-4 p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
@@ -604,7 +604,7 @@
                         </div>
 
                         {{-- RIGHT COLUMN: Pengiriman, Pembayaran & Total --}}
-                        <div class="col-lg-4 d-flex flex-column gap-4">
+                        <div class="col-xl-4 col-lg-4 d-flex flex-column gap-4">
 
                             {{-- Section 3: Pengiriman & Pembayaran --}}
                             <div class="border rounded-4 p-4" style="box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
@@ -717,7 +717,7 @@
 </div>
 
 <div class="modal fade" id="editOrderModal" tabindex="-1" aria-labelledby="editOrderModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <form id="editOrderForm" method="POST" enctype="multipart/form-data" class="modal-content" style="margin: 0;">
             @csrf
             @method('PUT')
